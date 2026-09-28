@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>베딕 쿤달리 · 무료 계산기</title>
+<style>
+  :root { --bg:#14121f; --card:#1e1b2e; --gold:#d4a94e; --ink:#f0ead8; --muted:#a89f8d; --line:#3a3352; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink); font-family:"Noto Sans KR",system-ui,sans-serif; line-height:1.6; }
+  .wrap { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
+  header { text-align:center; padding:32px 0 8px; }
+  header .om { font-size:40px; }
+  h1 { font-size:24px; letter-spacing:-.5px; margin:8px 0 4px; }
+  header p { color:var(--muted); font-size:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:20px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:14px 0 6px; }
+  input, select { width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:#12101c; color:var(--ink); font-size:16px; }
+  .row { display:flex; gap:10px; } .row > div { flex:1; }
+  .check { display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px; color:var(--muted); }
+  .check input { width:auto; }
+  button.primary { width:100%; margin-top:20px; padding:14px; border:none; border-radius:12px;
+    background:linear-gradient(135deg,#d4a94e,#b97f2a); color:#1a1408; font-size:17px; font-weight:700; cursor:pointer; }
+  button.primary:disabled { opacity:.5; cursor:wait; }
+  #result { display:none; }
+  .notice { background:#2a2417; border:1px solid #6b5626; color:#e8c87a; border-radius:10px; padding:12px 14px; font-size:14px; margin-bottom:16px; }
+  h2 { font-size:18px; margin:4px 0 12px; color:var(--gold); }
+  h3 { font-size:15px; margin:18px 0 8px; color:var(--gold); }
+  .facts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .fact { background:#12101c; border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .fact .k { font-size:12px; color:var(--muted); }
+  .fact .v { font-size:17px; font-weight:700; margin-top:2px; }
+  .fact .d { font-size:13px; color:var(--muted); margin-top:4px; }
+  #chart { width:100%; max-width:420px; display:block; margin:8px auto; }
+  table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
+  th, td { padding:8px 6px; border-bottom:1px solid var(--line); text-align:center; }
+  th { color:var(--muted); font-weight:500; font-size:12px; }
+  .interp { font-size:14px; color:#ddd6c2; background:#12101c; border-radius:10px; padding:12px 14px; margin-top:8px; }
+  .cta { text-align:center; padding:8px 0; }
+  .cta input { margin-bottom:10px; }
+  .fine { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
+  .err { color:#ff9d9d; font-size:14px; margin-top:12px; text-align:center; }
+  @media (max-width:480px){ .facts{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="om">🕉️</div>
+    <h1>베딕 쿤달리 무료 계산기</h1>
+    <p>인도 정통 점성술 · 라히리 아야남사 · 가입 없이 바로</p>
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <div><label>생년월일</label><input type="date" id="birthDate" value="1990-05-15"></div>
+      <div><label>태어난 시간</label><input type="time" id="birthTime" value="14:30"></div>
+    </div>
+    <label class="check"><input type="checkbox" id="timeUnknown"> 태어난 시간을 몰라요 (달 기준 간이 계산)</label>
+    <label>출생지</label>
+    <select id="place"></select>
+    <button class="primary" id="go" onclick="calc()">내 차트 계산하기</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="result">
+    <div class="card">
+      <div class="notice" id="notice" style="display:none"></div>
+      <h2>🔮 당신의 베딕 차트</h2>
+      <svg id="chart" viewBox="0 0 360 360"></svg>
+      <div class="facts" id="facts"></div>
+
+      <h3>🌙 달 별자리와 나크샤트라</h3>
+      <div class="interp" id="moonInterp"></div>
+
+      <h3>⏳ 현재 다샤 (시기)</h3>
+      <div class="interp" id="dashaInterp"></div>
+
+      <h3>🪐 행성 배치</h3>
+      <table><thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead><tbody id="planets"></tbody></table>
+
+      <h3>📜 심층 리포트가 궁금하신가요?</h3>
+      <div class="cta">
+        <p style="font-size:14px;color:var(--muted);margin-bottom:12px">
+          기질·재물·직업·관계·대운을 항목별로 깊게 풀어드리는<br>유료 심층 리포트를 준비하고 있습니다.</p>
+        <input type="email" id="email" placeholder="이메일 주소 (출시 알림)">
+        <button class="primary" onclick="notify()">출시 알림 신청</button>
+        <div class="err" id="notifyMsg" style="color:#9fe6a0"></div>
+      </div>
+    </div>
+    <p class="fine">본 결과는 참고용입니다 · 항성 황도(라히리) 기준 · 베딕 점성술 입문 계산기</p>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const CITIES = [
+  ["서울",37.5665,127.9780],["부산",35.1796,129.0756],["대구",35.8714,128.6014],
+  ["인천",37.4563,126.7052],["광주",35.1595,126.8526],["대전",36.3504,127.3845],
+  ["울산",35.5384,129.3114],["세종",36.4800,127.2890],["수원",37.2636,127.0286],
+  ["제주",33.4996,126.5312]
+];
+const placeSel = document.getElementById('place');
+CITIES.forEach(([n,la,lo])=>{ const o=document.createElement('option'); o.value=`${la},${lo}`; o.textContent=n; placeSel.appendChild(o); });
+
+// 북인도식 차트: 12하우스 고정 폴리곤
+const HOUSES = [
+  [[180,0],[270,90],[180,180],[90,90],[180,95]],
+  [[0,0],[180,0],[90,90],[90,35]],
+  [[0,0],[90,90],[0,180],[35,90]],
+  [[0,180],[90,90],[180,180],[90,270],[95,180]],
+  [[0,180],[90,270],[0,360],[35,270]],
+  [[0,360],[90,270],[180,360],[90,325]],
+  [[180,360],[270,270],[180,180],[90,270],[180,265]],
+  [[360,360],[270,270],[180,360],[270,325]],
+  [[360,360],[360,180],[270,270],[325,270]],
+  [[360,180],[270,90],[180,180],[270,270],[265,180]],
+  [[360,0],[360,180],[270,90],[325,90]],
+  [[360,0],[270,90],[180,0],[270,35]],
+];
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function drawChart(lagnaSignIdx, planets, chandraMode){
+  const svg = document.getElementById('chart');
+  svg.innerHTML = "";
+  const base = chandraMode ? planets.find(p=>p.abbr==="Mo").sign_index : lagnaSignIdx;
+  const byHouse = {};
+  planets.forEach(p=>{ const h = ((p.sign_index - base) % 12 + 12) % 12 + 1; (byHouse[h] ||= []).push(p.abbr); });
+  HOUSES.forEach((pts, i)=>{
+    const house = i+1, poly = pts.slice(0,-1), anchor = pts[pts.length-1];
+    const pg = document.createElementNS(SVGNS,"polygon");
+    pg.setAttribute("points", poly.map(p=>p.join(",")).join(" "));
+    pg.setAttribute("fill", house===1 ? "#2b2542" : "#1a1728");
+    pg.setAttribute("stroke", "#d4a94e"); pg.setAttribute("stroke-width","1.2");
+    svg.appendChild(pg);
+    const signNo = ((base - 1 + i) % 12) + 1;
+    const t1 = document.createElementNS(SVGNS,"text");
+    t1.setAttribute("x",anchor[0]); t1.setAttribute("y",anchor[1]-8);
+    t1.setAttribute("text-anchor","middle"); t1.setAttribute("fill","#8f86a8"); t1.setAttribute("font-size","11");
+    t1.textContent = signNo; svg.appendChild(t1);
+    let names = (byHouse[house]||[]).join(" ");
+    if(house===1) names = "As " + names;
+    const t2 = document.createElementNS(SVGNS,"text");
+    t2.setAttribute("x",anchor[0]); t2.setAttribute("y",anchor[1]+10);
+    t2.setAttribute("text-anchor","middle"); t2.setAttribute("fill","#f0ead8"); t2.setAttribute("font-size","12");
+    t2.setAttribute("font-weight","600"); t2.textContent = names; svg.appendChild(t2);
+  });
+  if(chandraMode){
+    const t = document.createElementNS(SVGNS,"text");
+    t.setAttribute("x",180); t.setAttribute("y",352); t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","#a89f8d"); t.setAttribute("font-size","11"); t.textContent = "달 기준 차트";
+    svg.appendChild(t);
+  }
+}
+
+async function calc(){
+  const err = document.getElementById('err'); err.textContent = "";
+  const btn = document.getElementById('go'); btn.disabled = true; btn.textContent = "계산 중…";
+  try{
+    const [lat,lon] = document.getElementById('place').value.split(",").map(Number);
+    const tu = document.getElementById('timeUnknown').checked;
+    const body = {
+      birth_date: document.getElementById('birthDate').value,
+      birth_time: tu ? null : (document.getElementById('birthTime').value || null),
+      tz_offset: 9.0, lat, lon,
+      place: placeSel.options[placeSel.selectedIndex].text
+    };
+    const r = await fetch((window.API_BASE || '') + '/api/chart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.detail || "계산 실패");
+    render(d, tu);
+  }catch(e){ err.textContent = e.message; }
+  finally{ btn.disabled = false; btn.textContent = "내 차트 계산하기"; }
+}
+
+function render(d, tu){
+  document.getElementById('result').style.display = "block";
+  const notice = document.getElementById('notice');
+  if(d.notice){ notice.style.display="block"; notice.textContent = d.notice; } else notice.style.display="none";
+
+  const lagnaIdx = d.lagna ? d.lagna.sign_index : d.moon.sign_index;
+  drawChart(lagnaIdx, d.planets, tu || !d.lagna);
+
+  const f = document.getElementById('facts'); f.innerHTML = "";
+  const add = (k,v,desc)=>{ f.insertAdjacentHTML('beforeend',
+    `<div class="fact"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${desc}</div></div>`); };
+  if(d.lagna) add("상승궁 (라그나)", d.lagna.sign_ko, `${d.lagna.nakshatra_ko} ${d.lagna.pada}파다 · ${d.lagna.description}`);
+  add("달 별자리", d.moon.sign_ko, `${d.moon.nakshatra_ko} ${d.moon.pada}파다`);
+  add("현재 마하다샤", `${d.dasha.mahadasha.lord_ko} 시기`, `${d.dasha.mahadasha.start} ~ ${d.dasha.mahadasha.end}`);
+  add("현재 안타르다샤", d.dasha.antardasha ? `${d.dasha.antardasha.lord_ko} 시기` : "-",
+      d.dasha.antardasha ? `${d.dasha.antardasha.start} ~ ${d.dasha.antardasha.end}` : "");
+
+  document.getElementById('moonInterp').textContent =
+    `달은 ${d.moon.sign_ko}에 있습니다. ${d.moon.description} 나크샤트라는 ${d.moon.nakshatra_ko}로, ${d.moon.nakshatra_description}`;
+  document.getElementById('dashaInterp').textContent =
+    `지금은 ${d.dasha.mahadasha.lord_ko} 마하다샤 기간입니다. ${d.dasha.mahadasha.description}`;
+
+  const tb = document.getElementById('planets'); tb.innerHTML = "";
+  d.planets.forEach(p=>{ tb.insertAdjacentHTML('beforeend',
+    `<tr><td>${p.name_ko}</td><td>${p.sign_ko}</td><td>${p.house? p.house+"하우스":"-"}</td></tr>`); });
+
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+
+function notify(){
+  const em = document.getElementById('email').value;
+  const m = document.getElementById('notifyMsg');
+  m.textContent = em.includes("@") ? "신청됐습니다. 출시 소식을 전해드릴게요." : "이메일 주소를 확인해 주세요.";
+}
+document.getElementById('timeUnknown').addEventListener('change', e=>{
+  document.getElementById('birthTime').disabled = e.target.checked;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2158 @@
+# =============================================================================
+# constants.yaml — 베딕 판정 엔진 상수 레지스트리
+# =============================================================================
+# 성격: 판정층 코드가 참조하는 유일한 수치 출처(single source of truth).
+#       코드는 지식베이스 .md 문서에서 숫자를 읽지 않는다. 이 파일만 읽는다.
+#
+# 원칙:
+#   - 04_프로젝트_기본지침_v2.0.md §1.6 — 판본이 다르면 병기한다.
+#     → 각 항목에 source_value(원전·문서 인쇄값)와 engine_value(엔진 채택값)를 병기.
+#   - §2.1 — 원본 문서는 수정하지 않는다.
+#     → 이 파일은 문서를 고치지 않고 값만 추출·정규화한다.
+#   - §6.2 — 존재하지 않는 값을 만들지 않는다.
+#     → 미확인 값은 null + status: 확인대기. 임의로 채우지 않는다.
+#
+# 범위: 커리어 타이밍 리포트 v1 경로에 필요한 상수만.
+#       쇼다나·핀다·특별라그나·굴리카·프라나파다는 v1 경로 외 → 미포함.
+#
+# 구간 표기 규약 (전 파일 공통):
+#   min 이상, max 미만  (max_inclusive: true 인 최상위 구간만 예외)
+#   → 소수 경계에서 등급이 두 개가 되는 문제를 차단한다.
+# =============================================================================
+
+meta:
+  version: 0.44.0
+  scope: career_timing_report_v1
+  created_from:
+    - 19_하우스10.md
+    - 43_BPHS_아쉬타카바르가.md
+    - 44_BPHS_카라카_특수점.md
+    - 40_BPHS_바르가계산_1_.md
+    - 41_BPHS_바르가판독_1_.md
+    - 02_이벤트타이밍_KN라오.md
+  archive_excluded:                     # §1.7 — 근거로 사용 금지
+    - 40_BPHS_바르가계산.md
+    - 41_BPHS_바르가판독.md
+  blocking_issues: 0                     # 발행 차단 없음                    # open_issues 의 blocking: true 개수
+  release_gate: >
+    open_issues 에 status: 결정대기 또는 확인대기 항목이 남아 있으면
+    유료 리포트를 발행하지 않는다.
+
+# =============================================================================
+# 1. 근거 계열 정책 (§4.1 · §9.1)
+# =============================================================================
+evidence_policy:
+  min_tiers: 3                          # §4.1 핵심 결론당 최소 근거 계열 수
+  l1_required: true                     # D1 직접 지시(하우스/로드/카라카) 필수
+  l1_definition: [d1_house, d1_lord, d1_occupant]
+
+  tiers:                                # §9.1 계열 구분
+    t1_d1:        { name: "D1 하우스/로드/재실", counts_as_evidence: true }
+    t2_karaka:    { name: "카라카",              counts_as_evidence: true }
+    t3_varga:     { name: "바르가(D9·D10 합산 1계열)", counts_as_evidence: true }
+    t4_dasha:     { name: "다샤/트랜짓",          counts_as_evidence: true }
+    t5_ashtaka:   { name: "아쉬타카바르가",       counts_as_evidence: false }  # ISSUE-002 해결
+    t6_yoga:      { name: "요가",                counts_as_evidence: true }
+
+  varga_aggregation: sum_as_one          # §9.1 바르가 개수로 계열 수를 늘리지 않는다
+  transit_aggregation: sum_as_one        # ISSUE-003 해결 — 확정
+  reference_point_aggregation: sum_as_one # ISSUE-019 해결 — 라그나·달 기준은 합산 1계열
+  cross_tradition_excluded: true         # §1.1 서양고전 규칙은 계열에 넣지 않는다
+
+  # --- 판정 기준점 정책 (ISSUE-019) ---
+  reference_points:
+    primary: lagna                        # 결론의 내용을 결정
+    secondary: chandra_lagna              # 같은 계열 안에서 보강 또는 이견
+    both_written: true                    # 리포트에 양쪽 다 서술한다
+    tier_counting: single                 # 서술은 둘, 계열은 하나
+
+    semantics:
+      lagna: "몸·외부 환경·실제 사건 — 무슨 일이 일어나는가"
+      chandra_lagna: "마음·감정·체감 — 그 일을 어떻게 느끼는가"
+
+    on_agreement: >
+      두 기준이 같은 방향이면 해당 계열의 강도가 올라간다. 계열 수는 변하지 않는다.
+    on_disagreement: >
+      §4.3 에 따라 양쪽을 병기하고 time_precision_flag 를 세운다.
+      라그나는 2시간, 달은 2.25일 주기이므로 불일치는 출생시각 정밀도가
+      결과를 좌우하는 차트라는 신호이기도 하다.
+
+    source_variants:                      # §1.6 병기
+      - doc: "62_Saravali_직업판단.md §0"
+        rule: "라그나와 달 중 더 강한 쪽으로 대체"
+        adopted: false
+        reason: "강약 판정 규칙이 지식베이스에 없다. 새로 만들면 §6.1 위반."
+      - doc: "11_하우스2.md §5"
+        rule: "달 기준 2로드를 영향 행성에 추가 (병행)"
+        adopted: true
+
+# =============================================================================
+# 2. 아쉬타카바르가 (43_BPHS_아쉬타카바르가.md)
+# =============================================================================
+ashtakavarga:
+
+  # --- 계산 체크섬 (43 §2.4) — 기여표 입력 오류 검출용 ---
+  bav_checksums:
+    sun: 48
+    moon: 49
+    mars: 39
+    mercury: 54
+    jupiter: 56
+    venus: 52
+    saturn: 39
+  sav_checksum: 337
+  sav_mean: 28.083                      # 337 / 12
+
+
+  # --- BAV 기여표 (43_BPHS_아쉬타카바르가.md §3) ---
+  # 구조: bav_contributions[대상행성][기여기준점] = 기여자 위치로부터 유리한 상대 하우스 목록
+  # 산식: 대상 사인 = ((기여자_사인 - 1 + 상대하우스 - 1) % 12) + 1
+  # 검증: 대상행성별 리스트 길이 합 == bav_checksums, 전체 합 == 337
+  # 주의: 개수 체크섬은 위치 오류를 잡지 못한다. 실질 검증은 JHora 교차 대조(ISSUE-007).
+  bav_contributions:
+    # [교정 v0.30.0] BPHS-San Vol.2 Ch.66 (책 p.847 달 / p.852 금성) 원본 이미지 대조.
+    # 원전은 Karanaprada(흉점) 형식이므로 여집합을 취해 길점으로 변환했다.
+    # 교정 4행 — 달표: 달 +9, 화성 -9, 목성 12→2 / 금성표: 화성 5→4
+    # 교정 후 JHora 7개 표 전부 12/12 일치 (ISSUE-007 해결).
+    sun:                                  # 태양 — 체크섬 48
+      sun     : [1, 2, 4, 7, 8, 9, 10, 11]          # 태양 (8)
+      moon    : [3, 6, 10, 11]                      # 달 (4)
+      mars    : [1, 2, 4, 7, 8, 9, 10, 11]          # 화성 (8)
+      mercury : [3, 5, 6, 9, 10, 11, 12]            # 수성 (7)
+      jupiter : [5, 6, 9, 11]                       # 목성 (4)
+      venus   : [6, 7, 12]                          # 금성 (3)
+      saturn  : [1, 2, 4, 7, 8, 9, 10, 11]          # 토성 (8)
+      lagna   : [3, 4, 6, 10, 11, 12]               # 라그나 (6)
+    moon:                                  # 달 — 체크섬 49
+      sun     : [3, 6, 7, 8, 10, 11]                # 태양 (6)
+      moon    : [1, 3, 6, 7, 9, 10, 11]                # 달 (6)
+      mars    : [2, 3, 5, 6, 10, 11]             # 화성 (7)
+      mercury : [1, 3, 4, 5, 7, 8, 10, 11]          # 수성 (8)
+      jupiter : [1, 2, 4, 7, 8, 10, 11]            # 목성 (7)
+      venus   : [3, 4, 5, 7, 9, 10, 11]             # 금성 (7)
+      saturn  : [3, 5, 6, 11]                       # 토성 (4)
+      lagna   : [3, 6, 10, 11]                      # 라그나 (4)
+    mars:                                  # 화성 — 체크섬 39
+      sun     : [3, 5, 6, 10, 11]                   # 태양 (5)
+      moon    : [3, 6, 11]                          # 달 (3)
+      mars    : [1, 2, 4, 7, 8, 10, 11]             # 화성 (7)
+      mercury : [3, 5, 6, 11]                       # 수성 (4)
+      jupiter : [6, 10, 11, 12]                     # 목성 (4)
+      venus   : [6, 8, 11, 12]                      # 금성 (4)
+      saturn  : [1, 4, 7, 8, 9, 10, 11]             # 토성 (7)
+      lagna   : [1, 3, 6, 10, 11]                   # 라그나 (5)
+    mercury:                                  # 수성 — 체크섬 54
+      sun     : [5, 6, 9, 11, 12]                   # 태양 (5)
+      moon    : [2, 4, 6, 8, 10, 11]                # 달 (6)
+      mars    : [1, 2, 4, 7, 8, 9, 10, 11]          # 화성 (8)
+      mercury : [1, 3, 5, 6, 9, 10, 11, 12]         # 수성 (8)
+      jupiter : [6, 8, 11, 12]                      # 목성 (4)
+      venus   : [1, 2, 3, 4, 5, 8, 9, 11]           # 금성 (8)
+      saturn  : [1, 2, 4, 7, 8, 9, 10, 11]          # 토성 (8)
+      lagna   : [1, 2, 4, 6, 8, 10, 11]             # 라그나 (7)
+    jupiter:                                  # 목성 — 체크섬 56
+      sun     : [1, 2, 3, 4, 7, 8, 9, 10, 11]       # 태양 (9)
+      moon    : [2, 5, 7, 9, 11]                    # 달 (5)
+      mars    : [1, 2, 4, 7, 8, 10, 11]             # 화성 (7)
+      mercury : [1, 2, 4, 5, 6, 9, 10, 11]          # 수성 (8)
+      jupiter : [1, 2, 3, 4, 7, 8, 10, 11]          # 목성 (8)
+      venus   : [2, 5, 6, 9, 10, 11]                # 금성 (6)
+      saturn  : [3, 5, 6, 12]                       # 토성 (4)
+      lagna   : [1, 2, 4, 5, 6, 7, 9, 10, 11]       # 라그나 (9)
+    venus:                                  # 금성 — 체크섬 52
+      sun     : [8, 11, 12]                         # 태양 (3)
+      moon    : [1, 2, 3, 4, 5, 8, 9, 11, 12]       # 달 (9)
+      mars    : [3, 4, 6, 9, 11, 12]                # 화성 (6)
+      mercury : [3, 5, 6, 9, 11]                    # 수성 (5)
+      jupiter : [5, 8, 9, 10, 11]                   # 목성 (5)
+      venus   : [1, 2, 3, 4, 5, 8, 9, 10, 11]       # 금성 (9)
+      saturn  : [3, 4, 5, 8, 9, 10, 11]             # 토성 (7)
+      lagna   : [1, 2, 3, 4, 5, 8, 9, 11]           # 라그나 (8)
+    saturn:                                  # 토성 — 체크섬 39
+      sun     : [1, 2, 4, 7, 8, 10, 11]             # 태양 (7)
+      moon    : [3, 6, 11]                          # 달 (3)
+      mars    : [3, 5, 6, 10, 11, 12]               # 화성 (6)
+      mercury : [6, 8, 9, 10, 11, 12]               # 수성 (6)
+      jupiter : [5, 6, 11, 12]                      # 목성 (4)
+      venus   : [6, 11, 12]                         # 금성 (3)
+      saturn  : [3, 5, 6, 11]                       # 토성 (4)
+      lagna   : [1, 3, 4, 6, 10, 11]                # 라그나 (6)
+
+  bav_contributors: [sun, moon, mars, mercury, jupiter, venus, saturn, lagna]
+  bav_excluded: [rahu, ketu]            # 43 §2.1
+  sav_summed_from: [sun, moon, mars, mercury, jupiter, venus, saturn]  # 라그나 AV 제외
+
+  # --- 용어 정규화 (43 §1) — 판본 혼동 차단 ---
+  point_convention:
+    engine: "benefic_point 1 = 유리, 0 = 기여 없음"
+    santhanam_note: "BPHS-San 은 Rekha/Sthana=길, Bindu/Karana=흉. 현대 소프트웨어와 반대."
+    rule: "원전의 도형 명칭(Bindu/Rekha)을 변수명으로 쓰지 않는다."
+
+  # --- BAV 등급 (43 §5.1), 0~8 정수 ---
+  bav_grades:
+    - { min: 0, max: 3, label: "수용력 낮음",   note: "지연·수정·관리 필요" }
+    - { min: 3, max: 4, label: "평균 이하",     note: "추가 노력·보완 조건 필요" }
+    - { min: 4, max: 5, label: "중간",         note: "다샤·하우스 약속에 따라 발현" }
+    - { min: 5, max: 6, label: "양호" }
+    - { min: 6, max: 7, label: "강함" }
+    - { min: 7, max: 9, label: "매우 강함", max_inclusive: true }
+
+  # --- SAV 등급 (43 §5.2), 정수. 겹침·공백 없음 ---
+  sav_grades:
+    - { min: 0,  max: 21, label: "수용력 낮음",      note: "구조적 관리 필요" }
+    - { min: 21, max: 25, label: "평균보다 약함",    note: "지연·비용 증가 가능" }
+    - { min: 25, max: 28, label: "보통 이하~중간",   note: "다샤가 좋으면 결과 가능" }
+    - { min: 28, max: 31, label: "평균 이상" }
+    - { min: 31, max: 35, label: "강한 하우스" }
+    - { min: 35, max: 57, label: "매우 강한 수용력", max_inclusive: true }
+
+  # --- 역할 정의 (43 §5.1 명시) ---
+  role: intensity_modifier
+  role_note: >
+    점수는 사건의 종류를 결정하지 않는다. 종류는 하우스·로드십·요가·다샤가 결정하고,
+    AV 는 발현의 수용력과 마찰 정도만 보조한다. → ISSUE-002 의 근거.
+
+  # --- 리포트 금지 (43 §0) ---
+  prohibited_uses:
+    - "AV 단독으로 사망·사고·중병·이혼·파산 확정"
+    - "특정 날짜 사건 단독 확정"
+    - "점수가 낮다는 이유만으로 실패·불운 표현"
+
+  # --- v1 스코프 (43 문서 말미) ---
+  v1_modules: [raw_bav, sav, dasha, jupiter_saturn_double_transit]
+  research_only: [trikona_shodhana, ekadhipatya_shodhana, rasi_pinda, graha_pinda, yoga_pinda]
+
+# =============================================================================
+# 3. 컴버스트 / 연소 (41_BPHS_바르가판독_1_.md §7 + 하단 교정 섹션)
+# =============================================================================
+# ⚠️ 이 블록은 원본 문서 내부에 표 충돌이 있다. ISSUE-004 · ISSUE-005 참조.
+combustion:
+  unit: degrees_from_sun
+  applies_to_nodes: false               # 41 §7 — 라후·케투는 수학적 점
+
+  moon:    { direct: 12.0, retrograde: null,  status: 확정 }
+  mercury: { direct: 14.0, retrograde: 12.0,  status: 확정 }
+  jupiter: { direct: 11.0, retrograde: 11.0,  status: 확정 }
+  venus:   { direct: 10.0, retrograde: 8.0,   status: 확정 }
+
+  saturn:
+    direct: 16.0                        # 원전값 채택 (ISSUE-004 해결)
+    retrograde: 16.0
+    status: 확정
+    source_printed: { direct: 16.0, retrograde: 16.0 }   # 원본 p.100 이미지 확인
+    deprecated_value: 15.0              # 41_1_ v1.1 교정 섹션
+    note: >
+      원전 p.100 은 순행·역행 모두 16° 로 명확히 인쇄되어 있다.
+      41_1_ v1.1 의 15° 는 전사 오류가 아니라 의도적 변경이었으나 근거가 기록되지 않았고
+      작성자도 기억하지 못한다. §7 출처등급(원전 > 실전서)에 따라 원전값으로 복귀한다.
+      15° 의 근거가 후에 확인되면 §1.6 에 따라 병기 검토.
+
+  mars:
+    direct: 17.0
+    retrograde: 8.0                     # 원전 확인 완료
+    status: 확정
+    note: >
+      원전 p.100 이 화성 역행 8° 를 명시(원본 이미지 확인).
+      "금성 역행값 8° 의 행 복사 오류" 가설은 기각됨 — 두 값이 같은 것은 우연이다.
+      41_1_ §7 본표의 "해당 없음" 표기가 오류이며 교정 섹션이 옳았다.
+
+# =============================================================================
+# 4. Vimsopaka Bala (41_BPHS_바르가판독_1_.md §6, 40_BPHS_바르가계산_1_.md)
+# =============================================================================
+vimsopaka:
+  max_score: 20.0
+  weight_checksum: 20.0                 # 가중치 합은 20 이어야 한다
+
+  # --- 삽타바르가 7분할 가중치 (40_1_ v1.1 교정본) ---
+  saptavarga_weights:                   # 7분할: D1 D2 D3 D7 D9 D12 D30 (D10 미포함 — ISSUE-017)
+    d1:  5.0                            # 원전 확인 완료
+    d2:  2.0                            # 원전 확인 완료
+    d3:  3.0                            # 원전 확인 완료
+    d7:  2.5                            # ← ISSUE-016 원전과 불일치
+    d9:  4.5                            # ← ISSUE-016 원전과 불일치
+    d12: 2.0                            # ← ISSUE-016 원전과 불일치
+    d30: 1.0                            # ← ISSUE-016 원전과 불일치
+    status: 순열충돌_v1미사용
+    source_printed:                     # BPHS-San Vol.1 Ch.7, 책 p.97 / PDF p.96 (원본 확인)
+      d1: 5.0
+      d2: 2.0
+      d3: 3.0
+      d7: 1.0
+      d9: 2.5
+      d12: 4.5
+      d30: 2.0
+    note: >
+      D1·D2·D3 은 양측 일치(합 10.0, derived_constraint 예측과 정확히 일치).
+      D7·D9·D12·D30 네 값이 서로 자리를 바꾼 순열 관계이며 양쪽 모두 합이 20.0 이라
+      체크섬으로 검출되지 않는다. ISSUE-016 결정 전까지 이 값을 리포트에 쓰지 않는다.
+
+  # --- 채택: 다샤바르가 10분할 (커리어 v1 의 T3 근거) ---
+  active_scheme: dasavarga              # ISSUE-017 결정. saptavarga 는 v1 경로에서 미사용
+  active_scheme_rationale: >
+    원전 p.97 Notes 는 Shadvarga/Saptavarga/Dasavarga/Shodasavarga 중
+    "점성가가 고려하는 것"으로 계산한다고 명시하여 선택을 맡긴다.
+    커리어 판정에 D10 이 빠진 집합을 쓰는 것은 그 원칙에 어긋나므로 다샤바르가를 채택.
+    부수 효과: 다샤바르가는 10개 중 8개가 1.5 동일값이라 순열 충돌(ISSUE-016)이
+    구조적으로 성립하지 않는다.
+  dasavarga_weights:
+    d1:  3.0
+    d2:  1.5
+    d3:  1.5
+    d7:  1.5
+    d9:  1.5
+    d10: 1.5                            # ← 삽타바르가에는 없는 항목
+    d12: 1.5
+    d16: 1.5                            # Kalamsa
+    d30: 1.5
+    d60: 5.0                            # Shastiamsa
+    status: 채택
+    source: "BPHS-San Vol.1 Ch.7, 책 p.97 — Dasa Varga 열 (원본 이미지 확인)"
+    note: >
+      합 20.0 검산 완료. D1=3.0, D60=5.0 을 제외한 8개가 모두 1.5 로 동일.
+      구현 선행 조건: D16(Kalamsa)·D60(Shastiamsa) 계산 규칙 — ISSUE-018.
+
+  # --- 등급표 (41_1_ §6.2). 소수 경계 → 개·폐구간 명시 ---
+  grades:
+    - { min: 17.5, max: 20.0, label: Atipoorna,  pct: [87.5, 100.0], max_inclusive: true }
+    - { min: 15.0, max: 17.5, label: Poorna,     pct: [75.0, 87.5] }
+    - { min: 12.5, max: 15.0, label: Atimadhya,  pct: [62.5, 75.0] }
+    - { min: 10.0, max: 12.5, label: Madhya,     pct: [50.0, 62.5] }
+    - { min: 7.5,  max: 10.0, label: Swalpa,     pct: [37.5, 50.0] }
+    - { min: 5.0,  max: 7.5,  label: Atiswalpa,  pct: [25.0, 37.5] }
+    - { min: 2.5,  max: 5.0,  label: Heena,      pct: [12.5, 25.0] }
+    - { min: 0.0,  max: 2.5,  label: Atiheena,   pct: [0.0, 12.5] }
+
+  # --- 고객용 변환 구간 (41_1_ §6.3) ---
+  report_bands:
+    - { min: 15.0, max: 20.0, key: stable,   max_inclusive: true }
+    - { min: 10.0, max: 15.0, key: variable }
+    - { min: 5.0,  max: 10.0, key: managed }
+    - { min: 0.0,  max: 5.0,  key: protective }
+
+# =============================================================================
+# 5. 바르가 분할 (40_BPHS_바르가계산_1_.md)
+# =============================================================================
+varga:
+  # 모든 분할 규칙 출처: BPHS-San Vol.1 Ch.6 (원본 이미지 확인)
+  # start_offset = 시작 사인까지의 사인 수 (0 = 자기 사인)
+  # 공통 산식: result = ((sign - 1 + start_offset + (division_index - 1) * step) % 12) + 1
+  #            division_index = floor(deg_in_sign / size_deg) + 1,  step 기본값 1
+  # start_mode: relative = 자기 사인 기준 offset / absolute = 고정된 시작 사인
+  #   relative → base = sign - 1 + offset      (D3 D4 D7 D9 D10 D12)
+  #   absolute → base = start_sign - 1         (D16)
+  # verified_examples 는 start_rule 의 모든 분기를 빠짐없이 덮어야 한다(검증기가 강제).
+
+  d1:
+    divisions: 1
+    size_deg: 30.0
+    start_mode: relative
+    start_rule: { all: 0 }
+    verified_examples:
+      - { input: { sign: 6, deg: 14.3333 }, expect_division_index: 1, expect_result_sign: 6, branch: all }
+
+  d2:                                    # Hora — 책 p.69
+    divisions: 2
+    size_deg: 15.0
+    special: true
+    lord_rule:
+      odd_sign:  [sun, moon]             # 0~15° 태양 / 15~30° 달
+      even_sign: [moon, sun]
+    sign_map: { sun: 5, moon: 4 }        # 태양의 호라 = 사자 / 달의 호라 = 게
+    note: >
+      D2 는 사인이 아니라 태양·달 지배를 산출한다. 사인 표기가 필요하면 sign_map 을 쓴다.
+      공통 산식을 적용하지 않는다.
+    verified_examples:
+      - { input: { sign: 1, deg: 10.0 },  expect_lord: sun,  branch: odd_sign }
+      - { input: { sign: 1, deg: 20.0 },  expect_lord: moon, branch: odd_sign }
+      - { input: { sign: 2, deg: 10.0 },  expect_lord: moon, branch: even_sign }
+      - { input: { sign: 2, deg: 20.0 },  expect_lord: sun,  branch: even_sign }
+
+  d3:                                    # Drekkana — 슬로카 7-8, 책 p.69
+    divisions: 3
+    size_deg: 10.0
+    start_mode: relative
+    start_rule: { all: 0 }
+    step: 4                              # 자기 사인의 1·5·9번째
+    verified_examples:
+      - { input: { sign: 1, deg: 15.0 }, expect_division_index: 2, expect_result_sign: 5,  branch: all }
+      - { input: { sign: 4, deg: 25.0 }, expect_division_index: 3, expect_result_sign: 12, branch: all }
+
+  d4:                                    # Chaturthamsa — 책 p.71
+    divisions: 4
+    size_deg: 7.5
+    start_mode: relative
+    start_rule: { all: 0 }
+    step: 3                              # 1·4·7·10번째
+    verified_examples:
+      - { input: { sign: 1, deg: 10.0 }, expect_division_index: 2, expect_result_sign: 4,  branch: all }
+      - { input: { sign: 3, deg: 25.0 }, expect_division_index: 4, expect_result_sign: 12, branch: all }
+
+  d7:                                    # Saptamamsa — 슬로카 10-11, 책 p.71
+    divisions: 7
+    size_deg: 4.2857143                  # 30/7 = 4°17′8.57″
+    start_mode: relative
+    start_rule: { odd: 0, even: 6 }      # 홀수=자기 사인 / 짝수=7번째부터
+    verified_examples:
+      - { input: { sign: 1, deg: 1.0 }, expect_division_index: 1, expect_result_sign: 1, branch: odd }
+      - { input: { sign: 2, deg: 5.0 }, expect_division_index: 2, expect_result_sign: 9, branch: even }
+
+  d9:                                    # Navamsa — 슬로카 12, 책 p.72
+    divisions: 9
+    size_deg: 3.3333333                  # 3°20′ — 파다와 동일
+    start_mode: relative
+    start_rule: { movable: 0, fixed: 8, dual: 4 }   # 자기 / 9번째 / 5번째
+    note: "황소(고정궁)의 첫 나밤샤는 염소자리 — 원전 표 2열 1행과 일치."
+    verified_examples:
+      - { input: { sign: 1, deg: 1.0 }, expect_division_index: 1, expect_result_sign: 1,  branch: movable }
+      - { input: { sign: 2, deg: 1.0 }, expect_division_index: 1, expect_result_sign: 10, branch: fixed }
+      - { input: { sign: 3, deg: 1.0 }, expect_division_index: 1, expect_result_sign: 7,  branch: dual }
+
+  d10:                                   # Dasamsa — 슬로카 13-14, 책 p.73
+    divisions: 10
+    size_deg: 3.0
+    start_mode: relative
+    start_rule: { odd: 0, even: 8 }      # 홀수=자기 사인 / 짝수=9번째부터
+    verified_examples:
+      - { input: { sign: 1, deg: 1.0 },     expect_division_index: 1, expect_result_sign: 1, branch: odd }
+      - { input: { sign: 6, deg: 14.3333 }, expect_division_index: 5, expect_result_sign: 6, branch: even }
+
+  d12:                                   # Dvadasamsa — 슬로카 15, 책 p.73
+    divisions: 12
+    size_deg: 2.5
+    start_mode: relative
+    start_rule: { all: 0 }
+    verified_examples:
+      - { input: { sign: 1, deg: 6.0 },  expect_division_index: 3,  expect_result_sign: 3,  branch: all }
+      - { input: { sign: 5, deg: 29.0 }, expect_division_index: 12, expect_result_sign: 4,  branch: all }
+
+  d16:                                   # Shodasamsa / Kalamsa — 책 p.75
+    divisions: 16
+    size_deg: 1.875                      # 1°52′30″
+    start_mode: absolute                 # ← D9·D10 과 다르다. 자기 사인 기준이 아니다
+    start_rule: { movable: 1, fixed: 5, dual: 9 }   # 양 / 사자 / 사수자리 (절대 사인 번호)
+    start_rule_note: >
+      원전은 활동궁이면 양자리부터, 고정궁이면 사자자리부터, 이중궁이면 사수자리부터
+      세라고 명시한다. 시작 사인이 고정되어 있으므로 자기 사인 기준 offset 이 아니다.
+      예 — 황소자리(고정궁)의 첫 쇼다삼샤는 사자자리이지 황소에서 5번째가 아니다.
+      D10 은 홀수·짝수로 갈리고 D16 은 활동·고정·이중으로 갈리며, 기준도 서로 다르다.
+    verified_examples:
+      - { input: { sign: 1, deg: 10.0 }, expect_division_index: 6, expect_result_sign: 6, branch: movable }
+      - { input: { sign: 2, deg: 1.0 },  expect_division_index: 1, expect_result_sign: 5, branch: fixed }
+      - { input: { sign: 3, deg: 1.0 },  expect_division_index: 1, expect_result_sign: 9, branch: dual }
+      - { input: { sign: 4, deg: 1.0 },  expect_division_index: 1, expect_result_sign: 1, branch: movable }
+
+  d30:                                   # Trimsamsa — 슬로카 27-28, 책 p.80
+    divisions: 5
+    unequal: true
+    odd_bands:                           # [폭, 결과 사인] — 화성·토성·목성·수성·금성
+      - [5.0, 1]
+      - [5.0, 11]
+      - [8.0, 9]
+      - [7.0, 3]
+      - [5.0, 7]
+    even_bands:                          # 금성·수성·목성·토성·화성 (역순)
+      - [5.0, 2]
+      - [7.0, 6]
+      - [8.0, 12]
+      - [5.0, 10]
+      - [5.0, 8]
+    note: >
+      D30 만 불균등 분할이다. 사인 내 도수가 어느 구간에 속하는지로 판정하며
+      공통 산식을 적용하지 않는다. 각 구간 폭의 합은 30 이어야 한다.
+    verified_examples:
+      - { input: { sign: 1, deg: 12.0 }, expect_result_sign: 9, branch: odd }
+      - { input: { sign: 2, deg: 6.0 },  expect_result_sign: 6, branch: even }
+
+  d60:                                   # Shashtiamsa — 슬로카 33-41, 책 p.83
+    divisions: 60
+    size_deg: 0.5
+    special: true
+    formula: "result = ((sign - 1 + (floor(deg_in_sign * 2) % 12)) % 12) + 1"
+    formula_prose: >
+      사인 위치를 무시하고 사인 내 도수만 취해 2를 곱한다. 그 정수부를 12로 나눈
+      나머지에 1을 더하면, 행성이 있는 사인에서 그만큼 세어간 사인이 결과가 된다.
+    odd_even_note: >
+      홀수·짝수 차이는 샤슈티암샤 명칭 순서가 역순이 되는 것이며 산출식은 동일하다.
+    sensitivity_note: >
+      분할폭 0.5° 로 가장 민감하다. 라그나의 D60 은 약 2분마다 바뀌어
+      출생시각 정밀도가 직접 영향을 준다. 토성·목성 등 느린 행성은 수 주 동안 불변.
+    verified_examples:
+      - input: { sign: 10, deg: 13.416667 }        # 원전 예시 — 염소 13°25′
+        intermediate: { doubled_deg: 26.833333, floor: 26, remainder: 2, count: 3 }
+        expect_result_sign: 12
+        branch: odd_even_same
+      - input: { sign: 1, deg: 5.0 }
+        intermediate: { doubled_deg: 10.0, floor: 10, remainder: 10, count: 11 }
+        expect_result_sign: 11
+        branch: odd_even_same
+
+  sign_quality:                          # start_rule 의 movable/fixed/dual 판정
+    movable: [1, 4, 7, 10]
+    fixed:   [2, 5, 8, 11]
+    dual:    [3, 6, 9, 12]
+
+  primary_for_career: [d1, d10]          # 41_1_ §1 · §2.3
+  dasavarga_set: [d1, d2, d3, d7, d9, d10, d12, d16, d30, d60]
+# =============================================================================
+# 6. 산술 검증 상수 (04_프로젝트_기본지침 §3.2 · §3.3)
+# =============================================================================
+arithmetic:
+  zodiac: sidereal
+  ayanamsa: lahiri                       # §1.4
+  nakshatra_count: 27
+  pada_count_total: 108                  # 27 × 4. 인덱스 계산의 기준값
+  nakshatra_span_deg: 13.3333333         # 표시·문서용. 인덱스 계산에 사용 금지
+  pada_span_deg: 3.3333333               # 표시·문서용. 인덱스 계산에 사용 금지
+  index_formula:
+    nakshatra: "floor(longitude * 27 / 360) + 1"
+    pada:      "floor(longitude * 108 / 360) % 4 + 1"
+    sign:      "floor(longitude * 12 / 360) + 1"
+    note: >
+      반복소수를 절단한 *_span_deg 로 나누면 각 구간 끝에서 인덱스가 범위를 벗어난다
+      (28번째 낙샤트라, 5번째 파다). 정수 개수를 곱하는 형태로 계산하면 절단 상수가
+      계산에 개입하지 않는다. 범위 클램프는 방어용 assert 로만 남기고,
+      클램프가 실제로 발동하면 테스트 실패로 취급한다.
+
+  ascendant_method: tropical_houses_minus_ayanamsa
+  ascendant_method_formula: "swe.houses_ex(트로피컬) 의 Asc − swe.get_ayanamsa_ut(jd)"
+  ascendant_method_note: >
+    [v0.8.0 에서 변경 — 이전 값은 swe_houses_ex_sidereal_flag]
+    JHora 실측 대조 결과 내장 사이데리얼 플래그 방식은 케이스마다 편차의 부호까지
+    바뀌었고(+13.79 / -8.11 / +0.58 각초), 수동 차감 방식은 전 케이스에서
+    행성들과 동일한 잔차 대역(-0.137 ~ -0.139 각초)에 들어왔다.
+    선택 기준은 천문학적 정확성이 아니라 레퍼런스 정합성이다 —
+    베딕 실무 소프트웨어가 사실상 모두 수동 차감 방식이고, 지식베이스의 규칙들도
+    그 값 위에서 만들어졌으며, 고객이 다른 앱으로 확인했을 때 라그나가 달라지면
+    그것은 결함으로 인식된다. 이 선택이 바뀌면 사인 경계 부근 라그나가 달라지므로
+    engine_meta 에 기록한다.
+  house_system: whole_sign                # §1.2 베딕 정의
+  mandatory_check: >
+    §3.3 — 출생 시점 마하다샤 로드와 달의 낙샤트라 로드가 일치해야 한다.
+    불일치 시 해석하지 않고 재계산을 요청한다.
+
+  # --- 에페메리스 설정 (ISSUE-009) ---
+  # 초각 정밀도 목적이 아니라, 상용 소프트웨어 교차 대조 시 변수를 하나 줄이기 위함.
+  # ISSUE-007(BAV 판본 검증)을 수행하려면 에페메리스가 변수에서 빠져 있어야 한다.
+  ephemeris:
+    backend: swiss_se1                  # Moshier 근사 아님
+    source: JPL_DE441
+    files_required: true
+    path_env: SE_EPHE_PATH
+    files:                              # 파일 1개당 레코드 1개. 병렬 구조를 만들지 않는다
+      sepl_18.se1:
+        role: planets
+        coverage: "1800-2399 CE"
+        size_bytes: 484061
+        sha256: "ca1393ceab3a44fbc895887cf789c68819ae6a1cbc9b22225872dbe4ccd99a66"
+      semo_18.se1:
+        role: moon
+        coverage: "1800-2399 CE"
+        size_bytes: 1304771
+        sha256: "1ca07bd67c24374d77226180c20a4f9996cba013697894810518e7eb582ca4f7"
+    files_excluded:
+      seas_18.se1: "소행성 — 베딕 미사용. 전체 카탈로그는 수십 GB"
+
+    files_repo: "https://github.com/aloistr/swisseph"   # ephe/ 디렉토리
+    files_pinned_ref: "56e8eef0ed61c9ef4b832cb4b87af776665b30fd"   # aloistr/swisseph 고정 커밋
+    verify_on_install: true             # 다운로드 후 sha256 대조. 불일치 시 설치 실패
+    gitignore: true                     # 리포지토리에 커밋하지 않고 설치 스크립트로 받는다
+
+    license:
+      current: AGPL-3.0                 # 무상. 단 전체 프로젝트를 AGPL 로 공개할 의무
+      alternative: swiss_ephemeris_professional
+      escalation_trigger: >
+        고객이 네트워크를 통해 계산 결과를 받는 형태(웹 폼, API, 자동 생성 서비스)로
+        전환하는 시점. AGPL 13조가 발동하면 constants.yaml 과 판정 규칙 전체를
+        공개해야 하며, 이는 이 프로젝트의 유일한 차별점을 잃는다는 뜻이다.
+      action_before_automation: "Professional Edition 구매 + 계약 서명 (ISSUE-010)"
+      note: "가격·조건은 astro.com/swisseph 에서 재확인할 것. 법률 자문 아님."
+
+    ayanamsa_constant: SIDM_LAHIRI      # 값이 아니라 상수명을 고정 기록. Lahiri 변종 다수 존재
+
+    position_mode: apparent             # pyswisseph 기본값. SEFLG_TRUEPOS 를 쓰지 않는다
+    position_mode_note: >
+      apparent = 광행시간·광행차·중력편향 적용. true(기하학적 위치)와는 수십 각초 차이가 나며
+      허용오차 1각초를 넘는다. 대조 소프트웨어도 apparent 로 맞춰야 한다.
+
+    node_type: mean                     # 확정 (ISSUE-009 해결)
+    node_type_status: 확정
+    node_type_evidence: "JHora Planet Calculation Options = Mean nodes (2026-07 확인)"
+    node_type_note: >
+      mean 과 true 는 최대 1도 이상 벌어진다. 라후가 사인·낙샤트라 경계 근처면
+      배치 자체가 갈리고, 19 §6 의 라후-케투 축 트랜짓 판정이 뒤집힐 수 있다.
+      인도 전통 판찬가와 K.N. Rao 계열은 통상 mean 을 사용하나, 확정은 정책 결정 사항.
+
+    reproducibility_note: >
+      backend · ayanamsa_constant · node_type 이 바뀌면 다샤 경계와 라후·케투 배치가
+      달라져 과거 리포트를 재현할 수 없다. 발행 리포트 푸터에 이 세 값을 기록한다.
+      고객이 이전 리포트와의 차이를 문의할 때 설정 변경인지 판정 변경인지 구분하는
+      유일한 수단이다.
+
+  # --- 대조 기준 소프트웨어 설정 (픽스처 기대값 생성 조건) ---
+  crosscheck_reference:
+    software: "Jagannatha Hora"
+    ayanamsa: "Traditional Lahiri"       # True Lahiri/Chitrapaksha 아님
+    siddhanta: Drik                      # SSS(Sri Surya Siddhanta) 아님
+    positions: "Apparent positions"
+    nodes: "Mean nodes"
+    chara_karaka: "Seven chara karakas (No Pik) - Sri KNRao"
+    navamsa: "Regular Parasari Navamsa"
+    dasamsa: "D-10 (Trd) — 설정 불가, 전통 방식 고정"
+    timezone_input: "0 (UTC 직접 입력). JHora 시간대 로직을 타지 않는다"
+    coordinates: "127 E 00 00 / 37 N 30 00"
+    note: >
+      픽스처 기대값은 위 설정에서 생성되었다. 하나라도 다르면 값이 재현되지 않는다.
+      테스트가 실패하면 코드보다 이 설정을 먼저 확인할 것.
+
+    # --- 관측된 기준 잔차 (2026-07 최초 대조) ---
+    observed_residual_arcsec: -0.14
+    observed_residual_derived_effects:
+      - "다샤 타임라인 상수 오프셋 +29.2분 (토성 19년 기준). ISSUE-031 참조."
+    observed_residual_amplification_note: >
+      0.14 각초는 위치 판정에서는 무시 가능하나, 다샤에서는 낙샤트라 잔여율을 거쳐
+      시간으로 증폭된다. 19년 구간에서 약 29분. 월 단위 창을 다루는 리포트에서는
+      영향이 없으나, 이 값이 크게 달라지면 아야남샤 설정이 바뀌었다는 신호다.
+    observed_residual_note: >
+      전 바디(행성 7 + 라후 + 라그나) 공통으로 -0.13 ~ -0.14 각초.
+      Traditional Lahiri 와 SIDM_LAHIRI 의 정의 미세차로 추정. 허용오차 1각초 이내.
+      이 값이 향후 크게 달라지면 아야남샤 상수·에페메리스·설정 중 무언가가 바뀐 것이다.
+      잔차의 "일정함" 자체가 건강 지표이므로, 값이 아니라 산포를 본다.
+
+# =============================================================================
+# 7. 카라카 (44_BPHS_카라카_특수점.md)
+# =============================================================================
+karaka:
+  scheme: 7                              # 44 §1.1 프로젝트 기본값
+  scheme_variant: knrao_no_pik           # "7" 만으로는 특정되지 않는다 — 아래 참조
+  scheme_variant_note: >
+    7체계에는 최소 두 종류가 있다.
+      (a) No PiK — 라후 제외 + 피트리카라카 제외. K.N. Rao 계열. ← 채택
+      (b) PK merged with MK — 다른 배정.
+    order 가 [AK, AmK, BK, MK, PK, GK, DK] 인 것은 (a) 와 일치한다.
+    대조 소프트웨어에서 (a) 를 선택하지 않으면 AmK 가 통째로 달라지고,
+    AmK 는 체크리스트 C1·C2 의 커리어 지표다.
+  order: [AK, AmK, BK, MK, PK, GK, DK]
+  sort_planets: [sun, moon, mars, mercury, jupiter, venus, saturn]
+  sort_key: descending_degree_in_sign
+  tie_precision: seconds                 # 44 §2.3
+  tie_behavior: emit_warning_do_not_reorder
+  career_indicator: AmK                  # 44 §4.1
+  rahu_effective_degree_formula: "30.0 - degree_in_sign"
+  rahu_status: 검증대기                   # 44 §2.2 — scheme 7 에서는 미사용
+  record_scheme_in_output: true          # 44 §2.2 요구
+
+# =============================================================================
+# 8. 커리어 SAV 임계값 — 충돌 항목 (ISSUE-001)
+# =============================================================================
+career_sav_threshold:
+  engine_source: ashtakavarga.sav_grades  # 43 (원전 직접 요약) 채택
+  status: 교정적용
+  deprecated_variant:                     # 19_하우스10.md §7.5 (실전서 종합)
+    source: 19_하우스10.md §7.5
+    bands:
+      - { min: 30, label: "강한 커리어 축복" }
+      - { min: 25, max: 30, label: "표준" }
+      - { min: 0,  max: 25, label: "커리어 시험" }
+    reason_deprecated: >
+      §7 출처등급 위계 — 원전 직접 요약(43)이 실전서 종합(19)보다 상위.
+      두 표가 동일 지표를 다르게 구간화하므로 43 을 단일 기준으로 채택한다.
+  bav_focus_planets: [sun, jupiter, mercury]   # 19 §7.5 — BAV 참고 우선순위
+
+# =============================================================================
+# 9. 다샤 · 트랜짓 (02_이벤트타이밍_KN라오.md, 19_하우스10.md §6)
+# =============================================================================
+timing:
+  dasha_system: vimshottari
+
+  # --- 빔쇼타리 다샤 표 (42_BPHS_다샤상세_1_.md v1.1) ---
+  vimshottari:
+    total_years: 120                     # 체크섬 — 9개 합이 120 이어야 한다
+    order: [ketu, venus, sun, moon, mars, rahu, jupiter, saturn, mercury]
+    years:
+      ketu: 7
+      venus: 20
+      sun: 6
+      moon: 10
+      mars: 7
+      rahu: 18
+      jupiter: 16
+      saturn: 19
+      mercury: 17
+    source: "42_BPHS_다샤상세_1_.md v1.1"
+    cycle_note: >
+      낙샤트라 27 ÷ 로드 9 = 3. 각 로드가 낙샤트라 3개를 지배한다.
+      케투부터 시작하는 순서는 아쉬위니(케투 지배)가 1번 낙샤트라인 것과 정합한다.
+
+    # --- 날짜 환산 (91_계산엔진_작업지시서.md) ---
+    year_definition: true_sidereal_solar_year
+    year_definition_status: 확정
+    year_definition_rule: >
+      다샤 1년 = 태양이 sidereal 로 360° 를 도는 실제 시간이다. 고정 일수가 아니다.
+      지구 궤도가 타원이므로 구간마다 길이가 다르다 (근일점 부근 빠름, 원일점 부근 느림).
+      계산은 일수 곱셈이 아니라 "출발 시점에서 태양이 N × 360° 진행하는 시점" 을 푼다.
+    year_definition_evidence: >
+      JHora 화면 우측 상단 "Using true sidereal solar years" 표기.
+      검증 — 첫 마하다샤 종료 오차가 365.25 고정 시 -4일, true sidereal 시 -8.5시간.
+      케투 마하 내 안타르다샤 3개도 8~25분 오차로 일치(적분 정밀도 한계).
+    days_per_year_mean: 365.256363       # 참고용 평균값. 계산에 사용 금지
+    days_per_year_deprecated: 365.25     # 91_계산엔진_작업지시서.md 값 — 폐기
+    traditional_year_days: 360           # 전통 Y/M/D 표기용. 날짜 계산에 사용 금지
+    traditional_month_days: 30           # 전통 Y/M/D 표기용
+    measurement_log:                     # JHora 마하다샤 전체 구간 실측 (1992-05-27 차트)
+      - { span: "Sat→Merc", years: 17, days: 6209.356, per_year: 365.256242 }
+      - { span: "Merc→Ket", years: 7,  days: 2556.799, per_year: 365.256991 }
+      - { span: "Ket→Ven",  years: 20, days: 7305.122, per_year: 365.256091 }
+      - { span: "Ven→Sun",  years: 6,  days: 2191.535, per_year: 365.255768 }
+    measurement_note: >
+      4개 구간이 365.2560~365.2570 에 수렴하나 이는 평균일 뿐이다.
+      실제로는 구간마다 길이가 다르며 태양의 실제 sidereal 운동을 따른다.
+      케투 마하가 11월에 시작해 태양이 빠른 구간을 지나므로 안타르다샤가
+      선형 계산보다 일찍 끝나는 현상이 이를 직접 보여준다.
+
+    conversion_warning: >
+      360일년과 365.25일년을 섞으면 다샤 경계가 수개월 밀린다.
+      실제 날짜는 365.25 로만 계산하고, 360/30 은 "3년 6개월 12일" 같은
+      전통 표기를 만들 때만 쓴다. 두 체계를 한 계산 안에서 혼용하지 않는다.
+
+    # --- 시작점 ---
+    start_rule: >
+      출생 시점 달의 낙샤트라 잔여 비율로 첫 마하다샤의 잔여 기간을 정한다.
+      잔여 비율 = (낙샤트라 종료 경도 - 달 경도) / 낙샤트라 폭
+      첫 마하다샤 잔여 = 해당 로드의 years × 잔여 비율
+    start_rule_index_note: >
+      낙샤트라 인덱스는 arithmetic.index_formula 의 정수 곱셈 공식을 쓴다.
+      *_span_deg 로 나누지 않는다(절단 상수가 경계에서 오차를 만든다).
+
+    do_not_mix:                          # §1.6 — 다샤 체계 혼용 금지
+      - "Saravali 물라 다샤 (64_Saravali_다샤_교차검증.md) — 빔쇼타리와 혼합하지 않는다"
+  resolution_layers: [mahadasha, antardasha, pratyantardasha]   # 02 §1
+  layer_roles:
+    mahadasha: "전반 트렌드 — 인생 국면"
+    antardasha: "구체 트렌드 — 기간 주제"
+    pratyantardasha: "이벤트 번역 — 월 단위 창"
+  double_transit: [jupiter, saturn]      # 02 §2 실현의 관문
+  transit_quality_gate: ashtakavarga     # 02 §2 확장 규칙
+  do_not_mix_dasha_systems: true         # §1.6 — 물라 다샤와 빔쇼타리 혼용 금지
+  gochara_model: jupiter_saturn_double_transit
+  gochara_model_note: >
+    Phaladeepika 계열 잔마라시 기준 고차라는 채택하지 않는다.
+    K.N. Rao 계열 이중 트랜짓 + AV 검증 모델과 판본이 다르므로 §1.6 충돌을 만든다.
+
+# =============================================================================
+# 8-B. 길성·흉성 판정 (00_방법론_하우스판단_원칙.md §2·§3)
+# =============================================================================
+benefic_malefic:
+  # 두 계층을 병기한다 (§1.6). 하나로 합치지 않는다.
+  layers:
+    natural:
+      grade: 원전
+      note: >
+        BPHS 슬로카의 "길성(shubha)·흉성(papa)" 은 같은 원전 전통 안에서 해석한다.
+        HTJH1 의 기능 길흉을 BPHS 조건문에 대입하면 슬로카가 말하는 바가 바뀐다.
+      benefic: [jupiter, venus, mercury, moon]
+      malefic: [saturn, mars, sun, rahu, ketu]
+      conditional:
+        mercury: "흉성과 결합하면 흉성으로 작용"
+        moon: "상현(waxing) 길성 / 하현(waning) 흉성"
+      applies_to: ["47_노드다샤_판독규칙.md 의 길성·흉성 조건"]
+
+    functional:
+      grade: 실전서
+      source: "00_방법론_하우스판단_원칙.md §2·§3 (HTJH1 Ch.2)"
+      note: "라그나별 판정. 보조 계층으로만 사용하고 BPHS 조건문에 대입하지 않는다."
+      general_rules:
+        benefic: ["라그나 로드(달 제외)", "5·9로드 (9 > 5)", "4·7·10로드가 자연 흉성일 때 (10 > 7 > 4)"]
+        malefic: ["3·6·11로드 (11 최악 > 6 > 3)", "켄드라 로드가 자연 길성일 때 (Kendradhipati Dosha)"]
+        neutral: ["달이 라그나 로드", "태양·달이 8로드", "태양·달이 2·12로드"]
+      reversal_rule: >
+        켄드라 소유로 흉성이 된 자연 길성이 자기 소유 켄드라에 재실하면 흉 작용이 해제된다.
+        역도 성립한다.
+      by_lagna:                          # 사인번호: {benefic, malefic, neutral}
+        1:  { benefic: [jupiter, sun, mars],          malefic: [mercury, saturn, venus], neutral: [], unclassified: [moon] }
+        2:  { benefic: [saturn, mercury, mars, sun],  malefic: [jupiter, moon],          neutral: [venus] }
+        3:  { benefic: [venus],                       malefic: [mars, jupiter, sun],     neutral: [moon, mercury], unclassified: [saturn] }
+        4:  { benefic: [mars, jupiter],               malefic: [venus, mercury],         neutral: [saturn, moon, sun] }
+        5:  { benefic: [mars, sun],                   malefic: [mercury, venus],         neutral: [jupiter, moon, saturn] }
+        6:  { benefic: [venus],                       malefic: [moon, mars, jupiter],    neutral: [saturn, sun, mercury] }
+        7:  { benefic: [saturn, mercury, venus],      malefic: [sun, jupiter, moon],     neutral: [mars] }
+        8:  { benefic: [moon, jupiter, sun],          malefic: [mercury, venus],         neutral: [mars, saturn] }
+        9:  { benefic: [mars, sun],                   malefic: [venus, saturn, mercury], neutral: [jupiter, moon] }
+        10: { benefic: [venus, mercury, saturn],      malefic: [mars, jupiter, moon],    neutral: [sun] }
+        11: { benefic: [venus, sun, mars],            malefic: [jupiter, moon],          neutral: [mercury], unclassified: [saturn] }
+        12: { benefic: [moon, mars],                  malefic: [saturn, sun, venus, mercury], neutral: [jupiter] }
+      unclassified_note: >
+        00_방법론 §3 원본 표에 누락된 항목이다. 검증기가 7행성 분류 검사에서 검출했다.
+        §6.1 에 따라 임의로 채우지 않고 공백으로 유지한다.
+        §2 일반 규칙을 적용하면 후보가 나오나 확정되지 않는다 —
+          양자리 달   : 4로드. 자연 길성의 켄드라 소유 = Kendradhipati Dosha 후보
+          쌍둥이 토성 : 8·9로드. 트리코나(길)와 두스타나(흉)가 겹쳐 §2 로 미해결
+          물병 토성   : 1·12로드. 라그나 로드(길)와 12로드가 겹침
+        판정에서 이 조합을 만나면 기능 길흉을 적용하지 않고 자연 길흉만 쓴다.
+        → ISSUE-035
+
+      strongest:                          # ◎ 표시 — 라그나별 최고 길성
+        2: saturn
+        3: venus
+        4: mars
+        5: mars
+        6: venus
+        7: saturn
+        8: moon
+        10: venus
+        11: venus
+        1: jupiter
+      worst:                              # ✕ 표시 — 라그나별 최악 흉성
+        1: mercury
+        3: mars
+        10: mars
+
+  yogakaraka:                             # §4 — 켄드라·트리코나 동시 소유
+    4:  mars      # 게 — 5·10로드
+    5:  mars      # 사자 — 4·9로드
+    2:  saturn    # 황소 — 9·10로드
+    7:  saturn    # 천칭 — 4·5로드
+    10: venus     # 염소 — 5·10로드
+    11: venus     # 물병 — 4·9로드
+    note: "화성·토성·금성만 요가카라카가 될 수 있다. 47 §4.1 라후 조건 A 평가에 사용."
+
+# =============================================================================
+# 8-C. 보충 원전 정책 (supplementary sources)
+# =============================================================================
+# 운영자 결정 — BPHS 에 규정이 없을 때 다른 고전을 끌어와 채운다.
+supplementary_sources:
+  enabled: true
+  rationale: >
+    BPHS 단독으로는 판정 불가 구간이 남는다. 다른 고전 원전으로 채우면 커버리지가 늘고,
+    §7 출처등급상 여전히 원전 등급을 유지할 수 있다.
+
+  accepted:
+    - id: brihat_jataka
+      full: "Brihat Jataka (Varahamihira)"
+      grade: 원전
+      note: "Santhanam 이 BPHS 역주에서 참조로 인용하는 텍스트. N.C. Iyer 1885 영역본 공개."
+    - id: saravali
+      full: "Saravali (Kalyanavarman)"
+      grade: 원전
+      caveat: "다샤 계열은 물라 다샤이므로 빔쇼타리와 혼용 금지 (§1.6)"
+    - id: phaladeepika
+      full: "Phaladeepika (Mantreswara)"
+      grade: 원전
+      caveat: "고차라는 잔마라시 기준이라 이중 트랜짓 모델과 판본 충돌 — timing 에 미사용"
+
+  guardrails:                             # §1.6 을 지키기 위한 필수 조건
+    - "출처를 규칙마다 명시한다. 어느 텍스트에서 왔는지 추적 가능해야 한다"
+    - "BPHS 규칙과 하나로 합치지 않는다 — 병기한다 (§1.6)"
+    - "같은 결론을 BPHS 와 보충 원전이 함께 지지해도 계열은 하나로 센다 (§9.1)"
+    - "보충 원전이 BPHS 와 상반되면 §4.3 에 따라 병기하고 판정하지 않는다"
+    - "역자가 의심을 표한 대목은 채택하지 않는다 (Ch.55 역자주 2건 선례)"
+
+  tier_counting_note: >
+    보충 원전은 커버리지를 늘리기 위한 것이지 계열 수를 늘리기 위한 것이 아니다.
+    BPHS 와 Brihat Jataka 가 같은 방향을 가리켜도 T4 는 여전히 1계열이다.
+    이 구분이 무너지면 ISSUE-002·003·020 에서 막아온 계열 부풀리기가 재발한다.
+
+# =============================================================================
+# 9-A. 진술 등급 정책 (statement grading)
+# =============================================================================
+# 근거가 부족한 결론을 폐기하는 대신 "범주가 다른 진술" 로 강등한다.
+# 강등은 약한 판정이 아니다. 종류가 다른 문장이다.
+statement_policy:
+
+  levels:
+    verdict:                            # 판정
+      requires: { min_tiers_excl_av: 3, l1: true, safety: true }
+      description: "근거 계열 3개 이상 + L1. §4.1 충족."
+      voice: "이 시기에 커리어 전환 가능성이 높습니다"
+      report_placement: 본문
+
+    conditional:                        # 조건부
+      requires: { min_tiers_excl_av: 2, l1: true, safety: true }
+      description: >
+        핵심 결론이 아니라 조건부 조언이다. §4.1 은 핵심 결론에 적용되므로
+        이 등급은 §4.1 의 완화가 아니라 적용 범위 밖이다.
+      voice: "다음 조건이 충족되면 전환을 검토할 만합니다"
+      report_placement: 본문_시각적_구분
+      constraints:
+        - "판정으로 승격 불가 — 추가 근거가 생기면 재판정하되 등급을 임의 상향하지 않는다"
+        - "확정 어투 금지 — '~할 것입니다' 대신 '~라면 ~를 검토할 수 있습니다'"
+        - "강등 사유를 ⚠️ 이견 및 불확실 사항 섹션에 반드시 기록"
+        - "시각적으로 판정과 구분되어야 함 (별도 블록·라벨)"
+
+    divergent:                          # 양면 — 근거가 상반될 때
+      requires: { min_tiers_excl_av: 1, opposing_present: true }
+      opposing_definition: >
+        [v0.41.0 교정] "반대 근거" 는 counts_as_evidence: true 인 계열만 센다.
+        아쉬타카바르가는 43 §5.1 에 따라 사건의 종류가 아니라 강도를 나타내므로
+        AV 가 낮아도 방향 충돌이 아니다. 지지 쪽에서만 AV 를 제외하고
+        반대 쪽에서 제외하지 않으면, AV 하나로 판정이 양면으로 강등되는 오류가 난다.
+      modifier_signal: >
+        계열이 아닌 지표(AV 등)의 반대는 modifier_oppose 로 분리한다.
+        등급에는 영향을 주지 않고, 서술에서 현실화 속도·강도를 낮춰 표현하는 데 쓴다.
+      description: >
+        근거가 없어서가 아니라 근거들이 서로 다른 방향을 가리켜서 하나로 좁혀지지 않는 경우다.
+        판정도 보류도 아니다. 양쪽을 다 서술하고 그 긴장 자체를 결론으로 삼는다.
+      voice: >
+        조건절 구조. "~하기 쉽습니다. 다만 ~합니다. ~라면 A, ~라면 B" 형태.
+        대칭 구조("한쪽에서는 / 다른 쪽에서는")는 사용하지 않는다 — 도식적으로 읽힌다.
+      narration_form: conditional_clause
+      narration_form_note: >
+        [v0.40.0 — 독자 피드백 반영] 초기 대칭 구조는 divergent 라는 내부 등급을
+        문장 형식으로 그대로 옮긴 것이었다. 등급명은 서술층에 넘기지 않기로 했는데
+        (internal_only_fields) 구조가 새어 나간 셈이다.
+        조건절 구조로 바꾸되, 조건부와 구별되는 요소를 반드시 남긴다.
+      required_elements:                # narration_check 가 강제하는 3요소
+        - "전환 — 첫 방향 뒤에 반대 방향으로 넘어가는 지점 (다만·그런데·반면 등)"
+        - "판별 갈림길 — 독자가 자기 경우를 가릴 분기 2개 이상 (~라면 / ~다면)"
+        - "분기별 귀결 — 어느 쪽이냐에 따라 조언이 달라짐"
+      vs_conditional: >
+        조건부 = 주장 + 단서. 양면 = 주장 + 단서 + 판별 갈림길.
+        문장 표면은 비슷하게 읽히지만, 양면에는 독자가 자기 경우를 판별하고
+        그에 따라 다른 조언을 받는 분기가 들어간다. 이 분기가 없으면
+        양면이 조건부로 퇴화하고 게이트가 등급을 나누는 의미가 사라진다.
+      report_placement: 본문_양면서술
+      constraints:
+        - "한쪽을 선택해 서술하지 않는다 — 선택하면 divergent 가 아니라 verdict 다"
+        - "양쪽의 조건을 함께 제시해 고객이 자기 상황에 대입할 수 있게 한다"
+        - "대칭 구조(한쪽/다른 쪽)를 쓰지 않는다 — 내부 등급 구조의 유출이다"
+        - "확정 어투 금지. 다만 '모르겠다' 로 끝내지 않는다"
+        - "부록에 어느 근거가 어느 방향이었는지 기록"
+      rationale: >
+        상반된 근거를 만났을 때 임의로 한쪽을 택하면 §4.3(반대 근거를 숨기지 않는다) 위반이고,
+        판단을 접으면 고객에게 아무것도 남지 않는다. 양쪽을 다 말하는 것이 정직하면서도
+        유용한 유일한 길이다. 실무적으로도 "조건에 따라 갈린다" 는 정보가
+        "강하다" 는 단정보다 행동에 도움이 되는 경우가 많다.
+
+    withheld:                           # 보류
+      requires: { min_tiers_excl_av: 1 }
+      description: "근거 부족을 명시하고 판단하지 않는다."
+      voice: "이 항목은 근거 부족으로 판단을 보류합니다"
+      report_placement: 이견_및_불확실_사항_섹션
+      constraints:
+        - "보류 사유(어느 계열이 왜 비었는지)를 함께 적는다"
+        - "그럴듯한 문장으로 빈 자리를 채우지 않는다"
+
+    silent:
+      requires: { min_tiers_excl_av: 0 }
+      description: "근거가 전무하면 언급하지 않는다."
+      report_placement: 미출력
+
+  anti_loophole: >
+    강등은 게이트의 우회로가 아니다. conditional 은 verdict 의 약한 버전이 아니라
+    다른 종류의 진술이며, 리포트에서 시각적으로 구분되고 사유가 공개되어야 한다.
+    이 세 조건이 지켜지지 않으면 강등 정책은 §4.1 을 무력화한다.
+
+  rationale: >
+    근거 부족 시 결론을 전량 폐기하면 리포트가 성립하지 않고(파일럿 1회차 0/3),
+    규칙 공백(ISSUE-013·014)이 발행 차단 요인으로 고착된다.
+    강등하면 공백이 "차단" 이 아니라 "명시된 한계" 가 되며, 이는 감사가능성
+    포지셔닝을 약화시키는 것이 아니라 강화한다.
+
+# =============================================================================
+# 9-A-2. 출력 계약 (문장 단위 감사 추적)
+# =============================================================================
+output_contract:
+
+  # --- 리포트 3층 구조 (v0.44.0) ---
+  layers: [judgment_input, author_draft, narration_input]
+  layers_note: >
+    판정층 → 작성자 검토본 → 고객 발송본. 각 층은 앞 층에서 정보를 덜어내는 방향으로만
+    간다. 작성자는 원문에 가까운 서술을 보고 무엇을 완곡화할지 직접 판단한다.
+    걸러진 결과만 보면 걸러진 것이 옳은지 검증할 수 없다.
+
+  author_draft:
+    audience: operator_only
+    delivery: never_to_client
+    purpose: >
+      완곡화·삭제 판단을 작성자가 직접 내리기 위한 층이다.
+      최종본에서 무엇이 왜 빠졌는지 추적 가능해야 한다.
+    includes:
+      - "원전 서술 원문 (완곡화 이전)"
+      - "확정 병명 등 최종본 미사용 항목"
+      - "신체 부위·계통 상세, 칼라푸루샤 매핑 전체"
+      - "근거 계열·규칙 ID·참조 문서와 절"
+      - "SAV·BAV 원점수, Vimsopaka 점수"
+      - "statement_policy 등급명과 판정 사유"
+      - "최종본에서 제외한 항목과 제외 사유"
+    excludes:
+      - "정신 건강 상태 진술 — 존재 사실만 알리고 내용은 옮기지 않는다"
+    mental_health_handling:
+      rule: existence_notice_only
+      notice_template: >
+        [작성자 전용] {배치}에 정서 관련 서술이 원문에 있습니다.
+        본 리포트에서는 생활 패턴 수준까지만 사용했습니다.
+        원문 확인이 필요하면 {출처}를 직접 보세요.
+      rationale: >
+        (1) 원본 신뢰도 — 고전의 정서 관련 서술은 신체 부위 매핑처럼 조건-결론이
+        명확하지 않고 성향을 뭉뚱그린 표현에 가깝다. 정확도가 낮은 정보를 정확한
+        정보처럼 제시하면 작성자의 판단을 오염시킨다.
+        (2) 비가역성 — 작성자가 차트 주인을 알거나 알게 되면, 읽은 사실이 남아
+        그 사람을 보는 시선에 영향을 준다. 최종본에서 제외해도 되돌릴 수 없다.
+        병명은 이 문제가 없으나 정신 건강 진술은 있다.
+      operator_choice: >
+        존재 사실을 알리므로 작성자가 원문을 직접 확인할 선택권은 유지된다.
+        자동으로 옮기지 않을 뿐이다.
+
+  # --- 리포트 2부 구성 (v0.31.0 결정) ---
+  report_structure: body_plus_appendix
+  report_structure_note: >
+    본문은 결론과 조언만 담는다. 판단 근거는 부록으로 분리한다.
+    근거는 작성자에게 필요한 것이지 고객이 읽어야 하는 것이 아니다.
+    다만 "얼마나 확신하는가" 는 본문에 남는다 — 조건부 어투, 반대 신호,
+    보류 표시는 근거가 아니라 정직성의 표현이며 statement_policy 의 결과다.
+
+  body:
+    includes:
+      - "결론 서술 (등급에 맞는 어투)"
+      - "실행 가능한 조언"
+      - "조건부 항목의 조건 명시"
+    excludes:
+      - "근거 계열 이름·개수 (T1·T5 등)"
+      - "문서·절 인용 (19 §1 등)"
+      - "점성술 기제 (10로드·요가명·SAV 등)"
+      - "등급명 (verdict / conditional / withheld)"
+      - "수치 일체"
+
+  # --- 보류 항목 처리 (v0.32.0) ---
+  withheld_disclosure:
+    body_mention: false                 # 본문에 언급하지 않는다
+    body_mention_rationale: >
+      "판단을 보류했습니다" 를 본문에 적으면 고객은 자기가 못 받은 것을 인지하게 되고,
+      결론이 아니라 결손이 남는다. 언급하지 않으면 그 항목이 있었는지 알지 못한다.
+      규칙 공백이 해소되면 그때부터 자연스럽게 포함된다.
+    appendix_record: true               # 부록에는 남긴다 (§6.3 최소 이행)
+
+    upsell_phrasing_rule: >
+      "상세 진행 시 안내드립니다" 류 문구는 기본 범위에서 의도적으로 제외한 항목에만 쓴다.
+      규칙 공백(ISSUE-013 노드 다샤 등)으로 판단이 불가능한 항목에는 쓰지 않는다.
+      추가금을 결제해도 제공할 수 없는 것을 유도하는 것이 되기 때문이다.
+      tiering.prohibited_addon_pattern 과 같은 취지다.
+
+    classification:
+      out_of_scope:                     # 기본에서 안 하기로 한 심화 분석
+        body: "상세 진행 시 안내드립니다"
+      rule_gap:                         # 규칙 부재로 판단 불가
+        body: null                      # 언급하지 않음
+        appendix: "판단 근거를 확보하지 못해 이번 리포트에서 다루지 않았습니다"
+      no_signal:                        # 차트에 신호 없음
+        body: null
+
+  appendix:
+    title: "판단 근거 요약"
+    default_state: collapsed            # 접힌 상태로 제공. 원하는 고객만 펼친다
+    rationale: >
+      대부분의 고객은 열어보지 않는다. 그러나 부록이 존재한다는 사실 자체가
+      신뢰 신호이며, 검증을 원하는 고객에게 답이 된다. 본문 가독성은 유지된다.
+    includes:
+      - "차트 사실 (배치·요가 성립 등 고객이 대조 가능한 정보)"
+      - "반대 방향 신호 (§4.3) — 결론 언어로"
+      - "다루지 않은 항목 (§6.3) — 사유는 한 줄로"
+      - "이 해석이 빗나갈 수 있는 조건"
+      - "계산 설정 (재현성 추적)"
+    excludes:
+      - "참조 문서명·절 번호 — 고객이 원문을 갖고 있지 않아 무의미"
+      - "근거 계열 이름 (T1·T5 등)"
+      - "SAV·BAV 원점수, Vimsopaka 점수 (internal_only_fields 유지)"
+      - "statement_policy 등급명"
+    excludes_rationale: >
+      부록의 목적은 고객이 검증할 수 있게 하는 것이다. 참조 문서명은 고객이
+      원문을 갖고 있지 않으므로 검증 수단이 되지 못하고 전문 용어 나열로만 읽힌다.
+      반면 차트 사실은 다른 소프트웨어로 대조 가능하므로 검증 수단이 된다.
+
+  statement_format: [fact, claim, disclosure]
+  statement_format_placement:
+    fact: appendix                      # 차트 사실 — 본문에서 제외
+    claim: body                         # 결론 서술 — 본문
+    disclosure: body_and_appendix       # 한계는 본문에 완곡히, 상세는 부록
+  applies_to: [verdict, conditional]    # withheld 는 사유만 기록
+
+  fields:
+    fact: >
+      차트에서 기계적으로 확인되는 정보만. 해석 없음.
+      예: "10하우스 로드 토성이 염소자리 10하우스"
+    claim: >
+      해당 사실에 대한 베딕 해석. 참조 문서·절을 함께 표기한다.
+      예: "자기 사인·자기 하우스 배치 — 커리어 지향 강화 (19 §1)"
+    disclosure: >
+      해석의 한계, 반대 근거, 추가 확인이 필요한 조건.
+      예: "D9·D10 에서는 반복되지 않음. 분할차트 강도는 별도 검증 필요"
+
+  conflict_template:                    # §4.3 · §1.6 의 출력 형식
+    fields:
+      - "BPHS 관점"
+      - "Saravali 관점"
+      - "실전서 관점"
+      - "충돌 지점"
+      - "종합 판단"
+      - "추가 확인이 필요한 입력"
+    note: >
+      §4.3 은 "병기한다" 는 원칙만 있고 출력 형식이 없었다. 이 템플릿이 그 형식이다.
+      §7 출처등급 3층(원전 BPHS / 원전 Saravali / 실전서)이 출력에서 그대로 분리된다.
+
+  falsification_required: true
+  falsification_field: "이 해석이 빗나갈 수 있는 조건"
+  falsification_placement: appendix     # v0.31.0 — 본문에서 부록으로 이동
+  falsification_note: >
+    부록 필수 항목. 본문에 두면 방어적으로 읽히지만, 부록에서는 성실함의 표시가 된다.
+    해석이 성립하지 않게 되는 구체적 조건을 적는다.
+
+  uncertainty_section:                  # §6.3 ⚠️ 이견 및 불확실 사항
+    body_form: >
+      결론 수준으로만. 예 — "커리어의 구체적 시기는 이번 리포트에서 판단을 보류했습니다."
+      어느 계열이 왜 비었는지는 본문에 쓰지 않는다.
+    appendix_form: >
+      상세 사유. 미충족 계열, 규칙 공백 이슈, 반대 근거 전문.
+
+  prohibited_expressions:
+    - "반드시"
+    - "무조건"
+    - "100%"
+    - "운명적으로"
+    - "틀림없이"
+    - "확정"
+    - "분명히"
+    - "당연히"
+    - "절대"
+
+  # --- 서술층 설계 (LLM 사용 규칙) ---
+  narration:
+    generator: llm
+    reviewer: human                      # 무인 발송 금지
+    review_required_before_delivery: true
+
+    closed_input: true
+    closed_input_rule: >
+      LLM 에게 지식베이스 .md 문서를 제공하지 않는다. 판정층이 생성한 구조화 JSON 만
+      입력한다. 문서를 보지 못하면 거기 있는 규칙을 인용할 수 없으므로,
+      LLM 의 작업이 "해석" 에서 "번역" 으로 축소된다. 이것이 오차 통제의 핵심 장치다.
+
+    internal_only_fields:                # 서술층에 넘기지 않는다 (ISSUE-020)
+      - "62 §6 직업 기능 점수"
+      - "SAV·BAV 원점수"
+      - "Vimsopaka 점수"
+      - "근거 계열 개수"
+      - "statement_policy 등급명"
+    internal_only_note: >
+      점수·등급·개수는 판정층 내부에서 순서와 강도를 정하는 데만 쓰고 서술층에 넘기지 않는다.
+      62 §6 이 스스로 "점수는 내부 우선순위이며 성공을 보장하는 확률값이 아니다" 라고 명시한다.
+      넘기지 않으면 narration_check 의 numeric_leak 검사가 구조적으로 유출을 차단한다.
+      결과적으로 리포트 본문에 수치가 등장하지 않는다.
+
+    block_scope: per_conclusion          # 리포트 전체를 한 번에 생성하지 않는다
+    block_scope_rule: >
+      결론 1개당 1회 생성. 긴 문서를 한 번에 쓰게 하면 검증이 불가능해지고
+      블록 사이에 근거 없는 연결 문장이 삽입된다.
+
+    field_ownership:
+      fact: template                     # 차트 사실 — LLM 미개입
+      claim: llm                         # 결론코드에 묶인 해석 문장
+      disclosure: llm_then_human         # 한계·반대 근거. 사람이 최종 확인
+      falsification: human               # 반증 조건은 사람이 작성
+
+    llm_settings:
+      temperature: 0
+      note: >
+        temperature 0 이 재현성을 보장하지는 않는다. 재현성은 판정층이 담보하고,
+        서술층은 사후 검사와 사람 승인으로 담보한다. 서로 다른 장치다.
+
+    post_checks:                          # narration_check.py 가 수행
+      - prohibited_expression             # 금지 표현 문자열 검출
+      - s3_keyword                        # S3 어휘 검출
+      - numeric_leak                      # 입력 JSON 에 없는 수치 검출
+      - term_leak                         # 입력 JSON 에 없는 점성 용어 검출
+      - conditional_voice                 # conditional 블록의 확정 어투 검출
+      - citation_integrity                # 입력에 없는 문서·절 인용 검출
+      - cross_tradition                   # 타 전통 용어 검출 (§1.1)
+
+    fail_action: block                    # 하나라도 걸리면 발송 차단, 재생성 또는 수기 수정
+
+  s3_keywords:                            # 서술층 하드 차단 어휘
+    # 91_민감표현_치환표.md §9 자동 필터 어휘 병합
+    - 사망
+    - 죽음
+    - 단명
+    - 수명
+    - 임종
+    - 사별
+    - 타살
+    - 자살
+    - 이혼
+    - 별거
+    - 중병
+    - 불치
+    - 암
+    - 불임
+    - 유산
+    - 파산
+    - 감옥
+    - 범죄
+    - 저주
+    - 악인
+    - 음란
+    - 신변 위험
+    - 마라카
+
+  cross_tradition_terms:                  # §1.1 — 타 전통 용어 차단
+    - 십신
+    - 격국
+    - 용신
+    - 조후
+    - 신살
+    - 대운
+    - 세운
+    - 일간
+    - 오행
+    - 사주
+    - 명리
+    - 에센셜
+    - 디그니티
+    - 섹트
+    - 포르투나
+
+# =============================================================================
+# 9-B. 접수 정책 (상품 스펙)
+# =============================================================================
+intake_policy:
+
+  birth_time:
+    required: true
+    rejection_rule: >
+      출생시각이 없거나 폭이 넓은(예: "새벽쯤") 의뢰는 접수하지 않는다.
+    rationale: >
+      시각이 없으면 라그나가 없고, 라그나가 없으면 홀사인 하우스가 미정이며,
+      evidence_policy.l1_definition (d1_house / d1_lord / d1_occupant) 이 산출되지 않는다.
+      §4.1 의 "L1 필수" 를 구조적으로 충족할 수 없으므로 어떤 결론도 게이트를 통과하지 못한다.
+      추가로 달은 하루에 약 1 낙샤트라를 지나가므로 출생 다샤 잔량이
+      최대 1 낙샤트라만큼 불확실해지고, 타이밍 리포트에서 다샤 경계가 수년 단위로 밀린다.
+
+    rectification: prohibited
+    rectification_rationale: >
+      역산(rectification)은 실재하는 고전 기법이나 이 상품에서는 사용하지 않는다.
+      커리어 사건으로 시각을 맞춘 뒤 그 차트로 커리어를 판정하면 순환논증이 되고,
+      §4.1 의 근거 계열 3개가 무의미해진다(이미 답을 알고 맞춰진 차트에서 나오므로).
+      상품의 차별점인 판정 절차의 감사가능성을 정면으로 훼손한다.
+      또한 차트당 수 시간이 소요되어 비동기 리포트 모델의 단위 경제와 맞지 않는다.
+
+    client_guidance:                     # 시각을 모르는 고객에게 안내할 경로
+      - "출산 병원 의무기록 사본 — 분 단위 기록이 남아 있는 경우가 많음"
+      - "아기수첩·산모수첩"
+      - "출생신고 서류 기재 시각"
+      - "가족의 기억 — 단 폭이 30분을 넘으면 사용 불가"
+    client_guidance_note: >
+      행정 실무는 시기·기관마다 다르므로 확인 항목으로만 안내한다. 법률 자문 아님.
+
+  time_precision:
+    boundary_check_required: true
+    boundary_check_rule: >
+      접수 시 라그나가 사인 경계에서 얼마나 떨어져 있는지 먼저 확인한다.
+      경계에 가까우면 시각 오차 ±30분으로도 라그나 사인이 바뀌므로 고객에게 고지한다.
+    tolerance_status: 결정대기          # 허용 오차 폭은 상품 스펙에서 확정
+
+  personal_data:
+    note: >
+      출생 시각·장소는 민감한 개인정보다. 보관 기간과 파기 절차를 상품 스펙에 명시하고,
+      테스트 픽스처·리포지토리에는 실제 출생정보를 넣지 않는다.
+
+# =============================================================================
+# 9-C. 상품 범위 (product scope)
+# =============================================================================
+product_scope:
+  form: comprehensive                    # 종합형 — 단일 주제 아님
+  categories: [career, finance, relationship, condition]
+
+  category_readiness:
+    career:
+      evidence_map: 완비                 # evidence_checklist.md §1
+      dedicated_doc: 62_Saravali_직업판단.md
+      s3_risk: low
+    finance:
+      evidence_map: evidence_map_finance.md
+      source_docs: [11_하우스2.md, 20_하우스11.md]
+      dedicated_doc: null
+      natural_karaka: jupiter            # Dhanakaraka — AmK 공백(ISSUE-014) 영향 없음
+      s3_risk: medium                    # ← low 에서 상향. ISSUE-025 참조
+      s3_risk_note: >
+        2하우스가 재물과 함께 눈·언어·가족을 관장하고 빈곤 조합에 마라카가 개입한다.
+        판정 과정에서 S3 내용이 자연스럽게 나오므로 판정 단계 필터가 필요하다.
+      tier_strength:
+        t1: 두꺼움                       # 11 §1·§2 + 20 §1·§2
+        t2: 양호                         # 목성 자연 카라카
+        t4: 최상                         # 11 §5 만으로 21개 조합
+        t6: 두꺼움                       # 11 §3 부유 13 + 20 §3
+    relationship:
+      evidence_map: evidence_map_relationship.md
+      source_docs: [16_하우스7.md, 44_BPHS_카라카_특수점.md]
+      karaka: [venus, jupiter, mars, sun, moon, DK]
+      primary_varga: d9                  # 16 헤더 — D1 만으로 부족, D9 병행 필수
+      s3_risk: high                      # ← medium 에서 상향
+      s3_risk_note: >
+        7하우스는 마라카(2·7)이므로 타이밍 작업이 수명 판단 영역에 접근한다.
+        또한 별거·이혼·배우자 건강은 문서 자체가 "볼트 지식(리포트 사용 금지)" 로 지정.
+      tier_strength:
+        t1: 두꺼움                       # 16 §1 12행 + §2 9행 + §5.1 12행
+        t2: 최상                         # 자연 카라카 5개 + DK. AmK 공백 영향 없음
+        t3: 최상                         # D9 가 결혼 전용 바르가
+        t4: 두꺼움                       # 16 §3.1~3.5
+        t6: 양호
+      vault_only:                        # 문서가 스스로 리포트 사용 금지로 표시
+        - "16 §4.5 별거·이혼 지표"
+        - "16 §8.5 배우자 건강 판단"
+    condition:
+      evidence_map: evidence_map_condition.md
+      superseded_doc: condition_category_assessment.md   # v0.17.0 평가. "사용 불가" 목록 무효
+      assessment: 유지_v0.20.0
+      assessment_summary: >
+        §5.4 폐지로 15_하우스6.md 의 §5.1 트리도샤, §5.2 칼라푸루샤 신체매핑,
+        §3.4 병증 조합, 헤더 카라카 4종이 근거로 사용 가능해졌다.
+        §6.3 병증 확정 절차는 결론이 S3 로 귀결되므로 여전히 미사용.
+        91_민감표현_치환표 §2(건강·수명)도 사용 가능해졌다.
+      remaining_constraint: >
+        §4.1 은 유지되므로 칼라푸루샤 단독(사인→신체 1:1 매핑)은 계열 1개로
+        withheld 에 머문다. 신체 주장이 판정으로 나가려면 6H로드·6H재실·다샤 등
+        복수 계열이 같은 방향을 가리켜야 한다.
+      s3_risk: high
+      tier_strength:
+        t1: 두꺼움                       # 15 §1 12행 + §2 9행
+        t2: 양호                         # 화성·토성·라후·케투 4종
+        t3: 보통                         # 트리도샤 (전용 바르가 없음)
+        t4: 양호                         # 15 §4
+        t6: 양호                         # 비파리트 + 병증 조합
+      still_blocked:
+        - "15 §6.3 병증 확정 절차 — 결론이 심각한 병증 지표 = §5.1 S3 귀결"
+        - "확정 병명 (자가면역 질환·성병 등) — 운영자 방침상 병명 미언급"
+        - "정신 건강 진술 — active_referral 로 대체 (§2-2)"
+        - "S3 어휘 포함 행 — 유산·상실·이혼 위기·감금"
+      redistributed_to_other_categories: >
+        15_하우스6.md 의 상당 부분이 컨디션이 아닌 다른 카테고리 내용이다.
+        부채 조합(§3.2·§5.4·§6.4) → 금전, 소송·적·경쟁(§3.3·§5.3·§6.5) → 커리어,
+        루차카 요가 조건(§2 화성) → 커리어. 중복 서술 금지.
+      label_note: >
+        "건강" 이 아니라 "컨디션·생활 리듬" 으로 명명한다. 제목 자체가 의료적 의미를
+        끌어오므로, 실제 서술 범위와 일치하는 이름을 쓴다.
+      s3_risk: high
+
+  # --- 맥락 정보 정책 (v0.43.0) ---
+  context_policy:
+    base: neutral
+    base_rule: >
+      기본 리포트는 고객의 현재 상태(관계·직업·재정 상황)를 받지 않고 작성한다.
+      차트는 "어느 영역이 움직인다" 까지만 말하고 그것이 시작인지 정리인지는
+      구분하지 못하므로, 상태를 모르는 채 방향을 단정하면 헛돈다.
+      따라서 기본 리포트는 상태에 무관하게 성립하는 서술만 담는다.
+
+    addon: context_based
+    addon_rule: >
+      카테고리별 상세 리포트 접수 시 최소 맥락을 받는다.
+      상담이 아니라 판정 분기용 최소 정보다.
+
+    intake_fields:                     # 상세 리포트 접수 시
+      - { id: relationship_status, label: "관계 상태",
+          options: [솔로, 연애 중, 기혼, 기타], required_for: [relationship] }
+      - { id: work_status, label: "직업 상태",
+          options: [재직, 프리랜서, 구직, 사업, 학생, 기타], required_for: [career] }
+      - { id: focus, label: "이번에 특히 알고 싶은 것",
+          type: free_text, max_length: 200, required: false }
+
+    judgment_unaffected: >
+      맥락은 판정 근거가 아니다. 계열 집계와 등급은 차트에서만 나온다.
+      맥락은 같은 판정을 어느 방향으로 서술할지에만 쓴다.
+      이 구분을 부록에 명시해 "들은 것을 쓴 것" 이라는 의심을 방어한다.
+
+    neutral_writing_rules:             # 기본 리포트 서술 제약
+      - "상태를 전제하는 표현 금지 — '새로운 만남', '이직 시', '배우자와' 등"
+      - "영역이 움직인다는 사실까지만 서술하고 사건 유형을 특정하지 않는다"
+      - "독자가 자기 상태에 대입할 수 있는 형태로 쓴다"
+      - "'어떤 조직에서' 같은 경험 전제도 피한다 — 조직 경험이 없을 수 있다"
+
+    example:
+      neutral: "관계 영역에 움직임이 생기기 쉬운 시기입니다"
+      context_solo: "새로운 관계가 시작될 여지가 있는 시기입니다"
+      context_married: "관계의 조율이나 재정비가 필요해지기 쉬운 시기입니다"
+
+  tiering:
+    base: >
+      전 카테고리를 동일 깊이로 완결한다. 기본 리포트만으로 완결되어야 하며,
+      찾은 결론을 유보하고 추가 구매를 유도하지 않는다.
+    addon_principle: >
+      추가금 상품은 기본에서 다루지 않은 다른 종류의 작업이어야 한다.
+      예: 특정 의사결정 1건의 시기 분석, 두 선택지 비교, 후속 질의 1회.
+    prohibited_addon_pattern: >
+      기본 리포트에서 이미 도출된 결론을 잠그고 추가 결제로 여는 구조.
+      근거를 전부 공개한다는 상품 포지셔닝과 정면 충돌한다.
+    context_as_addon_justification: >
+      맥락 기반 상세는 정당한 추가금 사유다 — 기본에서 도출한 결론을 잠근 것이 아니라,
+      기본에서 원리적으로 불가능했던 작업(상태별 분기 서술)을 추가로 하는 것이기 때문이다.
+      기본 리포트는 맥락 없이도 완결된다.
+
+  effort_estimate:
+    conclusions_per_report: "12~20"
+    note: >
+      종합형은 §4.1 통과를 쉽게 만들지 않는다. 결론 개수가 늘 뿐 결론 하나당
+      3계열 요건은 동일하므로 작업량만 비례 증가한다.
+      단일 주제 90분 목표 기준 종합형은 6시간 이상으로 추정되며,
+      월 가용 25시간에서 약 4건이 상한이다. 단가 설계 시 이 값을 전제로 한다.
+
+# =============================================================================
+# 9-D. 컨디션 카테고리 안전 규칙 (S3 인접 — 최고 위험)
+# =============================================================================
+condition_category_policy:
+
+  governing_rule: >
+    §5.1 은 S3 를 "변환이나 암시로도" 출력하지 않는다고 규정한다.
+    "주의할 부분으로 기재" 는 암시에 해당하므로 §5.1 의 적용 대상이다.
+    본 정책은 §5.1 을 완화하는 것이 아니라, 그 범위 안에서 무엇이 가능한지 명시한다.
+
+  boundary: s3_and_evidence_gate           # v0.18.0 개정 — 경계가 "구체성" 에서 이동
+  boundary_note: >
+    §5.4 폐지에 따라 신체 부위·상태·증상 서술을 허용한다.
+    통제는 표현의 구체성이 아니라 (1) §5.1 S3 차단과 (2) §4.1 근거 계열 게이트로 한다.
+    근거가 얇은 신체 주장은 금지되는 것이 아니라 statement_policy 에 따라
+    conditional 또는 withheld 로 강등되어 표시된다.
+
+  allowed:
+    - "휴식·수면·생활 리듬에 대한 조언"
+    - "스트레스 관리가 필요한 국면"
+    - "무리하기 쉬운 시기"
+    - "회복에 시간을 두라는 조언"
+    - "신체 부위·계통 언급 (§4.1 게이트 통과 시)"        # v0.18.0 추가
+    - "증상 경향·체질 성향 서술 (§4.1 게이트 통과 시)"   # v0.18.0 추가
+
+  prohibited:
+    - "확정 병명 진단"
+    - "중병·불치·사망 지시 (§5.1 S3 — 폐지되지 않음)"
+    - "안심시키는 표현 — 예: 올해는 건강이 안정적"
+    - "치료·투약·시술에 대한 지시나 권유"
+
+  under_review:                            # ISSUE-026 — 미결
+    - "신체 부위 + 특정 시기 결합 (예: 2028년 소화기 주의)"
+
+  mandatory_disclaimer_scope: all_condition_statements
+  mandatory_disclaimer_note: >
+    신체 서술을 허용하는 이상 고지문이 형식이 아니라 필수 요소가 된다.
+    컨디션 항목이 리포트에 포함되면 예외 없이 첨부한다.
+
+  rationale_reverse_risk: >
+    경고보다 안심이 더 위험하다. 실제 증상이 있는 사람이 "안정적" 이라는 서술을 읽고
+    의료기관 방문을 미룰 수 있으며, 이는 리포트가 직접 만든 해악이다.
+
+  mandatory_disclaimer: >
+    이 항목은 의학적 판단이 아니며 진단·치료를 대체하지 않습니다.
+    신체적·정신적 증상이 있다면 의료기관에 문의하시기 바랍니다.
+
+  active_referral: >
+    불면·불안·감정 기복·일상 기능 저하가 지속된다면 이 해석으로 해결하려 하지 마시고
+    의료·상담 전문가의 도움을 받으시기 바랍니다.
+  active_referral_note: >
+    수동적 고지문과 별개로 능동적 안내를 둔다. 고지문은 책임 범위를 밝히는 것이고,
+    이 문장은 고객이 실제로 도움을 받도록 유도하는 것이다. 둘 다 필수.
+
+  legal_note: >
+    면허 없는 의료행위 및 표시광고법상 효과 보장 광고 문제는 변호사 확인 사항.
+    본 항목은 법률 자문이 아니다.
+
+  crisis_signal: >
+    §5.3 — 고객 입력에 자해·자살 관련 표현이 감지되면 리포트 작성을 중단하고
+    지원 안내로 전환한다. 이 규칙은 컨디션 카테고리 유무와 무관하게 항상 적용된다.
+
+# =============================================================================
+# 10. 안전 게이트 (§5, 19 헤더, 43 §0, 41_1_ §3.4 · §3.12)
+# =============================================================================
+safety:
+  s3_topics: [death, lifespan, terminal_illness, infertility, divorce, bereavement]
+  s3_intake_conflict:                  # 고객 상태가 S3 영역인 경우
+    detection: "상세 리포트 접수 시 relationship_status 또는 focus 에서 감지"
+    cases:
+      - status: "이혼·별거 진행 중"
+        rule: >
+          §5.1 상 이혼은 절대 금지 주제이므로 해당 상황에 대한 판정을 제공할 수 없다.
+          접수 시점에 이 사실을 고지하고, 관계 카테고리를 제외하거나
+          "관계에서의 자기 패턴" 처럼 상태와 무관한 항목만 다룬다.
+        prohibited: "이혼 절차의 시기·결과·유불리 판정"
+      - status: "사별"
+        rule: "관계 카테고리 접수를 권하지 않는다. 고객이 원하면 자기 패턴 항목만."
+    note: >
+      고객이 바로 그 주제 때문에 구매했을 수 있으므로, 접수 후 환불보다
+      접수 전 고지가 낫다. 상품 설명에 다루지 않는 주제를 명시한다.
+  s3_output: prohibited                  # §5.1 — 변환·암시로도 출력 금지
+  substitution_table: 91_민감표현_치환표.md
+  career_prohibited:                     # 19 헤더
+    - "확정적 실패·강등·해고 예언"
+    - "특정 직업 강요"
+    - "당신은 절대 이 직업 못 함 류의 표현"
+  career_allowed_frames:                 # 19 헤더 · §10
+    - "커리어의 큰 도약이 가능한 시기"
+    - "직업의 재정비가 유리한 국면"
+    - "새로운 방향의 발견이 필요한 시기"
+    - "특별한 노력이 결실 맺는 시기"
+  no_single_batch_determination: false    # §5.4 폐지 (운영자 결정, v0.18.0)
+  no_single_batch_determination_note: >
+    §5.4(직업명·배우자 성격·질병을 하나의 배치로 확정하지 않는다)를 폐지한다.
+    폐지 사유 — 국내 점술 관행에서 통용되는 서술 범위이며, 1차 생성 후
+    운영자 검토 단계에서 정정한다는 운영 방침.
+    실질 효과 — §4.1(근거 계열 3개 + L1)은 그대로 유지되므로 단일 배치 주장은
+    여전히 게이트를 통과하지 못하고 statement_policy 에 따라 강등된다.
+    §5.4 폐지는 "금지 해제" 이지 "게이트 면제" 가 아니다.
+  treat_client_input_as_data: true        # §5.2 고객 입력 지시문 미실행
+  crisis_signal_halt: true                # §5.3
+
+# =============================================================================
+# 11. 미해결 항목 — 결정 로그
+# =============================================================================
+# status 값: 결정대기 (정책 판단 필요) / 확인대기 (원본 대조 필요)
+open_issues:
+
+  - id: ISSUE-001
+    title: 커리어 SAV 임계값 이중 정의
+    status: 교정적용
+    blocking: false
+    detail: "19 §7.5 (30/25 기준) vs 43 §5.2 (28/31 기준). 43 채택."
+    action: "19 §7.5 에 43 참조 주석 추가 (문서 수정, 값 변경 아님)."
+
+  - id: ISSUE-002
+    title: 아쉬타카바르가를 근거 계열로 세는 문제
+    status: 해결
+    blocking: false
+    resolved_note: >
+      t5_ashtaka.counts_as_evidence: false 로 확정. AV 는 intensity_modifier 로만 사용.
+      결정 비용 0 — statement_policy 가 이미 등급 판정에 count_b(AV 제외)를 쓰고 있어,
+      공식 제외 후에도 파일럿 4건의 등급이 전부 동일함을 검증했다.
+      근거 수렴 3건: 43 §5.1, 명리 실무의 신살 보조 지표 처리, 최초 설계 권고.
+    detail: >
+      43 §5.1 은 AV 가 사건의 종류를 결정하지 않는다고 명시.
+      그러나 §9.1 은 AV 를 독립 계열 ⑤ 로 센다. 사건 종류를 결정하지 않는 지표는
+      결론의 근거가 될 수 없으므로 §4.1 의 3계열을 공짜로 채우는 구멍이 된다.
+    convergence_evidence: >
+      독립 수렴 3건 — (1) 43 §5.1 "AV 는 사건의 종류를 결정하지 않는다",
+      (2) 전통 명리 실무의 신살 처리("보조 지표, 격국·용신보다 우선하지 않음"),
+      (3) 본 프로젝트의 최초 설계 권고. 서로 다른 전통이 같은 설계 문제에
+      같은 해법(보조 지표 강등)을 냈다는 점은 방향에 대한 방증이다.
+      단 파일럿 데이터(제거 시 0/3)에 따라 실행은 공백 보강 이후로 미룬다.
+    recommendation: >
+      [파일럿 1회차 결과로 권고 수정 — 결정 보류]
+      av_dependent 2/3 (67%). 게이트 설계 기준상 "절반 이상"이므로 AV 제거가 아니라
+      공백 계열 보강이 답이다. 측정 결과 AV 는 T2(카라카)·T4(다샤)의 빈자리를
+      메우고 있었을 뿐이며, AV 자체가 근거로 정당한지는 아직 판별되지 않았다.
+      ISSUE-013·014·006 해소 후 재측정한다.
+    pilot_log:
+      - round: 1
+        date: "2026-07"
+        chart: "파일럿 본인 차트 (1992)"
+        category: career
+        conclusions: 3
+        levels: { verdict: 0, divergent: 0, conditional: 0, withheld: 3 }
+        av_dependent: 2
+        empty_tiers: "T2 3/3, T4 2/3, T3 2/3"
+        note: "divergent 등급 도입 전. 이후 재판정 시 양면 2 · 조건부 1"
+      - round: 2
+        date: "2026-08"
+        chart: "파일럿 본인 차트 (1992)"
+        category: career
+        conclusions: 3
+        levels: { verdict: 0, divergent: 2, conditional: 1, withheld: 0 }
+        av_dependent: 2
+        empty_tiers: "T2 3/3, T4 3/3"
+      - round: 3
+        date: "2026-08"
+        chart: "검증 차트 (1987)"
+        category: career
+        conclusions: 1
+        levels: { verdict: 1, divergent: 0, conditional: 0, withheld: 0 }
+        av_dependent: 0
+        note: "T2·T4 모두 채워짐. 파일럿의 양면은 T3 처리 문제가 아니라 그 차트의 특성"
+      - round: 4
+        date: "2026-08"
+        chart: "검증 차트 (1987)"
+        category: finance
+        conclusions: 3
+        levels: { verdict: 2, divergent: 1, conditional: 0, withheld: 0 }
+        av_dependent: 0
+        note: >
+          금전이 커리어보다 근거가 두껍다는 evidence_map_finance 예측이 확인됐다.
+          T2(목성 자연 카라카)·T4(11 §5 + 20 §7.2)가 규칙 부재 없이 채워졌다.
+
+    av_dependent_cumulative: "4/10 결론 (커리어 4/4, 금전 0/3, 검증차트 커리어 0/1)"
+    av_conclusion: >
+      카테고리별로 갈린다. 커리어는 T2(AmK 공백)·T4(노드) 때문에 AV 의존이 높고,
+      금전은 자연 카라카와 두꺼운 다샤 표 덕에 의존이 없다.
+      AV 를 계열에서 제외한 결정(ISSUE-002)은 금전에서는 무해하고
+      커리어에서는 규칙 공백을 드러내는 역할을 한다.
+    side_effect: "3계열 충족이 어려워져 리포트 탈락 결론이 증가 → 분량 변동성 확대."
+
+  - id: ISSUE-003
+    title: 19 §6.4 "확정 신호" 의 트랜짓 계열 부풀리기
+    status: 해결
+    blocking: false
+    resolved_note: >
+      transit_aggregation: sum_as_one 확정. 19 §6.4 의 4조건은 계열 판정에 사용하지 않고
+      T4 내부의 강도·서술 순서 결정에만 쓴다. "확정" 표현은 §6.3 과 충돌하므로
+      statement_policy 등급으로 대체하며, 등급명은 서술층에 넘기지 않는다.
+    detail: >
+      19 §6.4 는 4조건 중 3개 충족을 "확정 신호"로 규정. 그러나 4조건 중
+      ①다샤 ②목성 트랜짓 ④카라카 트랜짓은 §9.1 기준 동일 계열(④)이고
+      ③AV 는 ISSUE-002 에 따라 계열이 아니다. 실질 1계열을 3조건으로 세고 있다.
+      또한 "확정" 이라는 표현이 §6.3 과 충돌한다.
+    recommendation: >
+      transit_aggregation: sum_as_one 확정. 내부 표기는 confidence: high 로 하고
+      고객 문장에는 확정 표현을 쓰지 않는다.
+
+  - id: ISSUE-004
+    title: 토성 컴버스트 — 원전 16° vs KB 교정 15°
+    status: 해결
+    blocking: false
+    resolved_note: >
+      원전 16° 채택. 15° 의 근거를 문서에서도 작성자 기억에서도 확인할 수 없어
+      §7 출처등급(원전 > 실전서)에 따라 원전값으로 복귀했다.
+    lesson: >
+      이 건은 constants.yaml 이 결정 로그를 겸하기 이전에 내려진 결정이라
+      근거가 남지 않았다. 이후 모든 수치 변경은 사유를 함께 기록한다.
+
+  - id: ISSUE-005
+    title: 41_1_ 내부 컴버스트 표 충돌 — 화성 역행
+    status: 해결
+    blocking: false
+    resolved_note: >
+      원전 p.100 확인 — 화성 역행 8° 확정. 복사 오류 가설은 기각.
+      교훈: 원본 확인 전의 패턴 추론("값이 같으니 복사 오류")은 근거가 아니다.
+
+  - id: ISSUE-006
+    title: 삽타바르가 가중치 D1·D2·D3 미확인
+    status: 해결
+    blocking: false
+    resolved_note: >
+      원전 p.97 확인 — D1=5.0, D2=2.0, D3=3.0. 합 10.0 으로
+      derived_constraint 예측과 정확히 일치. 다만 확인 과정에서 ISSUE-016·017 발견.
+
+  - id: ISSUE-016
+    title: Vimsopaka 삽타바르가 가중치 — 원전과 KB 가 순열 관계
+    status: 보류_v1경로외
+    blocking: false
+    downgrade_note: >
+      ISSUE-017 에서 다샤바르가를 채택하여 삽타바르가가 커리어 v1 경로에서 빠졌다.
+      충돌 자체는 미해결이나 v1 발행을 막지 않는다. 삽타바르가를 다시 쓸 때 재개할 것.
+    detail: >
+      원전 p.97 : D7=1.0  D9=2.5  D12=4.5  D30=2.0
+      KB v1.1   : D7=2.5  D9=4.5  D12=2.0  D30=1.0
+      네 값이 서로 자리를 바꾼 순열이며 양쪽 모두 합이 20.0 이라 체크섬으로 검출 불가.
+      D1·D2·D3 은 양측 일치.
+    consideration: >
+      KB 쪽은 나밤샤(D9)에 최고 가중치를 주며 이는 실무 통용 배분과 일치한다.
+      원전은 D12 에 4.5 를 준다. 판본 차이일 수 있으므로 오류로 단정하지 않는다.
+    action: >
+      40_1_ v1.1 개정 로그에서 교정 근거를 확인. 근거가 있으면 §1.6 병기,
+      없으면 원전 배분으로 되돌린다. 결정 전까지 Vimsopaka 를 리포트에 쓰지 않는다.
+
+  - id: ISSUE-017
+    title: 삽타바르가에 D10 이 포함되지 않음 — 커리어 리포트 T3 근거 부적합
+    status: 해결
+    blocking: false
+    resolved_note: >
+      다샤바르가(10분할) 채택. D10 에 1.5 배정되며 ISSUE-016 이 v1 경로에서 제외된다.
+      대가로 D16·D60 계산 구현이 필요해졌다 — ISSUE-018.
+    superseded_options:
+      - "삽타바르가 유지 + D10 별도 병기 (미채택)"
+      - "Vimsopaka 제외하고 D10 배치만 T3 로 사용 (미채택, 파일럿 1회차 방식)"
+    detail: >
+      원전 p.97 표 확인 결과 삽타바르가 7분할은 D1 D2 D3 D7 D9 D12 D30 이며
+      D10(다샴샤)이 없다. 커리어 리포트의 T3(바르가) 근거로 삽타바르가 Vimsopaka 를
+      쓰면 정작 커리어 차트인 D10 이 0점으로 빠진다.
+      evidence_checklist.md C3 의 T3 지정 근거가 "41_1_ §6 Vimsopaka" 이므로 직접 영향.
+    options:
+      - "다샤바르가(10분할) 로 전환 — D10 에 1.5 배정. dasavarga_weights 참조"
+      - "삽타바르가 유지 + D10 배치를 별도 근거로 병기"
+    action: "커리어 v1 의 T3 근거 정의를 확정. 파일럿 2회차 전 결정 권장."
+
+  - id: ISSUE-007
+    title: BAV 기여표 판본 검증 미실시
+    status: 해결
+    blocking: false
+    resolved_note: >
+      BPHS-San Vol.2 Ch.66 원본 대조로 4개 행 교정 후 JHora 와 완전 일치.
+        달표   : 달 행 +9 / 화성 행 -9 / 목성 행 12→2  (원전 책 p.847)
+        금성표 : 화성 행 5→4                            (원전 책 p.852)
+      교정 후 7개 표 전부 12/12, SAV 12/12 일치.
+    method: >
+      원전은 Karanaprada(흉점) 형식이므로 12하우스에서 여집합을 취해 길점으로 변환했다.
+      원전 텍스트의 기여자 목록과 표의 도트 수 열이 상호 검산되어(달 47 / 금성 44)
+      판독 신뢰도를 확보했다.
+    detection_chain: >
+      1. 체크섬은 7개 표 모두 통과 — 개수는 처음부터 맞았다
+      2. JHora SAV 대조에서 3칸 불일치, 차이 합 0 — 위치 오류 확인
+      3. 행성별 BAV 대조로 달·금성 두 표로 좁힘
+      4. 산술로 후보 행 5개까지 좁혔으나 확정하지 않고 원전 확인
+      5. 원전이 후보 중 목성 12→2, 화성 5→4 를 확정. 추가로 2개 행 더 발견
+      4단계에서 임의로 하나를 골랐다면 달표의 나머지 2개 행 오류는 남았을 것이다.
+    lesson: >
+      개수 체크섬은 위치 오류를 검출하지 못한다. 외부 대조가 유일한 검증 수단이며,
+      대조 도구의 판독 자체도 검증이 필요하다 — 저해상도 이미지에서 6/8/9/0 오독으로
+      한 차례 잘못된 진단이 발생했고 확대 캡처로 정정되었다.
+
+  - id: ISSUE-008
+    title: D10 세부 판독 규칙 부재
+    status: v2_이관
+    blocking: false
+    detail: >
+      41_1_ §3.6 에 행성별 커리어 톤 9행 + D1↔D10 충돌 4행 매트릭스는 있으나,
+      D10 라그나별·10로드 위치별 12행 표가 없다. 41_1_ §12 가 스스로 지적.
+    action: "v2 에서 51_D10_다샴샤_직업해석.md 신설. v1 차단 요소 아님."
+
+  - id: ISSUE-009
+    title: 라후·케투 노드 방식 미결정 (mean / true)
+    status: 해결
+    blocking: false
+    resolved_note: "mean 확정. JHora 도 Mean nodes 사용 확인 — 대조 조건 일치."
+    detail: >
+      mean 과 true 는 최대 1도 이상 차이. 사인·낙샤트라 경계 근처에서 배치가 갈리며,
+      에페메리스 정밀도(초각)와는 비교할 수 없는 크기의 오차원이다.
+      19 §6 라후-케투 축 트랜짓, 낙샤트라 로드 판정에 직접 영향.
+    action: >
+      정책 결정 후 arithmetic.ephemeris.node_type 에 기입.
+      결정 전에는 node_type_provisional(mean) 으로 개발은 진행하되 유료 발행은 차단.
+    implementation_note: >
+      계산 1단계에 필요하므로 구현은 막지 않는다. 화성 역행 컴버스트(ISSUE-005)와
+      동일한 패턴 — provisional 값으로 코드는 돌리고 릴리스 게이트에서 막는다.
+
+  - id: ISSUE-010
+    title: Swiss Ephemeris 라이선스 — 자동화 전환 시 승격 필요
+    status: 휴면
+    dormant_note: >
+      상품 형태가 "운영자 로컬 실행 + PDF 수동 발송" 으로 확정되어 소프트웨어를
+      배포하지 않는다. AGPL 13조(네트워크 경유 제공)가 발동하지 않으므로
+      constants.yaml 공개 의무가 없다. 웹 폼·API 도입 시 즉시 재개할 것.
+    blocking: false
+    blocking_trigger: "네트워크 경유 서비스로 전환하는 시점에 blocking: true 로 승격"
+    detail: >
+      Swiss Ephemeris 는 AGPL-3.0 / Professional 이중 라이선스.
+      네트워크 너머로 계산을 제공하면 AGPL 13조에 따라 전체 소스 공개 의무가 발생하고,
+      constants.yaml 과 판정 규칙이 공개 대상이 된다.
+      로컬 실행 + PDF 수동 발송 단계에서는 통상 문제되지 않으나 법률 자문은 아님.
+    action: "자동 생성 서비스 착수 전 Professional Edition 구매 및 계약 체결."
+
+  - id: ISSUE-012
+    title: 라그나 산출 방식 — 내장 사이데리얼 플래그에서 수동 차감으로 변경
+    status: 해결
+    blocking: false
+    detail: >
+      최초 채택값 swe_houses_ex_sidereal_flag 는 라이브러리 내장 기능이 더 정확할
+      것이라는 추정에 근거했다. JHora 실측 대조에서 이 추정이 뒤집혔다.
+      내장 플래그: +13.79 / -8.11 / +0.58 각초 (부호까지 변동)
+      수동 차감  : -0.139 / -0.138 / -0.137 각초 (행성 잔차 대역과 동일)
+    resolved_note: >
+      tropical_houses_minus_ayanamsa 로 변경. 교훈 — 라이브러리 기본값이 레퍼런스와
+      일치한다고 가정하지 않는다. 외부 대조 없이는 어느 쪽이 맞는지 알 수 없었다.
+
+  - id: ISSUE-013
+    title: 라후·케투(노드) 판독 규칙 공백
+    status: 해결
+    blocking: false
+    progress: >
+      47_노드다샤_판독규칙.md 신설 (BPHS-San Vol.2 Ch.55 라후 · Ch.59 케투, 출처등급 원전).
+      라후·케투 마하다샤 18개 안타르다샤 전체 수록. 조건 57개.
+      노드 25년 = 100% 커버. 어느 노드 다샤 조합이 와도 판정 가능하다.
+    structural_finding: >
+      19 §6.2 표가 로드십 기반이라 노드가 원리적으로 등장할 수 없었다.
+      원전은 로드십 대신 배치 조건부로 다룬다 — 같은 안타르다샤라도 조건에 따라
+      결과가 갈리며, 라그나 기준과 다샤 로드 기준 두 축을 함께 쓴다.
+    remaining: >
+      프라티안타르다샤(Ch.61 계열)만 미수록. 다만 19 §6.2 기존 표도 프라티안타르를
+      다루지 않으므로 노드 고유의 공백이 아니다.
+    rahu_specific_finding: >
+      라후 장은 케투 장과 달리 특정 사인을 명시한다 —
+      게·전갈·처녀·사수가 라후에게 유리한 사인. 로드십도 존엄도 아닌 라후 전용 규정.
+    translator_note_found: >
+      Ch.55 에 Santhanam 의 역자주 2건 — 슬로카 13-14½(목성)과 25-26(토성).
+      둘 다 흉한 배치에 길한 결과가 함께 기술된 것을 지적하며
+      "원문에 오류가 있을 수 있다" 고 명시. 해당 길한 결과는 미채택.
+    next_priority: "케투 MD 나머지 6 AD (5.07년) — 완료 시 노드 커버리지 100%"
+    downgrade_note: >
+      statement_policy 도입으로 발행 차단 요인에서 제외. 노드 마하다샤 고객의
+      타이밍 항목은 conditional 또는 withheld 로 강등되고 사유가 공개된다.
+      다만 품질 목표로는 유효하다 — 고객 약 21% 가 영향받으므로 v2 우선 과제.
+    detail: >
+      파일럿 1회차에서 T4(다샤) 2/3, T3(바르가) 일부가 노드 규칙 부재로 비었다.
+      구체적 공백: 케투 D10 하우스 판독, 케투 Vimsopaka, 케투 마하 - 행성 안타르 조합.
+      19 §6.2 다샤 조합 11행표에 노드 마하 조합이 없다.
+      지식베이스가 이미 자체 기록한 공백이다 — 57/58 Saravali 커버리지 문서,
+      02_KN라오 "본문 미포함 주제" 목록에 라후·케투 결과 규칙이 명시되어 있다.
+    impact: >
+      빔쇼타리 120년 중 라후 18 + 케투 7 = 25년(약 21%). 고객 5명 중 1명이
+      노드 마하다샤에 해당한다. 커리어 타이밍 리포트의 핵심 계열이 비는 것이라
+      상품 성립에 직결된다.
+    action: >
+      노드 다샤 조합 규칙을 별도 문서로 신설. 원전 커버리지가 얕으므로
+      §7 출처등급과 §6.3 불확실 표기를 함께 설계할 것.
+
+  - id: ISSUE-014
+    title: 아마티야카라카(AmK) 배치 판독 규칙 공백
+    status: 확인대기
+    blocking: false
+    downgrade_note: >
+      statement_policy 도입으로 발행 차단 요인에서 제외. T2 가 비면 계열 수가 줄어
+      해당 결론이 conditional 로 강등된다. 품질 목표로는 유효.
+    detail: >
+      파일럿 1회차에서 T2(카라카) 계열이 3/3 전부 비었다. 44 §4.1 정독 결과 공백 위치 특정:
+        있음 — AmK 정의(실행 방식), 판정 순서, AK-AmK 관계 규칙
+        없음 — AmK 행성별 실행 스타일 표, AmK 하우스별 판독 규칙
+      AK-AmK 관계 규칙도 결합/켄드라·트리코나 와 6/8·2/12 두 경우만 다루며,
+      파일럿 차트의 실제 배치(AK 토성 10H ↔ AmK 화성 12H = 3/11)는 어느 쪽에도 없다.
+    material_available:
+      - "62 §1 행성별 직무 기능 7행 — 10H 재실용이나 행성→일 매핑으로 전용 가능"
+      - "44 §3.2 AK 행성별 핵심 과제 8행 — 서술 톤 템플릿"
+      - "44 §4.1 AmK = 실행 스타일 정의"
+    proposed_approach: >
+      위 재료로 "AmK 행성별 실행 스타일" 표를 §2.3 [실전 운영] 태그로 신설 가능.
+      단 AmK 하우스별 판독은 재료가 없어 신설 불가 — 만들면 §6.1 위반이다.
+    caveat: >
+      [실전 운영] 규칙은 §7 출처등급상 원전보다 하위이나 §9.1 계열 집계에는
+      등급 가중치가 없다. 파생 규칙 하나가 원전 규칙과 동일한 무게로 T2 를 채우게 된다.
+      ISSUE-021 과 함께 결정할 것.
+    impact: >
+      T2 는 §4.1 의 L1 후보이자 커리어 판정의 핵심 계열이다.
+      이것이 비면 남은 계열로 3개를 채우기 위해 AV 의존이 발생한다(ISSUE-002 참조).
+    action: "AmK 행성별 x 하우스별 판독 규칙 신설. 카라캄샤(44 §6.3)와의 관계도 정리."
+
+  - id: ISSUE-015
+    title: 조건부 채택(av_dependent) 결론의 리포트 게재 정책 미정
+    status: 해결
+    blocking: false
+    resolved_note: >
+      statement_policy 3등급(verdict / conditional / withheld) 도입으로 해결.
+      av_dependent 결론은 count_B 가 2 이므로 conditional 로 강등되어
+      본문에 시각적 구분과 함께 게재되고, 강등 사유가 ⚠️ 섹션에 기록된다.
+    detail: >
+      evidence_checklist.md §3 이 PASS_A ✅ / PASS_B ❌ 를 "조건부 채택"으로만
+      규정하고, 그 결론이 실제 리포트 본문에 실리는지 ⚠️ 섹션으로 가는지 정하지 않았다.
+      파일럿 1회차에서 이 상태가 2/3 발생해 채택 건수 집계가 불가능했다.
+      C1 의 경우 반대 방향 계열(T3)까지 1개 있어 판단이 더 무겁다.
+    options:
+      - "본문 게재 + confidence: conditional 명시"
+      - "⚠️ 이견 및 불확실 사항 섹션으로 이동"
+      - "AV 제외 3계열 충족 시에만 본문. 그 외 전량 ⚠️ 섹션"
+    action: "상품 스펙(최소 보장 항목 수)과 함께 결정. 유료 발행 전 필수."
+
+  - id: ISSUE-018
+    title: D16(Kalamsa)·D60(Shastiamsa) 계산 규칙 미확인
+    status: 해결
+    blocking: false
+    resolved_note: >
+      BPHS-San Vol.1 Ch.6 원본 이미지에서 두 규칙 확인 완료.
+      D16 — 책 p.75. 활동/고정/이중궁에 따라 양·사자·사수자리에서 시작, 분할폭 1.875°.
+      D60 — 책 p.83 슬로카 33-41. 사인내 도수 × 2 의 정수부를 12로 나눈 나머지 + 1 만큼
+      해당 사인에서 세어간다. 분할폭 0.5°. 원전 예시(염소 13°25′ → 물고기)로 검산 고정.
+      다샤바르가 10분할이 모두 확보되었다.
+    detail: >
+      다샤바르가 채택(ISSUE-017)으로 10개 분할이 모두 필요해졌으나
+      D16·D60 의 계산 규칙이 constants.yaml 에도 40_1_ 에도 없다.
+      나머지 8개(D1 D2 D3 D7 D9 D10 D12 D30)는 확보되어 있다.
+    action: >
+      BPHS-San Vol.1 Ch.6 (바르가 계산 장)에서 D16·D60 분할 규칙을 확인.
+      D10 과 동일하게 verified_example 을 함께 기록하여 산술 검산 가능하게 할 것.
+    sensitivity_note: >
+      D60 은 분할폭 0.5° 로 가장 민감하다. 다만 민감도는 대상 행성에 따라 다르다 —
+      라그나의 D60 은 약 2분마다, 달은 약 55분마다 바뀌지만
+      토성·목성 등 느린 행성은 수 주 동안 변하지 않는다.
+      커리어 Vimsopaka 는 통상 10로드 기준이므로 대상이 느린 행성이면 영향이 작다.
+
+  - id: ISSUE-019
+    title: 판정 기준점 — 라그나 vs 달 중 강한 쪽 (미정)
+    status: 해결
+    blocking: false
+    resolved_note: >
+      C안 채택 — 라그나 주 기준, 찬드라 라그나 보조. 리포트에 양쪽 다 서술하되
+      계열은 하나로 센다(reference_point_aggregation: sum_as_one).
+      62 §0 의 "더 강한 쪽" 방식은 강약 판정 규칙이 지식베이스에 없어 미채택(§6.1).
+      불일치 시 §4.3 병기 + time_precision_flag.
+    severity: critical
+    detail: >
+      62 §0 은 Saravali Ch.33 을 근거로 "라그나와 달 중 더 강한 기준점에서 10번째"를
+      먼저 판단하라고 규정한다. 그러나 현재 파이프라인은 라그나 기준 홀사인만 사용하며,
+      "어느 쪽이 더 강한가"를 판정하는 규칙이 지식베이스 어디에도 없다.
+    impact: >
+      파일럿 차트에서 라그나 기준 10H = 염소(토성 자기사인, 사사 요가),
+      달 기준 10H = 사수(라후). 판정이 통째로 달라진다.
+      파일럿 C1·C3 의 T1·T6 근거 전체가 라그나 기준을 전제로 성립하므로,
+      달이 강한 기준점이면 두 결론은 재작성 대상이다.
+    action: >
+      (a) 라그나 고정으로 정책 확정하고 62 §0 을 병기 처리하거나
+      (b) 강약 판정 규칙을 원전에서 확보하고 이중 판정을 도입한다.
+      63_Saravali_행성강도_광선.md (Rasmi) 에 강도 산출 근거가 있는지 먼저 확인할 것.
+    variants_found:                      # 문서마다 달 기준 사용법이 다르다
+      - doc: 62_Saravali_직업판단.md §0
+        rule: "라그나와 달 중 더 강한 쪽을 기준점으로 대체"
+      - doc: 11_하우스2.md §5
+        rule: "달 기준 2로드를 영향 행성에 추가 (대체가 아니라 병행)"
+      - doc: 현재 파이프라인
+        rule: "라그나 단독"
+    variants_note: >
+      세 방식이 서로 다르다. 대체(62) / 추가(11) / 단독(엔진).
+      단일 정책으로 통일하거나 카테고리별로 다르게 적용할지 결정해야 한다.
+
+  - id: ISSUE-020
+    title: 62 §6 직업 점수 엔진이 §9.1 계열 집계와 충돌
+    status: 해결
+    blocking: false
+    resolved_note: >
+      §9.1 이 상위 정책. 62 §6 점수제는 계열 집계에 사용하지 않고
+      직무 기능의 내부 서술 순서를 정하는 데만 쓴다.
+      점수는 output_contract.narration.internal_only_fields 에 포함되어
+      서술층에 전달되지 않으므로 리포트에 노출되지 않는다.
+    detail: >
+      62 §6 은 가중 합산 점수제(14점 이상 = 핵심 커리어 축)를 별도로 정의한다.
+      이를 §9.1 계열로 환산하면 10H재실 3 + 10L 3 은 둘 다 T1,
+      AmK 2 + AK-AmK 2 는 둘 다 T2, 다샤 3 + 목·토 트랜짓 2 는 둘 다 T4 이다.
+      T1·T2·T4 세 계열만으로 15점이 나와 최고 등급 판정을 받을 수 있다.
+      §9.1 이 바르가에서 막고 ISSUE-003 이 트랜짓에서 지적한 계열 부풀리기와 동형이다.
+    action: >
+      §9.1 을 상위 정책으로 확정하고 62 §6 점수제는 리포트 판정에 사용하지 않거나,
+      점수제를 계열 단위로 재설계한다. 두 체계를 동시에 운용하지 않는다.
+
+  - id: ISSUE-021
+    title: §9.1 계열 집계에 출처등급 가중치가 없음
+    status: 결정대기
+    blocking: false
+    detail: >
+      §7 은 "등급이 다른 자료의 규칙은 같은 무게로 섞지 않는다"고 규정하나,
+      §9.1 계열 집계와 §4.1 의 3계열 요건에는 등급 개념이 없다.
+      원전 직접 요약 규칙과 [실전 운영] 파생 규칙이 동일하게 1계열로 계산된다.
+      ISSUE-014 의 AmK 파생 문서를 만들면 이 문제가 즉시 현실화된다.
+    action: >
+      §9.2 우선순위(구체적 조건 → 강한 행성 → 바르가 반복 → 다샤 활성)에
+      출처등급 항목을 넣을지, 또는 파생 규칙 단독으로는 계열을 채우지 못하게 할지 결정.
+
+  - id: ISSUE-022
+    title: 종합형 카테고리 3종의 근거 소재지 표 미작성
+    status: 해결
+    blocking: false
+    resolved_note: >
+      금전·연애·컨디션 3종 완료. 커리어(evidence_checklist.md §1)와 합쳐
+      4개 카테고리의 근거 소재지가 모두 확보되었다.
+      각 표에 "v1 미사용 → 추가금 상품 사양" 절을 포함해 tiering 사양도 함께 도출.
+    progress:
+      finance: 완료 (evidence_map_finance.md)
+      relationship: 완료 (evidence_map_relationship.md)
+      condition: 완료 (evidence_map_condition.md)
+    detail: >
+      evidence_checklist.md §1 의 "결론별 근거 소재지" 표가 커리어에만 존재한다.
+      금전·연애·컨디션 3개 카테고리는 결론 후보 정의와 T1~T6 근거 위치가 없어
+      판정 작업 자체가 불가능하다.
+    action: >
+      카테고리별로 (1) 결론 후보 정의 (2) 계열별 참조 문서·절 매핑 을 작성.
+      커리어 §1 표와 동일 형식. 종합형의 실질 선행 작업이다.
+
+  - id: ISSUE-023
+    title: 컨디션 카테고리 — 재료 부족으로 성립 여부 재검토
+    status: 해결
+    blocking: false
+    resolved_note: >
+      운영자 결정으로 §5.4 폐지, 신체 부위·상태·증상 서술 허용(v0.18.0).
+      15_하우스6.md 의 사용 가능 범위가 크게 확대되어 카테고리 유지.
+      단 §5.1 S3 와 §4.1 근거 게이트는 유지되므로 근거가 얇은 신체 주장은
+      강등되어 표시된다. condition_category_assessment.md 의 "사용 불가" 목록은
+      §6.3 과 S3 귀결 항목을 제외하고 무효화되었다.
+    evidence: >
+      15_하우스6.md 실측 평가 결과(condition_category_assessment.md):
+        사용 불가 6개 절 — §5.1 트리도샤(신경계·순환기·간·심장·호흡기),
+        §5.2 칼라푸루샤(12사인 신체 부위 매핑), §6.3 병증 확정 절차,
+        §3.4 병증 조합, 헤더 카라카 4종(상해·만성질환·중독·감염), §4.5 AV 병증 판정
+        확보 가능 계열 — 최대 2~3개, 확실한 것 1개
+        statement_policy 적용 시 대부분 withheld 로 귀결
+      추가로 91_민감표현_치환표.md §2(건강·수명)가 condition_category_policy 와
+      전제가 상충한다. 치환표는 "완곡 전달", 정책은 "미전달" 이다.
+    options:
+      - id: 제외_후_재배치
+        detail: >
+          카테고리 4개 → 3개(커리어·금전·연애).
+          부채 조합은 금전으로, 소송·적·경쟁은 커리어로, 극복력·비파리트는 공통 흡수.
+          버리는 재료 없음. s3_risk: high 카테고리 제거. 제작 시간 감소.
+      - id: 극도로_좁힌_유지
+        detail: >
+          에너지 배분·생활 리듬·회복 국면만. 상품 설명에 "질병·신체 미취급,
+          대부분 판단 보류 표시 가능" 을 명시. 추가금 대상으로는 부적합.
+    recommendation: 제외_후_재배치
+
+  - id: ISSUE-024
+    title: 20 §7.4 아쉬타카바르가 임계값 오표기 및 중복 정의
+    status: 교정적용
+    blocking: false
+    detail: >
+      20 §7.4 는 "11H BAV 30점 이상 / 35점 이상" 이라고 기술하나 BAV 는 0~8 범위다.
+      30·35 는 SAV 수치이며 라벨이 뒤바뀌었다. 같은 절 말미에 SAV 를 따로 언급하는
+      것으로 보아 전사 오류로 판단된다.
+      SAV 로 읽어도 43 §5.2 (31~35 강한 하우스 / 35~57 매우 강함) 와 어긋난다.
+      ISSUE-001(19 §7.5 vs 43 §5.2) 과 동형의 임계값 중복 정의다.
+    action: >
+      constants.yaml 의 ashtakavarga.sav_grades 를 단일 기준으로 사용한다.
+      20 §7.4 의 30/35 는 근거로 쓰지 않는다.
+
+  - id: ISSUE-025
+    title: 금전 카테고리에 S3 및 의료 내용 혼입
+    status: 교정적용
+    blocking: false
+    detail: >
+      금전을 s3_risk: low 로 분류한 최초 판단이 틀렸다. 실제 소스 문서에는
+      다음이 포함되어 있다 —
+        11 §3 "언어·눈 관련" 블록 전체 (말더듬·언어장애·눈 질환·야맹증)
+        11 §3 빈곤 조합의 "신체 변형"
+        11 §5 수성 항의 "신경 질환·마비"
+        11 §5 +7로드·+8로드의 "본인/배우자 신변 위험 시기"  ← S3 직접
+        11 §3 빈곤 조합 전반의 마라카 개입 (01_수명판단_마라카.md = S3 대상)
+    action: >
+      evidence_map_finance.md §2-1 에 판정 단계 필터 목록을 명시했다.
+      해당 항목은 완곡 표현으로도 사용하지 않는다(§5.1 암시 금지).
+      카테고리 s3_risk 를 medium 으로 상향.
+
+  - id: ISSUE-026
+    title: 신체 부위 + 특정 시기 결합 서술의 허용 여부
+    status: 결정대기
+    blocking: false
+    detail: >
+      §5.4 폐지로 신체 서술 일반은 허용되었으나, "신체 부위 + 특정 시기" 결합은
+      성격이 다르다. 예 — "소화기가 예민한 편" vs "2028년 소화기 문제에 주의".
+      후자는 장기 불안 구간을 형성하고, 실제 증상이 다른 부위에 있는 고객이
+      리포트와 대조하다 의료기관 방문을 늦출 위험(역방향 위험)이 있다.
+      문장 자체가 완곡하므로 운영자 검토 단계에서 검출이 어렵다.
+    action: >
+      파일럿에서 실제 생성 문장을 확인한 뒤 결정한다.
+      허용 시 condition_category_policy.under_review 에서 allowed 로 이동,
+      금지 시 prohibited 로 이동.
+
+  - id: ISSUE-027
+    title: 제3자 판정 — 배우자·파트너 서술의 범위
+    status: 결정대기
+    blocking: false
+    detail: >
+      배우자·파트너는 고객이 아니다. 분석에 동의한 적이 없고 본인 차트도 없다.
+      16 §8.5 는 배우자 건강에 대해 "그 사람의 차트로 판단해야 하며 상담자 차트로
+      배우자의 위기를 예언하는 것은 윤리적·법적·심리적으로 위험" 하다고 명시한다.
+      20 §9.4 도 손윗형제에 대해 동일 원칙을 적용한다.
+      §5.4 폐지는 고객 본인에 대한 서술 제한을 푼 것이지 제3자 판정을 승인한 것이 아니다.
+    current_rule: >
+      evidence_map_relationship.md §2-2 — 서술 주어를 사람이 아니라 관계로 둔다.
+      "배우자는 지배적입니다" 가 아니라 "관계에서 주도권이 두드러지는 구조입니다".
+    action: >
+      배우자 외모·직업·방위 등 심화 서술(16 §5.5, §8.4)의 허용 범위를 확정할 것.
+      추가금 상품에 포함할지 여부와 함께 결정.
+
+  - id: ISSUE-028
+    title: 궁합(Ashtakuta) — 상대방 출생정보 접수 정책 필요
+    status: 확인대기
+    blocking: false
+    detail: >
+      16 §6 궁합은 두 차트가 필요하다. 현재 intake_policy 는 고객 1인 기준이며
+      제3자 출생정보 수집·보관·파기 절차가 정의되어 있지 않다.
+      상대방의 출생정보는 상대방의 개인정보이므로 수집 근거가 별도로 필요하다.
+    opportunity: >
+      명백히 "다른 종류의 작업"(별도 입력 + 별도 계산)이므로 추가금 상품으로 최적이다.
+      기본 리포트는 궁합 없이 완결되므로 tiering.addon_principle 에 부합한다.
+    action: >
+      상대방 동의 확보 방식, 보관·파기 정책을 intake_policy 에 추가한 뒤 상품화.
+      법률 자문 확인 항목.
+
+  - id: ISSUE-029
+    title: 다샤 연 길이 — 365.25 vs 항성년 365.2564
+    status: 해결
+    blocking: false
+    resolved_note: >
+      둘 다 아니다. JHora 는 true sidereal solar year — 태양이 sidereal 360° 를
+      도는 실제 시간을 쓴다. 고정 일수가 아니므로 365.25 도 365.2564 도 근사값이다.
+      91_계산엔진_작업지시서.md 의 365.25 는 개정 대상.
+    detail: >
+      91_계산엔진_작업지시서.md 는 365.25(율리우스년)를 지정하나,
+      JHora 마하다샤 전체 구간 4개를 실측한 결과 모두 365.2560~365.2570 으로
+      항성년(365.256363)에 수렴했다. measurement_log 참조.
+      차이는 연 0.006363일 — 19년 구간에서 0.12일, 120년 전체에서 0.76일.
+    impact: 작음
+    action: >
+      항성년 채택 시 91_계산엔진_작업지시서.md 개정 필요(§1.6 병기 또는 교정).
+      단독으로는 영향이 작으므로 ISSUE-030 과 함께 결정할 것.
+
+  - id: ISSUE-031
+    title: 다샤 구현 방식 변경 — 일수 곱셈에서 태양 경도 해로
+    status: 해결
+    blocking: false
+    resolved_note: >
+      true sidereal solar progress solver 구현 완료. JHora 12개 경계 전부 1시간 이내 일치.
+      잔차는 +28.8 ~ +30.3분으로 일정하며 전량 설명된다 —
+      아야남샤 미세차 0.140각초 → 낙샤트라 잔여율 차 2.925e-06
+      → 토성 19년 구간에서 +29.2분. 실측과 정확히 일치한다.
+      첫 마하다샤 시작점이 29분 이동하고 이후 전 타임라인이 통째로 따라 이동하므로
+      12개 경계의 잔차가 모두 같다. 구현 오류가 아니다.
+    detail: >
+      engine/dasha.py 가 days_per_year 곱셈으로 구현되어 있으나
+      ISSUE-029 결과 true sidereal solar year 로 바뀌어야 한다.
+      필요한 함수 — 기준 시점 jd0 과 진행 각도 deg 를 받아
+      "태양이 sidereal 로 deg 만큼 진행한 시점" 을 반환하는 solver.
+      다샤 경계는 이 solver 로만 산출한다.
+    verification: >
+      본인 차트 기준 목표값 (JHora):
+        첫 마하다샤(토성) 종료  2007-11-05 05:54:54
+        케투 마하다샤          2024-11-04 14:27:42 ~ 2031-11-05 09:38:10
+        케투 내 안타르 3건     Ket 2025-03-30 03:05:43 /
+                              Ven 2026-05-31 02:19:34 / Sun 2026-10-08 23:14:17
+      허용 오차 — 우선 1시간, 달성되면 10분으로 강화.
+    note: >
+      전통 Y/M/D 표기(360일년·30일월)는 표시 전용이며 이 변경과 무관하다.
+
+  - id: ISSUE-032
+    title: D16 시작 사인을 상대 offset 으로 잘못 기록
+    status: 해결
+    blocking: false
+    detail: >
+      v0.27.0 에서 D16 을 start_rule {movable:0, fixed:4, dual:8} 로 기록했으나,
+      원전은 활동궁이면 양자리, 고정궁이면 사자자리, 이중궁이면 사수자리에서
+      세라고 명시한다 — 시작 사인이 고정되어 있으므로 자기 사인 기준 offset 이 아니다.
+      예 — 황소자리(고정궁)의 첫 쇼다삼샤는 사자자리이지 황소에서 5번째가 아니다.
+      D9·D10 은 상대, D16 은 절대다.
+    resolved_note: >
+      start_mode: absolute 도입하고 start_rule 을 절대 사인 번호로 교정.
+      검출 경위 — 검산 예시가 활동궁 하나뿐이라 다른 분기가 실행되지 않았고,
+      변이 테스트에서 fixed offset 을 오염시켜도 검증기가 통과했다.
+      이후 verified_examples 를 리스트로 바꾸고 모든 분기를 덮도록 강제했다.
+    lesson: >
+      검산 예시 1건은 규칙의 한 분기만 검증한다. 분기가 있는 규칙은
+      모든 분기에 예시를 두고, 검증기가 커버리지 자체를 확인해야 한다.
+
+  - id: ISSUE-030
+    title: 첫 마하다샤 잔여 — JHora 대비 약 2.85일 차이
+    status: 해결
+    blocking: false
+    severity: high
+    resolved_note: >
+      원인은 낙샤트라 잔여율이 아니라 연 길이 정의였다(ISSUE-029).
+      우리 잔여율 81.2295% 는 정확하다 — 달 경도가 JHora 표시값과 0.14각초 일치.
+      true sidereal solar year 를 적용하면 오차가 -4일에서 -8.5시간으로 감소한다.
+      잔여 8.5시간은 검증 스크립트의 수렴 정밀도 수준으로 추정되며,
+      구현 후 재측정한다.
+    detail: >
+      낙샤트라 잔여율이 어긋난다.
+        우리 계산  : 81.2295%  (달 335.836061°, JHora 표시값과 0.14각초 일치)
+        JHora 함의 : 81.2706%  (달 환산 335.830587°)
+        차이       : 0.0411% = 달 경도 19.7각초 = 시간으로 약 36초
+      15.4년 구간에서 2.85일 차이가 발생한다.
+    ruled_out:
+      - "연 길이 — 항성년을 써도 2.85일 잔존(ISSUE-029 는 별개, 0.12일 규모)"
+      - "토포센트릭 달 — 적용 시 오차가 2.84%로 오히려 확대"
+      - "달 경도 자체 — JHora 화면 표시값과 0.14각초 일치, 정상"
+    remaining_candidates:
+      - "JHora 다샤 모듈이 화면 표시와 다른 아야남샤 변종을 사용"
+      - "시간 척도 차이 (UT vs TT, 1992년 ΔT 약 58초)"
+    cross_check: >
+      안타르다샤 분할은 정확하다 — 케투 마하 내 태양 안타르 종료일이
+      JHora 와 0일 차이로 일치. 즉 비례 분할 로직은 옳고,
+      오차는 첫 마하다샤의 시작 잔여율에 집중되어 있다.
+    action: >
+      JHora 에서 Vimsottari Dasa 화면의 "잔여" 표시값(년/월/일)을 직접 확인하고
+      우리 계산값과 대조. 화면 표시가 있으면 원인 특정이 빨라진다.
+    title: 에페메리스 파일 해시 미기록
+    status: 해결
+    blocking: false
+    resolved_note: >
+      sha256 2건 기록 완료. files_pinned_ref 커밋 고정 완료.
+      해시 불일치 시 설치 실패하도록 setup_ephemeris.py 에 반영됨.
+    detail: >
+      arithmetic.ephemeris.files.*.sha256 이 null.
+      raw.githubusercontent 의 master 브랜치 URL 은 파일이 교체될 수 있어,
+      해시를 고정하지 않으면 과거 리포트를 재현할 수 없다.
+      reproducibility_note 가 막으려던 상황과 동일.
+    action: >
+      설치 스크립트 실행 후 두 파일의 sha256 을 이 파일에 기록.
+      가능하면 files_pinned_ref 에 커밋 SHA 도 고정한다(해시는 변경을 검출할 뿐,
+      커밋 고정은 변경 자체를 막는다).

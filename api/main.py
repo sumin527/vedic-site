@@ -1,0 +1,195 @@
+# -*- coding: utf-8 -*-
+"""무료 베딕 쿤달리 계산기 API (MVP).
+
+POST /api/chart — 출생 정보 → 무료 해석 JSON
+유료 리포트용 전체 데이터(varga/ashtakavarga/karaka/judge 결론)는 노출하지 않는다.
+"""
+from __future__ import annotations
+
+import datetime as dt
+import sys
+import time
+from collections import defaultdict
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+# --- 엔진 경로 설정 ---
+HERE = Path(__file__).resolve().parent
+if (HERE / "engine").is_dir():
+    # 배포용: api/ 안에 번들된 엔진
+    ENGINE_DIR = HERE
+    WEB_DIR = HERE.parent / "web"
+else:
+    # 로컬 개발용: 워크스페이스 원본 참조
+    ENGINE_DIR = HERE.parents[1] / "uploads" / "engine"
+    WEB_DIR = HERE.parents[1] / "mvp" / "web"
+sys.path.insert(0, str(ENGINE_DIR))
+
+from engine.constants import load_constants          # noqa: E402
+from engine.output import build_engine_output        # noqa: E402
+from free_content import (                            # noqa: E402
+    DASHA_KO, NAKSHATRA_KO, PLANET_ABBR, PLANET_KO,
+    RASHI_KO, SIGN_ORDER, TIME_UNKNOWN_NOTICE,
+)
+
+CONSTANTS = load_constants(ENGINE_DIR / "constants.yaml")
+EPHE_PATH = ENGINE_DIR / "ephe"
+
+app = FastAPI(title="Vedic Free Chart API", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+)
+
+# --- 간단 rate limit (IP당 분당 60회) ---
+_hits: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT = 60
+
+
+@app.middleware("http")
+async def _rate_limit(request: Request, call_next):
+    if request.url.path.startswith("/api/"):
+        ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        bucket = [t for t in _hits[ip] if now - t < 60]
+        if len(bucket) >= RATE_LIMIT:
+            raise HTTPException(429, "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.")
+        bucket.append(now)
+        _hits[ip] = bucket
+    return await call_next(request)
+
+
+class ChartRequest(BaseModel):
+    birth_date: str = Field(..., examples=["1990-05-15"])
+    birth_time: str | None = Field(None, examples=["14:30"])  # null = 시간 모름
+    tz_offset: float = 9.0
+    lat: float = Field(..., ge=-90, le=90)
+    lon: float = Field(..., ge=-180, le=180)
+    place: str = ""
+
+
+def _parse_birth(req: ChartRequest) -> tuple[dt.datetime, bool]:
+    try:
+        d = dt.date.fromisoformat(req.birth_date)
+    except ValueError:
+        raise HTTPException(400, "birth_date 형식이 올바르지 않습니다 (YYYY-MM-DD).")
+    time_unknown = not req.birth_time
+    t = dt.time(12, 0) if time_unknown else dt.time.fromisoformat(req.birth_time)
+    local = dt.datetime.combine(d, t)
+    utc = local - dt.timedelta(hours=req.tz_offset)
+    return utc.replace(tzinfo=dt.timezone.utc), time_unknown
+
+
+def _current_period(timeline: list[dict], now: dt.datetime) -> tuple[dict, dict | None]:
+    for md in timeline:
+        s = dt.datetime.fromisoformat(md["start"].replace("Z", "+00:00"))
+        e = dt.datetime.fromisoformat(md["end"].replace("Z", "+00:00"))
+        if s <= now < e:
+            ad = None
+            for sub in md.get("antardashas", []):
+                ss = dt.datetime.fromisoformat(sub["start"].replace("Z", "+00:00"))
+                ee = dt.datetime.fromisoformat(sub["end"].replace("Z", "+00:00"))
+                if ss <= now < ee:
+                    ad = sub
+                    break
+            return md, ad
+    return timeline[-1], None
+
+
+def _fmt_date(iso: str) -> str:
+    return dt.datetime.fromisoformat(iso.replace("Z", "+00:00")).strftime("%Y.%m.%d")
+
+
+@app.post("/api/chart")
+def chart(req: ChartRequest):
+    birth_utc, time_unknown = _parse_birth(req)
+    now = dt.datetime.now(dt.timezone.utc)
+    if birth_utc > now:
+        raise HTTPException(400, "출생 시각이 미래입니다.")
+
+    try:
+        out = build_engine_output(birth_utc, req.lat, req.lon, EPHE_PATH, CONSTANTS)
+    except Exception as exc:  # 엔진 계약 위반 등은 500 대신 422로
+        raise HTTPException(422, f"차트 계산에 실패했습니다: {exc}")
+
+    ji = out["judgment_input"]
+    planets = ji["chart"]["planets"]
+    asc = ji["chart"]["ascendant"]
+
+    # --- 라그나 (시간 미상이면 제외) ---
+    lagna = None
+    if not time_unknown:
+        s_idx = asc["sign"]
+        ko, desc = RASHI_KO[SIGN_ORDER[s_idx - 1]]
+        nak_ko, _ = NAKSHATRA_KO[asc["nakshatra"] - 1]
+        lagna = {
+            "sign_ko": ko, "sign_index": s_idx,
+            "nakshatra_ko": nak_ko, "pada": asc["pada"],
+            "description": desc,
+        }
+
+    # --- 달 ---
+    moon = planets["moon"]
+    m_idx = moon["sign"]
+    m_ko, m_desc = RASHI_KO[SIGN_ORDER[m_idx - 1]]
+    mn_ko, mn_desc = NAKSHATRA_KO[moon["nakshatra"] - 1]
+
+    # --- 행성 요약 (유료 데이터 제외) ---
+    planet_list = []
+    for key in ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"]:
+        p = planets[key]
+        planet_list.append({
+            "name_ko": PLANET_KO[key],
+            "abbr": PLANET_ABBR[key],
+            "sign_ko": RASHI_KO[SIGN_ORDER[p["sign"] - 1]][0],
+            "sign_index": p["sign"],
+            "house": None if time_unknown else p["whole_sign_houses"]["lagna"],
+        })
+
+    # --- 현재 다샤 ---
+    md, ad = _current_period(ji["dasha"]["full_timeline"], now)
+    md_ko, md_desc = DASHA_KO[md["lord"]]
+    dasha = {
+        "mahadasha": {"lord_ko": md_ko, "start": _fmt_date(md["start"]),
+                      "end": _fmt_date(md["end"]), "description": md_desc},
+        "antardasha": None,
+    }
+    if ad:
+        ad_ko = DASHA_KO[ad["lord"]][0]
+        dasha["antardasha"] = {"lord_ko": ad_ko, "start": _fmt_date(ad["start"]),
+                                           "end": _fmt_date(ad["end"])}
+
+    return {
+        "time_unknown": time_unknown,
+        "notice": TIME_UNKNOWN_NOTICE if time_unknown else None,
+        "place": req.place,
+        "lagna": lagna,
+        "moon": {"sign_ko": m_ko, "sign_index": m_idx, "description": m_desc,
+                 "nakshatra_ko": mn_ko, "nakshatra_index": moon["nakshatra"],
+                 "pada": moon["pada"], "nakshatra_description": mn_desc},
+        "planets": planet_list,
+        "dasha": dasha,
+    }
+
+
+@app.get("/api/health")
+def health():
+    return {"ok": True, "constants_version": CONSTANTS["meta"]["version"]}
+
+
+# --- 프론트 서빙 (로컬 개발용; 배포는 Cloudflare Pages) ---
+if WEB_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="web")
+
+
+@app.get("/", include_in_schema=False)
+def _root():
+    index = WEB_DIR / "index.html"
+    if index.exists():
+        return FileResponse(str(index))
+    return {"message": "web/ 디렉토리에 index.html을 넣어주세요."}
