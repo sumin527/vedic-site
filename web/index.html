@@ -56,6 +56,12 @@
     <p>인도 정통 점성술 · 라히리 아야남사 · 가입 없이 바로</p>
   </header>
 
+  <div class="card" id="pastlifeBanner" style="display:none">
+    <p style="font-size:15px">🔮 <b>전생 테스트에서 오셨군요.</b><br>
+    전생 캐릭터는 빙산의 일각 — 같은 달 별자리라도 태어난 시간에 따라 이번 생의 설계도는 완전히 달라집니다.<br>
+    <span style="color:var(--muted);font-size:13px">입력하신 정보로 자동 계산했어요.</span></p>
+  </div>
+
   <div class="card">
     <div class="row">
       <div><label>생년월일</label><input type="date" id="birthDate" value="1990-05-15"></div>
@@ -84,7 +90,7 @@
       <h3>🪐 행성 배치</h3>
       <table><thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead><tbody id="planets"></tbody></table>
 
-      <h3>📜 심층 리포트가 궁금하신가요?</h3>
+      <h3 id="deepReportTitle">📜 심층 리포트가 궁금하신가요?</h3>
       <div class="cta">
         <p style="font-size:14px;color:var(--muted);margin-bottom:12px">
           기질·재물·직업·관계·대운을 항목별로 깊게 풀어드리는<br>유료 심층 리포트를 준비하고 있습니다.</p>
@@ -221,6 +227,37 @@ async function notify(){
 document.getElementById('timeUnknown').addEventListener('change', e=>{
   document.getElementById('birthTime').disabled = e.target.checked;
 });
+
+// 전생테스트 유입 핸드오프 (?src=pastlife&dob=YYYY-MM-DD&tob=HH:MM&place=지역명&ch=캐릭터명)
+(function(){
+  const q = new URLSearchParams(location.search);
+  if(q.get('src') !== 'pastlife') return;
+  const dob = q.get('dob');
+  if(!dob || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) return;
+  document.getElementById('birthDate').value = dob;
+  const tu = document.getElementById('timeUnknown');
+  const tob = q.get('tob');
+  if(tob && /^\d{2}:\d{2}$/.test(tob)){
+    document.getElementById('birthTime').value = tob;
+    tu.checked = false;
+  } else {
+    tu.checked = true; // 출생 시간 모름 → 달 기준 간이 계산
+  }
+  tu.dispatchEvent(new Event('change'));
+  // 전생테스트 17개 시·도 → 계산기 10개 도시 매핑
+  const PLACE_MAP = {서울:'서울',부산:'부산',대구:'대구',인천:'인천',광주:'광주',대전:'대전',울산:'울산',세종:'세종',제주:'제주',경기:'수원',강원:'서울',충북:'대전',충남:'대전',전북:'광주',전남:'광주',경북:'대구',경남:'부산'};
+  const want = PLACE_MAP[q.get('place')] || '서울';
+  const sel = document.getElementById('place');
+  for(const o of sel.options){ if(o.text === want){ sel.value = o.value; break; } }
+  const banner = document.getElementById('pastlifeBanner');
+  banner.style.display = 'block';
+  const ch = q.get('ch');
+  if(ch){
+    // textContent만 사용 (XSS 방지)
+    document.getElementById('deepReportTitle').textContent = '📜 전생의 "' + ch + '", 이번 생의 설계도가 궁금하신가요?';
+  }
+  setTimeout(function(){ document.getElementById('go').click(); }, 500);
+})();
 </script>
 </body>
 </html>
