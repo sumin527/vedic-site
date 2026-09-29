@@ -64,6 +64,32 @@ async def _rate_limit(request: Request, call_next):
     return await call_next(request)
 
 
+# --- 수요 측정 카운터 (수요 검증용, 인메모리) ---
+# 컨테이너 재시작 시 초기화된다. 로그에도 남기므로 Railway 로그에서 복원 가능.
+_stats_total = {"chart_ok": 0, "chart_err": 0, "notify": 0}
+_stats_by_day: dict[str, dict[str, int]] = defaultdict(
+    lambda: {"chart_ok": 0, "chart_err": 0, "notify": 0})
+_stats_started = dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def _bump(key: str) -> None:
+    _stats_total[key] += 1
+    day = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    _stats_by_day[day][key] += 1
+    print(f"[stats] {day} {key} total={_stats_total[key]}", flush=True)
+
+
+@app.middleware("http")
+async def _stats(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/api/chart":
+        _bump("chart_ok" if response.status_code < 400 else "chart_err")
+    elif path == "/api/notify" and request.method == "POST" and response.status_code < 400:
+        _bump("notify")
+    return response
+
+
 class ChartRequest(BaseModel):
     birth_date: str = Field(..., examples=["1990-05-15"])
     birth_time: str | None = Field(None, examples=["14:30"])  # null = 시간 모름
@@ -180,6 +206,29 @@ def chart(req: ChartRequest):
 @app.get("/api/health")
 def health():
     return {"ok": True, "constants_version": CONSTANTS["meta"]["version"]}
+
+
+class NotifyRequest(BaseModel):
+    email: str = Field(..., max_length=254)
+
+
+@app.post("/api/notify")
+def notify(req: NotifyRequest):
+    """출시 알림 신청. MVP 단계에서는 이메일 저장 없이 신청 수만 집계한다."""
+    addr = req.email.strip()
+    if "@" not in addr or "." not in addr.rsplit("@", 1)[-1]:
+        raise HTTPException(400, "이메일 주소를 확인해 주세요.")
+    return {"ok": True}
+
+
+@app.get("/api/stats")
+def stats():
+    """수요 검증용 집계 (차트 계산 수, 알림 신청 수)."""
+    return {
+        "started_at": _stats_started,
+        "total": dict(_stats_total),
+        "by_day": {d: dict(v) for d, v in sorted(_stats_by_day.items())},
+    }
 
 
 # --- 프론트 서빙 (로컬 개발용; 배포는 Cloudflare Pages) ---
