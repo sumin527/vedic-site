@@ -536,13 +536,13 @@ arithmetic:
   ephemeris:
     backend: skyfield_jpl_de430          # 2026-09-29: swiss_se1(AGPL)에서 교체. Skyfield=MIT, DE430=퍼블릭도메인
     source: JPL_DE430
-    coverage_note: "1550-2650 CE — de430.bsp 커널 범위."
+    coverage_note: "1549-12-31 ~ 2650-01-25 (TDB) — de430.bsp 세그먼트 실측 (2026-09-29 검증). 단, 다샤 120년 타임라인+솔버 역탐색 때문에 실제 출생일 지원 범위는 이보다 좁다 (API에서 1600-2500년으로 제한)."
     files_required: true
     path_env: SE_EPHE_PATH              # 그대로 사용 (값은 de430.bsp가 있는 디렉터리)
     files:                              # 파일 1개당 레코드 1개. 병렬 구조를 만들지 않는다
       de430.bsp:
         role: planets+moon
-        coverage: "1550-2650 CE"
+        coverage: "1549-12-31 ~ 2650-01-25 (TDB) — 세그먼트 실측"
         size_bytes: 119741440
         sha256: "6e1b277c5f07135a84950604b83e56b736be696a7f3560bcddb1d4aeb944fca1"
         url: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp"

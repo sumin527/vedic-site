@@ -104,6 +104,9 @@ def _parse_birth(req: ChartRequest) -> tuple[dt.datetime, bool]:
         d = dt.date.fromisoformat(req.birth_date)
     except ValueError:
         raise HTTPException(400, "birth_date 형식이 올바르지 않습니다 (YYYY-MM-DD).")
+    # DE430 커널(1549-12-31 ~ 2650-01-25) + 다샤 120년 타임라인/역탐색 여유를 고려한 지원 범위
+    if d < dt.date(1600, 1, 1) or d > dt.date(2500, 12, 31):
+        raise HTTPException(400, "지원하는 출생 연도 범위는 1600–2500년입니다.")
     time_unknown = not req.birth_time
     t = dt.time(12, 0) if time_unknown else dt.time.fromisoformat(req.birth_time)
     local = dt.datetime.combine(d, t)
