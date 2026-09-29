@@ -40,7 +40,16 @@
   table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
   th, td { padding:8px 6px; border-bottom:1px solid var(--line); text-align:center; }
   th { color:var(--muted); font-weight:500; font-size:12px; }
-  .interp { font-size:14px; color:#4a3d24; background:#fbf8ee; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-top:8px; }
+  details.glossary { margin-top:8px; border:1px solid var(--line); border-radius:10px; background:#fbf8ee; }
+  details.glossary summary { cursor:pointer; padding:12px 14px; font-size:14px; font-weight:700; color:var(--gold-deep); list-style:none; }
+  details.glossary summary::-webkit-details-marker { display:none; }
+  details.glossary summary::before { content:"📖 "; }
+  details.glossary[open] summary { border-bottom:1px solid var(--line); }
+  details.glossary dl { padding:12px 14px; font-size:13.5px; }
+  details.glossary dt { font-weight:700; color:var(--ink); margin-top:10px; }
+  details.glossary dt:first-child { margin-top:0; }
+  details.glossary dd { margin:2px 0 0; color:#4a3d24; }
+  details.glossary .fine2 { font-size:12px; color:var(--muted); padding:0 14px 12px; }
   .cta { text-align:center; padding:8px 0; }
   .cta input { margin-bottom:10px; }
   .fine { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
@@ -89,6 +98,19 @@
 
       <h3>🪐 행성 배치</h3>
       <table><thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead><tbody id="planets"></tbody></table>
+
+      <details class="glossary">
+        <summary>처음 보시는 분을 위한 여섯 가지 용어</summary>
+        <dl>
+          <dt>라그나</dt><dd>태어난 순간 동쪽 지평선에 떠오르던 별자리. 차트를 읽는 출발점입니다. 생일로 말하는 별자리와는 기준이 다릅니다.</dd>
+          <dt>궁(하우스)</dt><dd>삶의 영역을 나눈 열두 자리입니다. 10궁은 직업·사회적 역할, 2궁은 재산·가족·말, 7궁은 배우자·동반자 관계 등을 봅니다.</dd>
+          <dt>궁의 주인</dt><dd>그 궁의 별자리를 다스리는 행성입니다. 예를 들어 10궁이 염소자리이면 토성이 직업 해석의 기준이 됩니다.</dd>
+          <dt>자기 별자리</dt><dd>행성이 자신이 다스리는 별자리에 있는 것. 전통적으로 힘을 얻는 조건으로 봅니다.</dd>
+          <dt>다샤</dt><dd>삶의 시기별 흐름을 읽는 체계입니다. 마하다샤(대운)는 긴 기간, 안타르다샤(소운)는 그 안의 짧은 기간입니다.</dd>
+          <dt>나크샤트라</dt><dd>황도를 27개로 나눈 달의 별자리 체계. 달이 있는 나크샤트라로 마음의 결을 읽습니다.</dd>
+        </dl>
+        <p class="fine2">베딕 점성술은 전통적인 상징과 해석 체계입니다. 위 결과는 그 관점에서 읽은 경향이며, 미래의 결과를 확정하는 설명은 아닙니다.</p>
+      </details>
 
       <h3 id="deepReportTitle">📜 심층 리포트가 궁금하신가요?</h3>
       <div class="cta">
