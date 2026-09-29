@@ -100,6 +100,16 @@
       <div class="interp" id="timingTeaser"></div>
       <button class="primary" id="teaserCta" style="margin-top:12px">올해 운세 전체 보기</button>
 
+      <h3>🤖 AI에게 물어보기</h3>
+      <div class="interp">
+        <p style="margin-bottom:10px">차트 정보를 담은 프롬프트를 복사해서, 평소 쓰는 AI(챗GPT·클로드·제미나이 등)에 붙여넣어 보세요. 이 차트의 큰 흐름을 2~3문장으로 요약해줍니다.</p>
+        <div class="row">
+          <div><button class="primary" id="copyPrompt" style="margin-top:0">프롬프트 복사하기</button></div>
+          <div><button class="primary" id="saveChart" style="margin-top:0;background:linear-gradient(135deg,#f0e2b8,#d9b45c)">차트 이미지 저장</button></div>
+        </div>
+        <p class="fine2" id="copyMsg" style="margin-top:8px"></p>
+      </div>
+
       <h3>🪐 행성 배치</h3>
       <table><thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead><tbody id="planets"></tbody></table>
 
@@ -241,6 +251,61 @@ function render(d, tu){
   document.getElementById('timingTeaser').textContent = teaser;
   document.getElementById('teaserCta').onclick = () =>
     document.getElementById('deepReportTitle').scrollIntoView({behavior:'smooth'});
+
+  // AI 프롬프트 복사: 라그나 차트 기본 정보만 담아 얕은 요약 유도 (상세는 유료 경계)
+  // 우리 서버가 AI를 호출하지 않음 — 유저가 자기 AI에 붙여넣는 방식 (비용 0)
+  function buildPrompt(){
+    const L = [];
+    L.push("너는 베딕 점성술 해석가야. 아래 차트 정보를 바탕으로 이 사람이 어떤 사람인지 2~3문장으로 간략히 요약해줘.");
+    L.push("");
+    L.push("[차트 정보]");
+    if(d.lagna) L.push(`- 라그나(상승궁): ${d.lagna.sign_ko} (${d.lagna.nakshatra_ko} ${d.lagna.pada}파다)`);
+    L.push(`- 달: ${d.moon.sign_ko} (${d.moon.nakshatra_ko} ${d.moon.pada}파다)`);
+    const sun = d.planets.find(p=>p.abbr==="Su" || p.name_ko==="태양");
+    if(sun) L.push(`- 태양: ${sun.sign_ko}`);
+    const md2 = d.dasha.mahadasha, ad2 = d.dasha.antardasha;
+    L.push(`- 현재 시기: ${md2.lord_ko} 대운(${md2.start} ~ ${md2.end})` + (ad2 ? `, ${ad2.lord_ko} 소운(${ad2.start} ~ ${ad2.end})` : ""));
+    L.push("");
+    L.push("[규칙]");
+    L.push("- 성격과 기질의 큰 흐름만 다뤄줘");
+    L.push("- 시기별 예측, 영역별(직업·재물·관계·건강) 상세 조언은 하지 마");
+    L.push("- 단정적으로 말하지 말고 '경향'으로 표현해줘");
+    L.push("- 점성술 용어는 쉽게 풀어서 써줘");
+    return L.join("\n");
+  }
+  document.getElementById('copyPrompt').onclick = async () => {
+    const msg = document.getElementById('copyMsg');
+    const text = buildPrompt();
+    try { await navigator.clipboard.writeText(text); }
+    catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch(_){}
+      ta.remove();
+    }
+    msg.textContent = "복사됐습니다. 쓰는 AI 채팅에 붙여넣어 보세요.";
+  };
+  // 차트 이미지 저장 (SNS 공유·AI 이미지 질문용)
+  document.getElementById('saveChart').onclick = () => {
+    const src = document.getElementById('chart');
+    const clone = src.cloneNode(true);
+    clone.setAttribute("width", "720"); clone.setAttribute("height", "720");
+    const xml = new XMLSerializer().serializeToString(clone);
+    const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = 720; c.height = 720;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#faf6ec'; ctx.fillRect(0,0,720,720);
+      ctx.drawImage(img, 0, 0, 720, 720);
+      URL.revokeObjectURL(url);
+      const a = document.createElement('a');
+      a.download = 'vedic-chart.png'; a.href = c.toDataURL('image/png'); a.click();
+      document.getElementById('copyMsg').textContent = "차트 이미지를 저장했습니다.";
+    };
+    img.onerror = () => document.getElementById('copyMsg').textContent = "이미지 저장에 실패했습니다. 화면 캡처를 이용해주세요.";
+    img.src = url;
+  };
 
   const tb = document.getElementById('planets'); tb.innerHTML = "";
   d.planets.forEach(p=>{ tb.insertAdjacentHTML('beforeend',
