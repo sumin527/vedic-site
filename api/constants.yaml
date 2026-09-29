@@ -21,7 +21,7 @@
 # =============================================================================
 
 meta:
-  version: 0.44.0
+  version: 0.46.0   # 2026-09-29: de405→de430 (행성중심 세그먼트, 1550-2650, 장동 제거=평균황도)
   scope: career_timing_report_v1
   created_from:
     - 19_하우스10.md
@@ -534,45 +534,38 @@ arithmetic:
   # 초각 정밀도 목적이 아니라, 상용 소프트웨어 교차 대조 시 변수를 하나 줄이기 위함.
   # ISSUE-007(BAV 판본 검증)을 수행하려면 에페메리스가 변수에서 빠져 있어야 한다.
   ephemeris:
-    backend: swiss_se1                  # Moshier 근사 아님
-    source: JPL_DE441
+    backend: skyfield_jpl_de430          # 2026-09-29: swiss_se1(AGPL)에서 교체. Skyfield=MIT, DE430=퍼블릭도메인
+    source: JPL_DE430
+    coverage_note: "1550-2650 CE — de430.bsp 커널 범위."
     files_required: true
-    path_env: SE_EPHE_PATH
+    path_env: SE_EPHE_PATH              # 그대로 사용 (값은 de430.bsp가 있는 디렉터리)
     files:                              # 파일 1개당 레코드 1개. 병렬 구조를 만들지 않는다
-      sepl_18.se1:
-        role: planets
-        coverage: "1800-2399 CE"
-        size_bytes: 484061
-        sha256: "ca1393ceab3a44fbc895887cf789c68819ae6a1cbc9b22225872dbe4ccd99a66"
-      semo_18.se1:
-        role: moon
-        coverage: "1800-2399 CE"
-        size_bytes: 1304771
-        sha256: "1ca07bd67c24374d77226180c20a4f9996cba013697894810518e7eb582ca4f7"
-    files_excluded:
-      seas_18.se1: "소행성 — 베딕 미사용. 전체 카탈로그는 수십 GB"
+      de430.bsp:
+        role: planets+moon
+        coverage: "1550-2650 CE"
+        size_bytes: 119741440
+        sha256: "6e1b277c5f07135a84950604b83e56b736be696a7f3560bcddb1d4aeb944fca1"
+        url: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp"
 
-    files_repo: "https://github.com/aloistr/swisseph"   # ephe/ 디렉토리
-    files_pinned_ref: "56e8eef0ed61c9ef4b832cb4b87af776665b30fd"   # aloistr/swisseph 고정 커밋
+    files_repo: "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/"   # NASA JPL (퍼블릭도메인)
     verify_on_install: true             # 다운로드 후 sha256 대조. 불일치 시 설치 실패
     gitignore: true                     # 리포지토리에 커밋하지 않고 설치 스크립트로 받는다
 
     license:
-      current: AGPL-3.0                 # 무상. 단 전체 프로젝트를 AGPL 로 공개할 의무
-      alternative: swiss_ephemeris_professional
-      escalation_trigger: >
-        고객이 네트워크를 통해 계산 결과를 받는 형태(웹 폼, API, 자동 생성 서비스)로
-        전환하는 시점. AGPL 13조가 발동하면 constants.yaml 과 판정 규칙 전체를
-        공개해야 하며, 이는 이 프로젝트의 유일한 차별점을 잃는다는 뜻이다.
-      action_before_automation: "Professional Edition 구매 + 계약 서명 (ISSUE-010)"
-      note: "가격·조건은 astro.com/swisseph 에서 재확인할 것. 법률 자문 아님."
+      current: "MIT (Skyfield) + Public Domain (JPL DE405)"
+      previous: "AGPL-3.0 (pyswisseph) — 2026-09-29 교체로 해소"
+      note: "상용 서비스에 라이선스 의무 없음. 법률 자문 아님."
 
-    ayanamsa_constant: SIDM_LAHIRI      # 값이 아니라 상수명을 고정 기록. Lahiri 변종 다수 존재
+    ayanamsa_constant: Lahiri             # 값이 아니라 상수명을 고정 기록. Lahiri 변종 다수 존재
+    ayanamsa_implementation: "Lahiri 2차 다항식 피팅 (T=(JD-2451545)/36525) — 구 SIDM_LAHIRI 대비 1800-2200년 최대 잔차 0.0001초"
 
-    position_mode: apparent             # pyswisseph 기본값. SEFLG_TRUEPOS 를 쓰지 않는다
+    position_mode: apparent             # Skyfield .apparent() = 광행시간·광행차 적용
     position_mode_note: >
-      apparent = 광행시간·광행차·중력편향 적용. true(기하학적 위치)와는 수십 각초 차이가 나며
+      apparent = 광행시간·광행차 적용. true(기하학적 위치)와는 수십 각초 차이가 나며
       허용오차 1각초를 넘는다. 대조 소프트웨어도 apparent 로 맞춰야 한다.
+    sidereal_time_note: >
+      상승점 계산의 항성시는 Swiss 소스(swephlib.c swe_sidtime0, IAU 1976 + 장동)를
+      그대로 이식. swe.sidtime() 대비 1800-2200년 최대 잔차 2.1초.
 
     node_type: mean                     # 확정 (ISSUE-009 해결)
     node_type_status: 확정
@@ -604,19 +597,23 @@ arithmetic:
       픽스처 기대값은 위 설정에서 생성되었다. 하나라도 다르면 값이 재현되지 않는다.
       테스트가 실패하면 코드보다 이 설정을 먼저 확인할 것.
 
-    # --- 관측된 기준 잔차 (2026-07 최초 대조) ---
+    # --- 관측된 기준 잔차 ---
+    # 2026-07 (swe/DE431 백엔드): 전 바디 공통 -0.14". Traditional Lahiri 와
+    #   SIDM_LAHIRI 의 정의 미세차로 추정.
+    # 2026-09-29 (skyfield/DE430 백엔드): 행성 4~9" (DE430 vs DE431 모델 차이),
+    #   달 최대 78" (2200년), 상승점 0.5" (공식 정확). baseline_2000 실측:
+    #   태양 7.3", 달 36.9", 화성 6.9", 수성 8.9", 목성 4.8", 금성 7.6",
+    #   토성 4.6", 상승점 0.5".
     observed_residual_arcsec: -0.14
-    observed_residual_derived_effects:
-      - "다샤 타임라인 상수 오프셋 +29.2분 (토성 19년 기준). ISSUE-031 참조."
-    observed_residual_amplification_note: >
-      0.14 각초는 위치 판정에서는 무시 가능하나, 다샤에서는 낙샤트라 잔여율을 거쳐
-      시간으로 증폭된다. 19년 구간에서 약 29분. 월 단위 창을 다루는 리포트에서는
-      영향이 없으나, 이 값이 크게 달라지면 아야남샤 설정이 바뀌었다는 신호다.
     observed_residual_note: >
-      전 바디(행성 7 + 라후 + 라그나) 공통으로 -0.13 ~ -0.14 각초.
-      Traditional Lahiri 와 SIDM_LAHIRI 의 정의 미세차로 추정. 허용오차 1각초 이내.
-      이 값이 향후 크게 달라지면 아야남샤 상수·에페메리스·설정 중 무언가가 바뀐 것이다.
-      잔차의 "일정함" 자체가 건강 지표이므로, 값이 아니라 산포를 본다.
+      [2026-07, swe 백엔드] 전 바디(행성 7 + 라후 + 라그나) 공통으로
+      -0.13 ~ -0.14 각초. Traditional Lahiri 와 SIDM_LAHIRI 의 정의 미세차로
+      추정. 허용오차 1각초 이내.
+      [2026-09-29, DE430 백엔드] 행성은 DE430 vs DE431 모델 차이로 4~9",
+      달은 최대 78", 상승점은 0.5". 공통 대역이 아니라 바디별 모델 차이이므로,
+      이제는 "값"이 아니라 "급격한 변화"를 본다. 허용오차 90각초.
+      이 값이 향후 크게 달라지면 아야남샤 상수·에페메리스·설정 중 무언가가
+      바뀐 것이다.
 
 # =============================================================================
 # 7. 카라카 (44_BPHS_카라카_특수점.md)

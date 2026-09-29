@@ -19,14 +19,20 @@ import math
 from decimal import Decimal
 from typing import Any
 
-import swisseph as swe
-
-from engine.ephemeris import julian_day_ut, sidereal_longitude
+from engine.ephemeris import (
+    BODY_IDS,
+    sun_longitude_and_speed,
+    julian_day_ut,
+    sidereal_longitude,
+)
 
 _FULL_CIRCLE_DEG = 360.0
 _MAX_SOLVER_STEP_DEG = 120.0
 _SOLVER_ANGLE_TOLERANCE_DEG = 1e-9
 _SOLVER_MAX_ITERATIONS = 16
+# 평균 사이데리얼 태양 운동 = 360° / 365.256363004일 (J2000 항성년).
+# solve_sidereal_solar_progress 의 초기 추정치 전용 — 경계는 실제 근으로 결정된다.
+_MEAN_SIDEREAL_SUN_SPEED_DEG_PER_DAY = 360.0 / 365.256363004
 _UNIX_EPOCH_JD = 2440587.5
 
 
@@ -71,26 +77,22 @@ def _solve_solar_step(jd0: float, progress_degrees: float) -> float:
         raise ValueError("internal solar step must not exceed 120 degrees")
 
     target_longitude = (
-        sidereal_longitude(jd0, swe.SUN) + progress_degrees
+        sidereal_longitude(jd0, BODY_IDS["sun"]) + progress_degrees
     ) % _FULL_CIRCLE_DEG
     guess = jd0 + progress_degrees
 
     for _iteration in range(_SOLVER_MAX_ITERATIONS):
-        longitude = sidereal_longitude(guess, swe.SUN)
+        longitude, speed = sun_longitude_and_speed(guess)
         error = _signed_angle_degrees(longitude - target_longitude)
         if abs(error) <= _SOLVER_ANGLE_TOLERANCE_DEG:
             return guess
 
-        half_window_days = 0.05
-        before = sidereal_longitude(guess - half_window_days, swe.SUN)
-        after = sidereal_longitude(guess + half_window_days, swe.SUN)
-        speed = _signed_angle_degrees(after - before) / (2.0 * half_window_days)
         if not 0.9 < speed < 1.1:
             raise RuntimeError(f"비정상적인 사이데리얼 태양 속도: {speed} deg/day")
         guess -= error / speed
 
     final_error = _signed_angle_degrees(
-        sidereal_longitude(guess, swe.SUN) - target_longitude
+        sun_longitude_and_speed(guess)[0] - target_longitude
     )
     raise RuntimeError(
         "사이데리얼 태양 진행 solver가 수렴하지 않음: "
@@ -101,15 +103,34 @@ def _solve_solar_step(jd0: float, progress_degrees: float) -> float:
 def solve_sidereal_solar_progress(jd0: float, progress_degrees: float) -> float:
     """태양이 사이데리얼로 ``progress_degrees`` 진행한 UT Julian day를 반환한다.
 
-    큰 진행량은 120° 이하 조각으로 나누어 같은 경도의 다음/이전 교차점을
-    순서대로 푼다. 따라서 360°의 배수에서도 회전 횟수를 잃지 않으며 고정
-    ``days_per_year`` 또는 평균 태양년을 경계 계산에 사용하지 않는다.
+    평균 항성년(365.256363004일 → 0.98564736°/일)으로 점프한 뒤 Newton 법으로
+    다듬는다. 중심차(±1.9°)는 주기적이라 누적되지 않으므로 점프는 항상 실제 근의
+    2° 이내에 떨어지고, 2°는 360° 회전 한 바퀴보다 훨씬 작아 회전 횟수를 잃지
+    않는다. 평균 태양년은 초기 추정치로만 쓰고, 반환 경계는 실제 태양 경도의
+    근으로 결정된다 (고정 ``days_per_year`` 를 경계 계산에 사용하지 않음).
     """
     if not math.isfinite(jd0) or not math.isfinite(progress_degrees):
         raise ValueError("jd0 and progress_degrees must be finite")
     if progress_degrees == 0.0:
         return jd0
 
+    # 평균 사이데리얼 태양 운동 — 초기 추정치 전용
+    guess = jd0 + progress_degrees / _MEAN_SIDEREAL_SUN_SPEED_DEG_PER_DAY
+    target_longitude = (
+        sidereal_longitude(jd0, BODY_IDS["sun"]) + progress_degrees
+    ) % _FULL_CIRCLE_DEG
+
+    for _iteration in range(_SOLVER_MAX_ITERATIONS):
+        longitude, speed = sun_longitude_and_speed(guess)
+        error = _signed_angle_degrees(longitude - target_longitude)
+        if abs(error) <= _SOLVER_ANGLE_TOLERANCE_DEG:
+            return guess
+        if not 0.9 < speed < 1.1:
+            raise RuntimeError(f"비정상적인 사이데리얼 태양 속도: {speed} deg/day")
+        guess -= error / speed
+
+    # 점프가 실패하면(수렴 못함) 기존 120° 스텝 방식으로 폴백 — 태양은 항상
+    # 순행이라 실제로는 도달하지 않는 보험이다.
     remaining = progress_degrees
     current_jd = jd0
     direction = 1.0 if remaining > 0.0 else -1.0
@@ -204,16 +225,18 @@ def _period_boundaries(
     parent_end_jd: float | None = None,
 ) -> list[float]:
     boundaries = [parent_start_jd]
-    cumulative_angle = Decimal(0)
+    prev_jd = parent_start_jd
     for index, angle in enumerate(progress_angles):
-        cumulative_angle += angle
         if parent_end_jd is not None and index == len(progress_angles) - 1:
             boundary = parent_end_jd
         else:
-            boundary = solve_sidereal_solar_progress(
-                parent_start_jd, float(cumulative_angle)
-            )
+            # 이전 경계에서 증분만큼만 푼다. 매번 parent_start 에서 누적 각도로
+            # 풀면 같은 120° 구간을 반복해서 걸어 O(n²) 이 된다.
+            # 태양은 항상 순행하므로 이전 경계는 정확한 근이고, 여기서 증분만큼
+            # 전진한 다음 근은 누적 각도로 푼 근과 동일하다.
+            boundary = solve_sidereal_solar_progress(prev_jd, float(angle))
         boundaries.append(boundary)
+        prev_jd = boundary
     return boundaries
 
 

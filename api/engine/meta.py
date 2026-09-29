@@ -8,7 +8,7 @@ node_type 이 바뀌면 다샤 경계와 라후·케투 배치가 달라져 과�
 node_type 은 ISSUE-009 확정(mean)이므로 provisional 폴백 로직은 없다 —
 constants.yaml 이 결정 안 된 값을 null 로 두는 경우는 이제 없다는 전제다.
 
-ephemeris_sha256 은 constants.yaml 의 값이 아니라 실제 사용된 .se1 파일을 직접
+ephemeris_sha256 은 constants.yaml 의 값이 아니라 실제 사용된 de430.bsp 파일을 직접
 해시한 값이다 — "설정값"이 아니라 "무엇이 실제로 계산에 쓰였는지"를 기록한다.
 """
 from __future__ import annotations
@@ -16,9 +16,9 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from engine.ephemeris import ASCENDANT_METHOD, describe_swisseph_flags
+from engine.ephemeris import ASCENDANT_METHOD, describe_backend_flags
 
-_EPHE_FILES = ("sepl_18.se1", "semo_18.se1")
+_EPHE_FILES = ("de430.bsp",)
 
 
 def build_engine_meta(constants: dict, ephe_path: str | Path) -> dict:
@@ -40,7 +40,7 @@ def build_engine_meta(constants: dict, ephe_path: str | Path) -> dict:
         "ayanamsa_constant": ephe_cfg["ayanamsa_constant"],
         "node_type": ephe_cfg["node_type"],
         "position_mode": ephe_cfg["position_mode"],
-        "swisseph_flags": describe_swisseph_flags(),
+        "backend_flags": describe_backend_flags(),
         "ascendant_method": ASCENDANT_METHOD,
         "ephemeris_sha256": ephemeris_sha256,
         "constants_version": constants["meta"]["version"],

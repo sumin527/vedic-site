@@ -38,7 +38,7 @@ from free_content import (                            # noqa: E402
 )
 
 CONSTANTS = load_constants(ENGINE_DIR / "constants.yaml")
-EPHE_PATH = ENGINE_DIR / "ephe"
+EPHE_PATH = ENGINE_DIR / "ephe_sky"  # 2026-09-29: DE430 BSP (skyfield). 배포 시 다운로드 필요.
 
 app = FastAPI(title="Vedic Free Chart API", version="0.1.0")
 app.add_middleware(
