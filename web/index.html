@@ -256,7 +256,7 @@ function render(d, tu){
   // 우리 서버가 AI를 호출하지 않음 — 유저가 자기 AI에 붙여넣는 방식 (비용 0)
   function buildPrompt(){
     const L = [];
-    L.push("너는 베딕 점성술 해석가야. 아래 차트 정보를 바탕으로 이 사람이 어떤 사람인지 2~3문장으로 간략히 요약해줘.");
+    L.push("너는 베딕 점성술 입문 가이드야. 아래 차트 정보를 바탕으로, 이 사람을 처음 만나는 사람에게 소개하듯 성격과 기질의 큰 흐름을 2~3문장으로 말해줘.");
     L.push("");
     L.push("[차트 정보]");
     if(d.lagna) L.push(`- 라그나(상승궁): ${d.lagna.sign_ko} (${d.lagna.nakshatra_ko} ${d.lagna.pada}파다)`);
@@ -266,11 +266,8 @@ function render(d, tu){
     const md2 = d.dasha.mahadasha, ad2 = d.dasha.antardasha;
     L.push(`- 현재 시기: ${md2.lord_ko} 대운(${md2.start} ~ ${md2.end})` + (ad2 ? `, ${ad2.lord_ko} 소운(${ad2.start} ~ ${ad2.end})` : ""));
     L.push("");
-    L.push("[규칙]");
-    L.push("- 성격과 기질의 큰 흐름만 다뤄줘");
-    L.push("- 시기별 예측, 영역별(직업·재물·관계·건강) 상세 조언은 하지 마");
-    L.push("- 단정적으로 말하지 말고 '경향'으로 표현해줘");
     L.push("- 점성술 용어는 쉽게 풀어서 써줘");
+    L.push("- 단정적으로 말하지 말고 '경향'으로 표현해줘");
     return L.join("\n");
   }
   document.getElementById('copyPrompt').onclick = async () => {
