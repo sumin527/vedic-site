@@ -66,9 +66,11 @@ async def _rate_limit(request: Request, call_next):
 
 # --- 수요 측정 카운터 (수요 검증용, 인메모리) ---
 # 컨테이너 재시작 시 초기화된다. 로그에도 남기므로 Railway 로그에서 복원 가능.
-_stats_total = {"chart_ok": 0, "chart_err": 0, "notify": 0}
+_stats_total = {"chart_ok": 0, "chart_err": 0, "notify": 0,
+               "interest_total": 0, "interest_yearly": 0, "interest_category": 0}
 _stats_by_day: dict[str, dict[str, int]] = defaultdict(
-    lambda: {"chart_ok": 0, "chart_err": 0, "notify": 0})
+    lambda: {"chart_ok": 0, "chart_err": 0, "notify": 0,
+             "interest_total": 0, "interest_yearly": 0, "interest_category": 0})
 _stats_started = dt.datetime.now(dt.timezone.utc).isoformat()
 
 
@@ -221,6 +223,22 @@ def notify(req: NotifyRequest):
     addr = req.email.strip()
     if "@" not in addr or "." not in addr.rsplit("@", 1)[-1]:
         raise HTTPException(400, "이메일 주소를 확인해 주세요.")
+    return {"ok": True}
+
+
+_INTEREST_PRODUCTS = {"total", "yearly", "category"}
+
+
+class InterestRequest(BaseModel):
+    product: str = Field(..., max_length=32)
+
+
+@app.post("/api/interest")
+def interest(req: InterestRequest):
+    """상품 카드 클릭 집계 (카테고리별 수요 검증용, 인메모리)."""
+    if req.product not in _INTEREST_PRODUCTS:
+        raise HTTPException(400, "알 수 없는 상품입니다.")
+    _bump(f"interest_{req.product}")
     return {"ok": True}
 
 

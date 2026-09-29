@@ -52,6 +52,16 @@
   details.glossary .fine2 { font-size:12px; color:var(--muted); padding:0 14px 12px; }
   .cta { text-align:center; padding:8px 0; }
   .cta input { margin-bottom:10px; }
+  .products { display:grid; gap:10px; margin:12px 0 4px; }
+  .product { background:#fffdf7; border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .product.featured { border:1.5px solid var(--gold); box-shadow:0 2px 12px rgba(201,162,39,.16); }
+  .pname { font-weight:700; font-size:15px; color:var(--ink); }
+  .pdesc { font-size:13px; color:var(--muted); margin:4px 0 8px; }
+  .price { font-size:17px; font-weight:800; color:var(--ink); margin-bottom:10px; }
+  .price s { color:#b09a6a; font-weight:400; font-size:13px; margin-right:6px; }
+  .sale { display:inline-block; background:#e2574c; color:#fff; font-size:11px; font-weight:700;
+          border-radius:6px; padding:2px 6px; margin-left:6px; vertical-align:1px; }
+  .product .primary { margin-top:0; }
   .fine { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
   .err { color:#b3261e; font-size:14px; margin-top:12px; text-align:center; }
   @media (max-width:480px){ .facts{grid-template-columns:1fr;} }
@@ -116,10 +126,30 @@
         <p class="fine2">베딕 점성술은 전통적인 상징과 해석 체계입니다. 위 결과는 그 관점에서 읽은 경향이며, 미래의 결과를 확정하는 설명은 아닙니다.</p>
       </details>
 
-      <h3 id="deepReportTitle">📜 심층 리포트가 궁금하신가요?</h3>
-      <div class="cta">
+      <h3 id="deepReportTitle">📜 심층 리포트</h3>
+      <div class="products">
+        <div class="product featured">
+          <div class="pname">총운 리포트</div>
+          <div class="pdesc">평생 소장하는 당신의 전체 지도 — 기질, 시기의 흐름, 나아갈 방향을 한 권에</div>
+          <div class="price">33,000원</div>
+          <button class="primary" data-product="total">출시 알림 신청</button>
+        </div>
+        <div class="product">
+          <div class="pname">올해의 운세</div>
+          <div class="pdesc">2026년 10월 ~ 2027년 9월 — 소운이 바뀌는 고비마다 읽는 12개월</div>
+          <div class="price">9,900원</div>
+          <button class="primary" data-product="yearly">출시 알림 신청</button>
+        </div>
+        <div class="product">
+          <div class="pname">카테고리별 운세 <span class="sale">런칭 50%</span></div>
+          <div class="pdesc">커리어 · 금전 · 관계 · 컨디션 — 하나를 골라 깊게</div>
+          <div class="price"><s>9,900원</s>4,950원</div>
+          <button class="primary" data-product="category">출시 알림 신청</button>
+        </div>
+      </div>
+      <div class="cta" id="notifyCta">
         <p style="font-size:14px;color:var(--muted);margin-bottom:12px">
-          기질·재물·직업·관계·대운을 항목별로 깊게 풀어드리는<br>유료 심층 리포트를 준비하고 있습니다.</p>
+          출시되면 가장 먼저 알려드립니다.</p>
         <input type="email" id="email" placeholder="이메일 주소 (출시 알림)">
         <button class="primary" onclick="notify()">출시 알림 신청</button>
         <div class="err" id="notifyMsg" style="color:#9fe6a0"></div>
@@ -241,6 +271,17 @@ function render(d, tu){
   document.getElementById('timingTeaser').textContent = teaser;
   document.getElementById('teaserCta').onclick = () =>
     document.getElementById('deepReportTitle').scrollIntoView({behavior:'smooth'});
+
+  // 상품 카드 클릭 → 관심 집계 후 알림 신청 폼으로 안내
+  document.querySelectorAll('[data-product]').forEach(btn => {
+    btn.onclick = () => {
+      fetch(API_BASE + '/api/interest', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({product: btn.dataset.product})
+      }).catch(()=>{});
+      document.getElementById('notifyCta').scrollIntoView({behavior:'smooth'});
+    };
+  });
 
   const tb = document.getElementById('planets'); tb.innerHTML = "";
   d.planets.forEach(p=>{ tb.insertAdjacentHTML('beforeend',
