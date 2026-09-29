@@ -96,6 +96,10 @@
       <h3>⏳ 현재 다샤 (시기)</h3>
       <div class="interp" id="dashaInterp"></div>
 
+      <h3>🕰️ 지금 당신의 시기</h3>
+      <div class="interp" id="timingTeaser"></div>
+      <button class="primary" id="teaserCta" style="margin-top:12px">올해 운세 전체 보기</button>
+
       <h3>🪐 행성 배치</h3>
       <table><thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead><tbody id="planets"></tbody></table>
 
@@ -227,6 +231,16 @@ function render(d, tu){
     `달은 ${d.moon.sign_ko}에 있습니다. ${d.moon.description} 나크샤트라는 ${d.moon.nakshatra_ko}로, ${d.moon.nakshatra_description}`;
   document.getElementById('dashaInterp').textContent =
     `지금은 ${d.dasha.mahadasha.lord_ko} 마하다샤 기간입니다. ${d.dasha.mahadasha.description}`;
+
+  // 무료 티저: "지금 당신의 시기" — 시기를 맛보여주고 올해 운세(출시 알림)로 연결
+  const md = d.dasha.mahadasha, ad = d.dasha.antardasha;
+  const tdesc = (ad && ad.description) || md.description || "";
+  const teaser = ad
+    ? `지금은 ${ad.lord_ko} 소운(${ad.start} ~ ${ad.end}) — ${md.lord_ko} 대운의 흐름 안입니다. ${tdesc} 올해의 남은 12개월, 시기별 흐름과 영역별 해석은 《올해의 운세》 편에 담깁니다.`
+    : `지금은 ${md.lord_ko} 대운(${md.start} ~ ${md.end})의 흐름 안입니다. ${tdesc} 올해의 남은 12개월, 시기별 흐름과 영역별 해석은 《올해의 운세》 편에 담깁니다.`;
+  document.getElementById('timingTeaser').textContent = teaser;
+  document.getElementById('teaserCta').onclick = () =>
+    document.getElementById('deepReportTitle').scrollIntoView({behavior:'smooth'});
 
   const tb = document.getElementById('planets'); tb.innerHTML = "";
   d.planets.forEach(p=>{ tb.insertAdjacentHTML('beforeend',
