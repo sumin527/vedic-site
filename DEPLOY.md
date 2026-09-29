@@ -8,7 +8,7 @@ GitHub repo (site/)
 └── api/   → Railway (Python FastAPI, 월 $5)
 ```
 
-Cloudflare Workers로는 Python 엔진(pyswisseph, C 확장)을 실행할 수 없어서
+Cloudflare Workers로는 Python 엔진을 실행할 수 없어서
 API는 별도 호스팅한다. 검증된 엔진을 그대로 쓰는 게 정확성 면에서 안전하다.
 
 ## 1. GitHub에 푸시
@@ -36,9 +36,11 @@ gh repo create vedic-site --public --source=. --push
 1. railway.app → New Project → Deploy from GitHub repo → `vedic-site`
 2. Settings → Root Directory: `api`
 3. Variables: `PORT`는 자동. 별도 설정 불필요 (railway.json이 startCommand 지정)
-4. Deploy 후 도메인 발급: Settings → Domains → Generate Domain
+4. 첫 시작 시 `fetch_bsp.py`가 de430.bsp(115MB)를 NAIF 미러에서 자동 다운로드
+   (SHA256 검증 포함, 2회차부터는 스킵). 첫 헬스체크까지 1~2분 소요.
+5. Deploy 후 도메인 발급: Settings → Domains → Generate Domain
    예: `https://vedic-site-api.up.railway.app`
-5. 헬스체크: `https://<도메인>/api/health` → `{"ok":true}`
+6. 헬스체크: `https://<도메인>/api/health` → `{"ok":true}`
 
 ## 4. 프론트-API 연결
 
@@ -63,5 +65,5 @@ window.API_BASE = "https://<railway 도메인>";
 
 ## 주의
 
-- 상용 트래픽 전 Swiss Ephemeris 라이선스 결정 (상용 CHF 750 or MIT 대안)
+- 천문력: Skyfield(MIT) + JPL DE430(퍼블릭도메인) — 라이선스 문제 없음 (2026-09-29 교체)
 - 현재 rate limit: IP당 분당 60회 (main.py)
