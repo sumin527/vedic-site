@@ -136,7 +136,11 @@ def _tropical_longitude(jd_ut: float, body_id: str) -> float:
     from skyfield.functions import mxv
 
     _require_init()
-    t = _TS.tt(jd=jd_ut)
+    # jd_ut는 UT 기준이다. _TS.tt(jd=...)는 입력 JD를 TT로 해석하므로
+    # ΔT(=TT−UT, 2026년 기준 약 69초)만큼 어긋난 시각의 위치를 구하게 된다
+    # (달 기준 약 38" 오차). _TS.ut1(jd=...)로 UT→TT 변환을 Skyfield에 맡긴다.
+    # UTC≈UT1 근사(DUT1 ≤ 0.9s → 달 ≤ 0.5")는 남는다 — 점성학적 허용 범위.
+    t = _TS.ut1(jd=jd_ut)
     rot = _mean_ecliptic_rotation(t)
     xyz = mxv(rot, _EARTH.at(t).observe(_resolve_body(body_id)).apparent().xyz.au)
     return math.degrees(math.atan2(xyz[1], xyz[0])) % 360.0
@@ -161,7 +165,8 @@ def sun_longitude_and_speed(jd_ut: float) -> tuple[float, float]:
     from skyfield.functions import mxv
 
     _require_init()
-    t = _TS.tt(jd=jd_ut)
+    # 시간 척도: _tropical_longitude와 동일하게 UT→TT 변환 (위 주석 참조).
+    t = _TS.ut1(jd=jd_ut)
     app = _EARTH.at(t).observe(_BODIES["sun"]).apparent(deflectors=())
     rot = _mean_ecliptic_rotation(t)
     xyz = mxv(rot, app.xyz.au)
