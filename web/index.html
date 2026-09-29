@@ -5,29 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>베딕 쿤달리 · 무료 계산기</title>
 <style>
-  :root { --bg:#14121f; --card:#1e1b2e; --gold:#d4a94e; --ink:#f0ead8; --muted:#a89f8d; --line:#3a3352; }
+  :root { color-scheme:light; --bg:#faf6ec; --card:#ffffff; --gold:#c9a227; --gold-deep:#9a6f16; --ink:#2e2413; --muted:#8d7c58; --line:#e7dcc0; }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--bg); color:var(--ink); font-family:"Noto Sans KR",system-ui,sans-serif; line-height:1.6; }
   .wrap { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
   header { text-align:center; padding:32px 0 8px; }
   header .om { font-size:40px; }
+  header::after { content:""; display:block; width:64px; height:3px; margin:14px auto 0; border-radius:2px;
+    background:linear-gradient(90deg,#dcb958,#b8860b); }
   h1 { font-size:24px; letter-spacing:-.5px; margin:8px 0 4px; }
   header p { color:var(--muted); font-size:14px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:20px;
+    box-shadow:0 4px 18px rgba(154,111,22,.07); }
   label { display:block; font-size:13px; color:var(--muted); margin:14px 0 6px; }
-  input, select { width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:#12101c; color:var(--ink); font-size:16px; }
+  input, select { width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background:#fffdf7; color:var(--ink); font-size:16px; }
+  input:focus, select:focus { outline:2px solid #dcb958; outline-offset:0; border-color:#c9a227; }
   .row { display:flex; gap:10px; } .row > div { flex:1; }
   .check { display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px; color:var(--muted); }
   .check input { width:auto; }
   button.primary { width:100%; margin-top:20px; padding:14px; border:none; border-radius:12px;
-    background:linear-gradient(135deg,#d4a94e,#b97f2a); color:#1a1408; font-size:17px; font-weight:700; cursor:pointer; }
+    background:linear-gradient(135deg,#e3c06a,#b8860b); color:#2a1e05; font-size:17px; font-weight:700; cursor:pointer;
+    box-shadow:0 3px 12px rgba(184,134,11,.28); }
   button.primary:disabled { opacity:.5; cursor:wait; }
   #result { display:none; }
-  .notice { background:#2a2417; border:1px solid #6b5626; color:#e8c87a; border-radius:10px; padding:12px 14px; font-size:14px; margin-bottom:16px; }
-  h2 { font-size:18px; margin:4px 0 12px; color:var(--gold); }
-  h3 { font-size:15px; margin:18px 0 8px; color:var(--gold); }
+  .notice { background:#fdf6e0; border:1px solid #d9b45c; color:#7c5f16; border-radius:10px; padding:12px 14px; font-size:14px; margin-bottom:16px; }
+  h2 { font-size:18px; margin:4px 0 12px; color:var(--gold-deep); }
+  h3 { font-size:15px; margin:18px 0 8px; color:var(--gold-deep); }
   .facts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .fact { background:#12101c; border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .fact { background:#fbf8ee; border:1px solid var(--line); border-radius:10px; padding:12px; }
   .fact .k { font-size:12px; color:var(--muted); }
   .fact .v { font-size:17px; font-weight:700; margin-top:2px; }
   .fact .d { font-size:13px; color:var(--muted); margin-top:4px; }
@@ -35,11 +40,11 @@
   table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
   th, td { padding:8px 6px; border-bottom:1px solid var(--line); text-align:center; }
   th { color:var(--muted); font-weight:500; font-size:12px; }
-  .interp { font-size:14px; color:#ddd6c2; background:#12101c; border-radius:10px; padding:12px 14px; margin-top:8px; }
+  .interp { font-size:14px; color:#4a3d24; background:#fbf8ee; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-top:8px; }
   .cta { text-align:center; padding:8px 0; }
   .cta input { margin-bottom:10px; }
   .fine { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
-  .err { color:#ff9d9d; font-size:14px; margin-top:12px; text-align:center; }
+  .err { color:#b3261e; font-size:14px; margin-top:12px; text-align:center; }
   @media (max-width:480px){ .facts{grid-template-columns:1fr;} }
 </style>
 </head>
@@ -130,25 +135,25 @@ function drawChart(lagnaSignIdx, planets, chandraMode){
     const house = i+1, poly = pts.slice(0,-1), anchor = pts[pts.length-1];
     const pg = document.createElementNS(SVGNS,"polygon");
     pg.setAttribute("points", poly.map(p=>p.join(",")).join(" "));
-    pg.setAttribute("fill", house===1 ? "#2b2542" : "#1a1728");
-    pg.setAttribute("stroke", "#d4a94e"); pg.setAttribute("stroke-width","1.2");
+    pg.setAttribute("fill", house===1 ? "#f6ecd4" : "#fffdf6");
+    pg.setAttribute("stroke", "#b8860b"); pg.setAttribute("stroke-width","1.2");
     svg.appendChild(pg);
     const signNo = ((base - 1 + i) % 12) + 1;
     const t1 = document.createElementNS(SVGNS,"text");
     t1.setAttribute("x",anchor[0]); t1.setAttribute("y",anchor[1]-8);
-    t1.setAttribute("text-anchor","middle"); t1.setAttribute("fill","#8f86a8"); t1.setAttribute("font-size","11");
+    t1.setAttribute("text-anchor","middle"); t1.setAttribute("fill","#a08c5a"); t1.setAttribute("font-size","11");
     t1.textContent = signNo; svg.appendChild(t1);
     let names = (byHouse[house]||[]).join(" ");
     if(house===1) names = "As " + names;
     const t2 = document.createElementNS(SVGNS,"text");
     t2.setAttribute("x",anchor[0]); t2.setAttribute("y",anchor[1]+10);
-    t2.setAttribute("text-anchor","middle"); t2.setAttribute("fill","#f0ead8"); t2.setAttribute("font-size","12");
+    t2.setAttribute("text-anchor","middle"); t2.setAttribute("fill","#2e2413"); t2.setAttribute("font-size","12");
     t2.setAttribute("font-weight","600"); t2.textContent = names; svg.appendChild(t2);
   });
   if(chandraMode){
     const t = document.createElementNS(SVGNS,"text");
     t.setAttribute("x",180); t.setAttribute("y",352); t.setAttribute("text-anchor","middle");
-    t.setAttribute("fill","#a89f8d"); t.setAttribute("font-size","11"); t.textContent = "달 기준 차트";
+    t.setAttribute("fill","#8d7c58"); t.setAttribute("font-size","11"); t.textContent = "달 기준 차트";
     svg.appendChild(t);
   }
 }
