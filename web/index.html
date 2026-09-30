@@ -36,6 +36,7 @@
   .fact .k { font-size:12px; color:var(--muted); }
   .fact .v { font-size:17px; font-weight:700; margin-top:2px; }
   .fact .d { font-size:13px; color:var(--muted); margin-top:4px; }
+  .fact .t { font-size:12px; color:var(--muted); margin-top:2px; }
   #chart { width:100%; max-width:420px; display:block; margin:8px auto; }
   table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
   th, td { padding:8px 6px; border-bottom:1px solid var(--line); text-align:center; }
@@ -64,7 +65,7 @@
   .product .primary { margin-top:0; }
   .fine { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
   .err { color:#b3261e; font-size:14px; margin-top:12px; text-align:center; }
-  @media (max-width:480px){ .facts{grid-template-columns:1fr;} }
+  @media (max-width:480px){ .facts{grid-template-columns:1fr;} .row{flex-direction:column;} }
 </style>
 </head>
 <body>
@@ -249,12 +250,16 @@ function render(d, tu){
   drawChart(lagnaIdx, d.planets, tu || !d.lagna);
 
   const f = document.getElementById('facts'); f.innerHTML = "";
-  const add = (k,v,desc)=>{ f.insertAdjacentHTML('beforeend',
-    `<div class="fact"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${desc}</div></div>`); };
-  if(d.lagna) add("상승궁 (라그나)", d.lagna.sign_ko, `${d.lagna.nakshatra_ko} ${d.lagna.pada}파다 · ${d.lagna.description}`);
-  add("달 별자리", d.moon.sign_ko, `${d.moon.nakshatra_ko} ${d.moon.pada}파다`);
-  add("현재 마하다샤", `${d.dasha.mahadasha.lord_ko} 시기`, `${d.dasha.mahadasha.start} ~ ${d.dasha.mahadasha.end}`);
-  add("현재 안타르다샤", d.dasha.antardasha ? `${d.dasha.antardasha.lord_ko} 시기` : "-",
+  const add = (k,what,v,desc)=>{ f.insertAdjacentHTML('beforeend',
+    `<div class="fact"><div class="k">${k}</div><div class="t">${what}</div><div class="v">${v}</div><div class="d">${desc}</div></div>`); };
+  if(d.lagna) add("상승궁 (라그나)", "태어난 순간 동쪽 지평선에 떠오른 별자리 — 차트를 읽는 출발점",
+      d.lagna.sign_ko, `${d.lagna.nakshatra_ko} ${d.lagna.pada}파다 · ${d.lagna.description}`);
+  add("달 별자리", "달이 있던 별자리 — 감정과 마음의 기본값",
+      d.moon.sign_ko, `${d.moon.nakshatra_ko} ${d.moon.pada}파다`);
+  add("현재 마하다샤", "긴 호흡의 큰 시기 — 몇 년 단위로 바뀌는 흐름",
+      `${d.dasha.mahadasha.lord_ko} 시기`, `${d.dasha.mahadasha.start} ~ ${d.dasha.mahadasha.end}`);
+  add("현재 안타르다샤", "큰 시기 안의 짧은 시기 — 요즘 체감되는 변화",
+      d.dasha.antardasha ? `${d.dasha.antardasha.lord_ko} 시기` : "-",
       d.dasha.antardasha ? `${d.dasha.antardasha.start} ~ ${d.dasha.antardasha.end}` : "");
 
   document.getElementById('moonInterp').textContent =
