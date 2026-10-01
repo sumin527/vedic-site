@@ -1,177 +1,319 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>베딕 쿤달리 · 무료 계산기</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이번 생의 설계도 · 베딕 쿤달리 계산기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme:light; --bg:#faf6ec; --card:#ffffff; --gold:#c9a227; --gold-deep:#9a6f16; --ink:#2e2413; --muted:#8d7c58; --line:#e7dcc0; }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg); color:var(--ink); font-family:"Noto Sans KR",system-ui,sans-serif; line-height:1.6; }
-  .wrap { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
-  header { text-align:center; padding:32px 0 8px; }
-  header .om { font-size:40px; }
-  header::after { content:""; display:block; width:64px; height:3px; margin:14px auto 0; border-radius:2px;
-    background:linear-gradient(90deg,#dcb958,#b8860b); }
-  h1 { font-size:24px; letter-spacing:-.5px; margin:8px 0 4px; }
-  header p { color:var(--muted); font-size:14px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:20px;
-    box-shadow:0 4px 18px rgba(154,111,22,.07); }
-  label { display:block; font-size:13px; color:var(--muted); margin:14px 0 6px; }
-  input, select { width:100%; max-width:100%; min-width:0; padding:12px; border-radius:10px; border:1px solid var(--line); background:#fffdf7; color:var(--ink); font-size:16px; }
-  input:focus, select:focus { outline:2px solid #dcb958; outline-offset:0; border-color:#c9a227; }
-  .row { display:flex; gap:10px; } .row > div { flex:1 1 0; min-width:0; }
-  .check { display:flex; align-items:center; gap:8px; margin-top:12px; font-size:14px; color:var(--muted); }
-  .check input { width:auto; }
-  button.primary { width:100%; margin-top:20px; padding:14px; border:none; border-radius:12px;
-    background:linear-gradient(135deg,#e3c06a,#b8860b); color:#2a1e05; font-size:17px; font-weight:700; cursor:pointer;
-    box-shadow:0 3px 12px rgba(184,134,11,.28); }
-  button.primary:disabled { opacity:.5; cursor:wait; }
-  #result { display:none; }
-  .notice { background:#fdf6e0; border:1px solid #d9b45c; color:#7c5f16; border-radius:10px; padding:12px 14px; font-size:14px; margin-bottom:16px; }
-  h2 { font-size:18px; margin:4px 0 12px; color:var(--gold-deep); }
-  h3 { font-size:15px; margin:18px 0 8px; color:var(--gold-deep); }
-  .facts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .fact { background:#fbf8ee; border:1px solid var(--line); border-radius:10px; padding:12px; }
-  .fact .k { font-size:12px; color:var(--muted); }
-  .fact .v { font-size:17px; font-weight:700; margin-top:2px; }
-  .fact .t { font-size:12px; color:var(--muted); margin-top:2px; }
-  details.fact summary { list-style:none; cursor:pointer; display:block; position:relative; padding-right:22px; }
-  details.fact summary::-webkit-details-marker { display:none; }
-  details.fact summary::after { content:"⌄"; position:absolute; right:2px; top:0; color:var(--muted); font-size:15px; transition:transform .18s; }
-  details.fact[open] summary::after { transform:rotate(180deg); }
-  details.fact summary .k, details.fact summary .t, details.fact summary .v, details.fact summary .r { display:block; }
-  details.fact .r { font-size:13px; color:var(--muted); margin-top:4px; }
-  details.fact .d { font-size:13.5px; color:#4a3d24; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
-  #chart { width:100%; max-width:420px; display:block; margin:8px auto; }
-  table { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
-  th, td { padding:8px 6px; border-bottom:1px solid var(--line); text-align:center; }
-  th { color:var(--muted); font-weight:500; font-size:12px; }
-  details.glossary { margin-top:8px; border:1px solid var(--line); border-radius:10px; background:#fbf8ee; }
-  details.glossary summary { cursor:pointer; padding:12px 14px; font-size:14px; font-weight:700; color:var(--gold-deep); list-style:none; }
-  details.glossary summary::-webkit-details-marker { display:none; }
-  details.glossary summary::before { content:"📖 "; }
-  details.glossary[open] summary { border-bottom:1px solid var(--line); }
-  details.glossary dl { padding:12px 14px; font-size:13.5px; }
-  details.glossary dt { font-weight:700; color:var(--ink); margin-top:10px; }
-  details.glossary dt:first-child { margin-top:0; }
-  details.glossary dd { margin:2px 0 0; color:#4a3d24; }
-  details.glossary .fine2 { font-size:12px; color:var(--muted); padding:0 14px 12px; }
-  .cta { text-align:center; padding:8px 0; }
-  .cta input { margin-bottom:10px; }
-  .products { display:grid; gap:10px; margin:12px 0 4px; }
-  .product { background:#fffdf7; border:1px solid var(--line); border-radius:14px; padding:14px; }
-  .product.featured { border:1.5px solid var(--gold); box-shadow:0 2px 12px rgba(201,162,39,.16); }
-  .pname { font-weight:700; font-size:15px; color:var(--ink); }
-  .pdesc { font-size:13px; color:var(--muted); margin:4px 0 8px; }
-  .price { font-size:17px; font-weight:800; color:var(--ink); margin-bottom:10px; }
-  .price s { color:#b09a6a; font-weight:400; font-size:13px; margin-right:6px; }
-  .sale { display:inline-block; background:#e2574c; color:#fff; font-size:11px; font-weight:700;
-          border-radius:6px; padding:2px 6px; margin-left:6px; vertical-align:1px; }
-  .product .primary { margin-top:0; }
-  .fine { font-size:12px; color:var(--muted); text-align:center; margin-top:24px; }
-  .err { color:#b3261e; font-size:14px; margin-top:12px; text-align:center; }
-  @media (max-width:480px){ .facts{grid-template-columns:1fr;} .row{flex-direction:column;} }
+:root{
+  --bg:#FAF6EE; --surface:#FFFFFF;
+  --ink:#1F1B3A; --ink-sub:#5E5770; --ink-mute:#8F889C;
+  --gold:#B8862B; --gold-dark:#9A6F1F; --gold-soft:#F3E9D2;
+  --line:#E8DFCC;
+  --shadow:0 1px 2px rgba(31,27,58,.04),0 4px 16px rgba(31,27,58,.06);
+  --serif:'Gowun Batang',serif;
+  --sans:'Pretendard','Noto Sans KR',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;font-variant-numeric:tabular-nums;overflow-x:hidden}
+h1,h2{font-family:var(--serif)}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px;position:relative}
+
+/* 히어로 */
+.hero{position:relative;text-align:center;padding:64px 0 8px}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(31,27,58,.10),rgba(31,27,58,0) 75%)}
+.stars{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:1440px;max-width:none;height:480px;opacity:.08;pointer-events:none}
+.hero-inner{position:relative}
+.hero-icon{color:var(--gold);display:inline-flex}
+h1{font-size:28px;font-weight:700;line-height:1.35;margin:16px 0 12px}
+.hero-sub{color:var(--ink-sub);font-size:16px}
+@media(min-width:1024px){.hero{padding:96px 0 16px}h1{font-size:36px}}
+
+/* 전생테스트 배너 */
+.banner{background:var(--gold-soft);border:1px solid var(--line);border-radius:16px;
+  padding:16px 20px;margin-top:24px;font-size:15px;box-shadow:var(--shadow)}
+.banner .small{font-size:13px;color:var(--ink-sub)}
+
+/* 입력 폼 */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  padding:20px;margin-top:32px;box-shadow:var(--shadow)}
+@media(min-width:1024px){.card{padding:24px}}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.frow{grid-template-columns:1fr}}
+label.lbl{display:block;font-size:14px;font-weight:700;margin:16px 0 8px}
+.frow label.lbl{margin-top:0}
+.field{width:100%;max-width:100%;min-width:0;height:52px;padding:0 12px;
+  border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);
+  font-size:16px;font-family:inherit}
+.field:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(184,134,43,.16)}
+.field:disabled{background:var(--bg);color:var(--ink-sub)}
+.check{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;flex:none;accent-color:var(--gold);padding:0}
+.tunote{font-size:13px;color:var(--ink-sub);margin-top:8px}
+.btn-primary{width:100%;height:56px;margin-top:24px;border:none;border-radius:12px;
+  background:var(--gold);color:#fff;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-primary:hover{background:var(--gold-dark)}
+.btn-primary:disabled{opacity:.65;cursor:wait}
+.err{font-size:13px;color:var(--gold-dark);margin-top:8px;min-height:20px}
+
+/* 결과 영역 */
+#result{display:none}
+#result.show{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.block{margin-top:48px}
+@media(min-width:1024px){.block{margin-top:64px}}
+h2{font-size:20px;font-weight:700;margin:0 0 8px}
+@media(min-width:1024px){h2{font-size:24px}}
+.hsub{font-size:14px;color:var(--ink-sub);margin:0 0 4px}
+.notice{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);
+  border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink-sub);margin:16px 0}
+.result-grid{display:grid;gap:24px;margin-top:16px}
+@media(min-width:1024px){.result-grid{grid-template-columns:55fr 45fr;gap:32px;align-items:start}}
+.chartmeta{font-size:14px;color:var(--ink-sub);margin:0 0 12px}
+#chart{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
+.chartcap{font-size:13px;color:var(--ink-sub);text-align:center;margin-top:12px}
+
+/* 요약 카드 */
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(min-width:1024px){.facts{grid-template-columns:1fr;gap:16px}}
+.fact{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--gold);
+  border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+@media(min-width:1024px){.fact{padding:20px}}
+.fact-head{position:relative;display:flex;align-items:center;gap:4px}
+.fact-label{font-size:13px;color:var(--ink-sub)}
+.info{background:none;border:none;color:var(--gold-dark);cursor:pointer;
+  display:inline-flex;padding:4px;border-radius:50%;line-height:0}
+.info:hover{color:var(--ink)}
+.tip{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:5;
+  background:var(--ink);color:#fff;font-size:13px;line-height:1.5;
+  padding:10px 12px;border-radius:8px;box-shadow:var(--shadow)}
+.tip[hidden]{display:none}
+.fact-value{font-family:var(--serif);font-size:22px;font-weight:700;margin-top:4px}
+.fact-period{font-size:14px;color:var(--ink-sub);margin-top:4px}
+.fdetail{margin-top:8px}
+.fdetail summary{list-style:none;display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:700;color:var(--gold-dark);cursor:pointer}
+.fdetail summary::-webkit-details-marker{display:none}
+.fdetail .d{font-size:14px;color:var(--ink-sub);margin-top:8px}
+.chev{width:8px;height:8px;flex:none;border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .2s}
+details[open] .chev{transform:rotate(225deg)}
+
+/* 접이식 토글 (행성표·용어집) */
+.toggle{border:1px solid var(--line);border-radius:16px;background:var(--surface);
+  box-shadow:var(--shadow);margin-top:16px}
+.toggle summary{list-style:none;display:flex;align-items:center;gap:12px;
+  padding:16px 20px;font-size:15px;font-weight:700;cursor:pointer}
+.toggle summary::-webkit-details-marker{display:none}
+.toggle .ticon{color:var(--gold);display:inline-flex;flex:none}
+.toggle .tlabel{flex:1}
+.toggle .chev{color:var(--ink-sub)}
+.toggle-body{padding:4px 20px 20px}
+
+/* 행성 배치 표 */
+.ptable{width:100%;border-collapse:collapse;font-size:15px}
+.ptable th{font-size:13px;font-weight:500;color:var(--ink-sub);text-align:left;height:40px;border-bottom:1px solid var(--line)}
+.ptable td{text-align:left;height:48px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+
+/* 용어 설명 */
+.gloss dt{font-weight:700;margin-top:12px;font-size:14px}
+.gloss dd{font-size:14px;color:var(--ink-sub);margin:4px 0 0}
+.gloss .gdisc{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-sub)}
+
+/* 상품 카드 */
+.products{display:grid;gap:12px;margin-top:16px}
+@media(min-width:1024px){.products{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+.product{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:8px;
+  cursor:pointer;color:var(--ink)}
+@media(min-width:1024px){.product{padding:24px}}
+.product:hover{border-color:var(--gold)}
+.product:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.badge{align-self:flex-start;font-size:13px;font-weight:700;color:var(--gold-dark);
+  border:1px solid var(--gold);border-radius:999px;padding:2px 12px;white-space:nowrap}
+.pname{font-size:18px;font-weight:700}
+.pdesc{font-size:14px;color:var(--ink-sub);flex:1}
+.pricerow{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.was{font-size:14px;color:var(--ink-sub);text-decoration:line-through}
+.now{font-size:18px;font-weight:700;flex:1}
+.parr{color:var(--gold);display:inline-flex;align-self:center}
+
+/* 출시 알림 */
+.notify{background:var(--gold-soft);border-radius:16px;padding:24px;margin-top:16px}
+.notify p{font-size:15px;font-weight:700;margin:0 0 16px}
+.notify-row{display:flex;flex-direction:column;gap:12px}
+@media(min-width:640px){.notify-row{flex-direction:row}.notify-row .field{flex:1}}
+.btn-secondary{height:52px;padding:0 24px;border-radius:12px;background:#fff;
+  border:1.5px solid var(--gold);color:var(--gold-dark);font-size:16px;font-weight:700;
+  cursor:pointer;white-space:nowrap;font-family:inherit}
+.btn-secondary:hover{background:var(--gold-soft)}
+#notifyMsg{font-size:13px;color:var(--ink-sub);margin-top:8px;min-height:20px}
+
+footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
+  font-size:13px;color:var(--ink-sub);text-align:center}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="om">🕉️</div>
-    <h1>베딕 쿤달리 무료 계산기</h1>
-    <p>인도 정통 점성술 · 라히리 아야남사 · 가입 없이 바로</p>
+
+  <svg class="stars" viewBox="0 0 1440 480" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+    <g fill="none" stroke="#1F1B3A" stroke-width="1">
+      <polyline points="180,120 260,80 340,140 420,100 470,180"></polyline>
+      <polyline points="340,140 360,240 300,300"></polyline>
+      <polyline points="980,90 1060,150 1150,120 1230,190 1290,150"></polyline>
+      <polyline points="1060,150 1090,250 1180,290"></polyline>
+      <polyline points="620,40 700,70 780,40"></polyline>
+    </g>
+    <g fill="#1F1B3A">
+      <circle cx="180" cy="120" r="3"></circle><circle cx="260" cy="80" r="2.5"></circle>
+      <circle cx="340" cy="140" r="3.5"></circle><circle cx="420" cy="100" r="2.5"></circle>
+      <circle cx="470" cy="180" r="3"></circle><circle cx="360" cy="240" r="2.5"></circle>
+      <circle cx="300" cy="300" r="3"></circle>
+      <circle cx="980" cy="90" r="3"></circle><circle cx="1060" cy="150" r="3.5"></circle>
+      <circle cx="1150" cy="120" r="2.5"></circle><circle cx="1230" cy="190" r="3"></circle>
+      <circle cx="1290" cy="150" r="2.5"></circle><circle cx="1090" cy="250" r="2.5"></circle>
+      <circle cx="1180" cy="290" r="3"></circle>
+      <circle cx="620" cy="40" r="2.5"></circle><circle cx="700" cy="70" r="3"></circle>
+      <circle cx="780" cy="40" r="2.5"></circle>
+      <circle cx="90" cy="360" r="2"></circle><circle cx="560" cy="300" r="2"></circle>
+      <circle cx="880" cy="260" r="2"></circle><circle cx="1360" cy="340" r="2"></circle>
+    </g>
+  </svg>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="hero-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path></svg>
+      </span>
+      <h1>태어난 순간의 하늘로 읽는,<br>이번 생의 설계도</h1>
+      <p class="hero-sub">인도 정통 베딕 점성술 · 가입 없이 30초</p>
+    </div>
   </header>
 
-  <div class="card" id="pastlifeBanner" style="display:none">
-    <p style="font-size:15px">🔮 <b>전생 테스트에서 오셨군요.</b><br>
-    전생 캐릭터는 빙산의 일각 — 같은 달 별자리라도 태어난 시간에 따라 이번 생의 설계도는 완전히 달라집니다.<br>
-    <span style="color:var(--muted);font-size:13px">입력하신 정보로 자동 계산했어요.</span></p>
-  </div>
-
-  <div class="card">
-    <div class="row">
-      <div><label>생년월일</label><input type="date" id="birthDate" value="1990-05-15"></div>
-      <div><label>태어난 시간</label><input type="time" id="birthTime" value="14:30"></div>
+  <div class="hero-inner">
+    <div class="banner" id="pastlifeBanner" style="display:none">
+      <b>전생 테스트에서 오셨군요.</b><br>
+      전생 캐릭터는 빙산의 일각 — 같은 달 별자리라도 태어난 시간에 따라 이번 생의 설계도는 완전히 달라집니다.<br>
+      <span class="small">입력하신 정보로 자동 계산했어요.</span>
     </div>
-    <label class="check"><input type="checkbox" id="timeUnknown"> 태어난 시간을 몰라요 (달 기준 간이 계산)</label>
-    <label>출생지</label>
-    <select id="place"></select>
-    <button class="primary" id="go" onclick="calc()">내 차트 계산하기</button>
-    <div class="err" id="err"></div>
+
+    <div class="card">
+      <div class="frow">
+        <div><label class="lbl" for="birthDate">생년월일</label><input class="field" type="date" id="birthDate" value="1990-05-15"></div>
+        <div><label class="lbl" for="birthTime">태어난 시간</label><input class="field" type="time" id="birthTime" value="14:30"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="timeUnknown"> 태어난 시간을 몰라요</label>
+      <p class="tunote" id="tuNote" hidden>상승궁과 하우스는 표시되지 않아요. 달 기준으로 간이 계산합니다.</p>
+      <label class="lbl" for="place">출생지</label>
+      <select class="field" id="place"></select>
+      <button class="btn-primary" id="go" onclick="calc()">내 차트 계산하기</button>
+      <div class="err" id="err"></div>
+    </div>
   </div>
 
   <div id="result">
-    <div class="card">
+    <section class="block" aria-labelledby="rh">
+      <h2 id="rh">당신의 베딕 차트</h2>
       <div class="notice" id="notice" style="display:none"></div>
-      <h2>🔮 당신의 베딕 차트</h2>
-      <svg id="chart" viewBox="0 0 360 360"></svg>
-      <div class="facts" id="facts"></div>
+      <div class="result-grid">
+        <figure>
+          <p class="chartmeta" id="chartMeta"></p>
+          <svg id="chart" viewBox="0 0 360 360" role="img" aria-label="북인도식 베딕 차트"></svg>
+          <figcaption class="chartcap">금색 칸이 1하우스(라그나) · 작은 숫자는 별자리 번호(1 = 양자리)</figcaption>
+        </figure>
+        <div class="facts" id="facts"></div>
+      </div>
+    </section>
 
-      <h3>🪐 행성 배치</h3>
-      <table><thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead><tbody id="planets"></tbody></table>
-
-      <details class="glossary">
-        <summary>처음 보시는 분을 위한 여섯 가지 용어</summary>
-        <dl>
-          <dt>라그나</dt><dd>태어난 순간 동쪽 지평선에 떠오르던 별자리. 차트를 읽는 출발점입니다. 생일로 말하는 별자리와는 기준이 다릅니다.</dd>
-          <dt>궁(하우스)</dt><dd>삶의 영역을 나눈 열두 자리입니다. 10궁은 직업·사회적 역할, 2궁은 재산·가족·말, 7궁은 배우자·동반자 관계 등을 봅니다.</dd>
-          <dt>궁의 주인</dt><dd>그 궁의 별자리를 다스리는 행성입니다. 예를 들어 10궁이 염소자리이면 토성이 직업 해석의 기준이 됩니다.</dd>
-          <dt>자기 별자리</dt><dd>행성이 자신이 다스리는 별자리에 있는 것. 전통적으로 힘을 얻는 조건으로 봅니다.</dd>
-          <dt>다샤</dt><dd>삶의 시기별 흐름을 읽는 체계입니다. 마하다샤(대운)는 긴 기간, 안타르다샤(소운)는 그 안의 짧은 기간입니다.</dd>
-          <dt>나크샤트라</dt><dd>황도를 27개로 나눈 달의 별자리 체계. 달이 있는 나크샤트라로 마음의 결을 읽습니다.</dd>
-        </dl>
-        <p class="fine2">베딕 점성술은 전통적인 상징과 해석 체계입니다. 위 결과는 그 관점에서 읽은 경향이며, 미래의 결과를 확정하는 설명은 아닙니다.</p>
+    <section class="block" aria-labelledby="ph">
+      <h2 id="ph">행성 배치</h2>
+      <details class="toggle">
+        <summary><span class="ticon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg></span><span class="tlabel">전체 행성 배치 보기</span><span class="chev"></span></summary>
+        <div class="toggle-body">
+          <table class="ptable">
+            <thead><tr><th>행성</th><th>별자리</th><th>하우스</th></tr></thead>
+            <tbody id="planets"></tbody>
+          </table>
+        </div>
       </details>
+    </section>
 
-      <h3 id="deepReportTitle">📜 심층 리포트</h3>
+    <section class="block" aria-labelledby="gh">
+      <h2 id="gh">용어 설명</h2>
+      <details class="toggle">
+        <summary><span class="ticon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg></span><span class="tlabel">처음 보시는 분을 위한 여섯 가지 용어</span><span class="chev"></span></summary>
+        <div class="toggle-body gloss">
+          <dl>
+            <dt>라그나(상승궁)</dt><dd>태어난 순간 동쪽 지평선에 떠오르던 별자리. 차트를 읽는 출발점입니다. 생일로 말하는 별자리와는 기준이 다릅니다.</dd>
+            <dt>궁(하우스)</dt><dd>삶의 영역을 나눈 열두 자리입니다. 10궁은 직업·사회적 역할, 2궁은 재산·가족·말, 7궁은 배우자·동반자 관계 등을 봅니다.</dd>
+            <dt>궁의 주인</dt><dd>그 궁의 별자리를 다스리는 행성입니다. 예를 들어 10궁이 염소자리이면 토성이 직업 해석의 기준이 됩니다.</dd>
+            <dt>자기 별자리</dt><dd>행성이 자신이 다스리는 별자리에 있는 것. 전통적으로 힘을 얻는 조건으로 봅니다.</dd>
+            <dt>다샤</dt><dd>삶의 시기별 흐름을 읽는 체계입니다. 마하다샤(대운)는 긴 기간, 안타르다샤(소운)는 그 안의 짧은 기간입니다.</dd>
+            <dt>나크샤트라</dt><dd>황도를 27개로 나눈 달의 별자리 체계. 달이 있는 나크샤트라로 마음의 결을 읽습니다.</dd>
+          </dl>
+          <p class="gdisc">베딕 점성술은 전통적인 상징과 해석 체계입니다. 위 결과는 그 관점에서 읽은 경향이며, 미래의 결과를 확정하는 설명은 아닙니다.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="block" aria-labelledby="dh">
+      <h2 id="deepReportTitle">더 깊이 읽고 싶다면</h2>
+      <p class="hsub">지금 본 차트를 바탕으로 한 심층 리포트 3종이 곧 출시됩니다.</p>
       <div class="products">
-        <div class="product featured">
-          <div class="pname">총운 리포트 <span class="sale">런칭 50%</span></div>
-          <div class="pdesc">평생 소장하는 당신의 전체 지도 — 기질, 시기의 흐름, 나아갈 방향을 한 권에</div>
-          <div class="price"><s>33,000원</s>16,500원</div>
-          <button class="primary" data-product="total">출시 알림 신청</button>
+        <div class="product" data-product="total" role="button" tabindex="0" aria-label="총운 리포트 출시 알림 신청">
+          <span class="badge">런칭 50%</span>
+          <span class="pname">총운 리포트</span>
+          <span class="pdesc">평생 소장하는 당신의 전체 지도 — 기질, 시기의 흐름, 나아갈 방향을 한 권에</span>
+          <span class="pricerow"><span class="was">33,000원</span><span class="now">16,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product">
-          <div class="pname">올해의 운세 <span class="sale">런칭 50%</span></div>
-          <div class="pdesc">2026년 10월 ~ 2027년 9월 — 소운이 바뀌는 고비마다 읽는 12개월</div>
-          <div class="price"><s>22,000원</s>11,000원</div>
-          <button class="primary" data-product="yearly">출시 알림 신청</button>
+        <div class="product" data-product="yearly" role="button" tabindex="0" aria-label="올해의 운세 출시 알림 신청">
+          <span class="badge">런칭 50%</span>
+          <span class="pname">올해의 운세</span>
+          <span class="pdesc">2026년 10월 ~ 2027년 9월 — 소운이 바뀌는 고비마다 읽는 12개월</span>
+          <span class="pricerow"><span class="was">22,000원</span><span class="now">11,000원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product">
-          <div class="pname">카테고리별 운세 <span class="sale">런칭 50%</span></div>
-          <div class="pdesc">커리어 · 금전 · 관계 · 컨디션 — 하나를 골라 깊게</div>
-          <div class="price"><s>11,000원</s>5,500원</div>
-          <button class="primary" data-product="category">출시 알림 신청</button>
+        <div class="product" data-product="category" role="button" tabindex="0" aria-label="카테고리별 운세 출시 알림 신청">
+          <span class="badge">런칭 50%</span>
+          <span class="pname">카테고리별 운세</span>
+          <span class="pdesc">커리어 · 금전 · 관계 · 컨디션 — 하나를 골라 깊게</span>
+          <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
       </div>
-      <div class="cta" id="notifyCta">
-        <p style="font-size:14px;color:var(--muted);margin-bottom:12px">
-          출시되면 가장 먼저 알려드립니다.</p>
-        <input type="email" id="email" placeholder="이메일 주소 (출시 알림)">
-        <button class="primary" onclick="notify()">출시 알림 신청</button>
-        <div class="err" id="notifyMsg" style="color:#9fe6a0"></div>
+      <div class="notify" id="notifyCta">
+        <p>출시되면 가장 먼저, 런칭 특가로 알려드릴게요</p>
+        <div class="notify-row">
+          <input class="field" type="email" id="email" placeholder="이메일 주소" autocomplete="email" aria-label="이메일 주소">
+          <button class="btn-secondary" onclick="notify()">출시 알림 신청</button>
+        </div>
+        <div id="notifyMsg"></div>
       </div>
-    </div>
-    <p class="fine">본 결과는 참고용입니다 · 항성 황도(라히리) 기준 · 베딕 점성술 입문 계산기</p>
+    </section>
   </div>
+
+  <footer>본 결과는 참고용입니다 · 항성 황도(라히리 아야남사) 기준 계산</footer>
 </div>
 
 <script src="config.js"></script>
 <script>
-const CITIES = [
-  ["서울",37.5665,127.9780],["부산",35.1796,129.0756],["대구",35.8714,128.6014],
-  ["인천",37.4563,126.7052],["광주",35.1595,126.8526],["대전",36.3504,127.3845],
-  ["울산",35.5384,129.3114],["세종",36.4800,127.2890],["수원",37.2636,127.0286],
-  ["제주",33.4996,126.5312]
-];
+// 도시 목록 (위도,경도)
+const CITIES = {"서울":"37.5665,126.9780","부산":"35.1796,129.0756","대구":"35.8714,128.6014","인천":"37.4563,126.7052","광주":"35.1595,126.8526","대전":"36.3504,127.3845","울산":"35.5384,129.3114","세종":"36.4801,127.2890","수원":"37.2636,127.0286","제주":"33.4996,126.5312"};
 const placeSel = document.getElementById('place');
-CITIES.forEach(([n,la,lo])=>{ const o=document.createElement('option'); o.value=`${la},${lo}`; o.textContent=n; placeSel.appendChild(o); });
+Object.keys(CITIES).forEach(c=>{ const o=document.createElement('option'); o.value=CITIES[c]; o.textContent=c; placeSel.appendChild(o); });
 
-// 북인도식 차트: 12하우스 고정 폴리곤
+// 북인도식 다이아몬드 차트 (12궁 폴리곤 + 라벨 앵커)
 const HOUSES = [
-  [[180,0],[270,90],[180,180],[90,90],[180,95]],
-  [[0,0],[180,0],[90,90],[90,35]],
-  [[0,0],[90,90],[0,180],[35,90]],
+  [[180,0],[270,90],[180,180],[90,90],[180,55]],
+  [[0,0],[90,90],[180,0],[90,35]],
   [[0,180],[90,90],[180,180],[90,270],[95,180]],
   [[0,180],[90,270],[0,360],[35,270]],
   [[0,360],[90,270],[180,360],[90,325]],
@@ -181,8 +323,10 @@ const HOUSES = [
   [[360,180],[270,90],[180,180],[270,270],[265,180]],
   [[360,0],[360,180],[270,90],[325,90]],
   [[360,0],[270,90],[180,0],[270,35]],
+  [[180,0],[90,90],[0,0],[180,0],[90,0],[95,0]],
 ];
 const SVGNS = "http://www.w3.org/2000/svg";
+const KO = {As:"상승",Su:"태양",Mo:"달",Ma:"화성",Me:"수성",Ju:"목성",Ve:"금성",Sa:"토성",Ra:"라후",Ke:"케투"};
 
 function drawChart(lagnaSignIdx, planets, chandraMode){
   const svg = document.getElementById('chart');
@@ -194,25 +338,32 @@ function drawChart(lagnaSignIdx, planets, chandraMode){
     const house = i+1, poly = pts.slice(0,-1), anchor = pts[pts.length-1];
     const pg = document.createElementNS(SVGNS,"polygon");
     pg.setAttribute("points", poly.map(p=>p.join(",")).join(" "));
-    pg.setAttribute("fill", house===1 ? "#f6ecd4" : "#fffdf6");
-    pg.setAttribute("stroke", "#b8860b"); pg.setAttribute("stroke-width","1.2");
+    pg.setAttribute("fill", house===1 ? "#F3E9D2" : "#FFFFFF");
+    pg.setAttribute("stroke", "#B8862B"); pg.setAttribute("stroke-width","1.5");
     svg.appendChild(pg);
     const signNo = ((base - 1 + i) % 12) + 1;
     const t1 = document.createElementNS(SVGNS,"text");
-    t1.setAttribute("x",anchor[0]); t1.setAttribute("y",anchor[1]-8);
-    t1.setAttribute("text-anchor","middle"); t1.setAttribute("fill","#a08c5a"); t1.setAttribute("font-size","11");
+    t1.setAttribute("x",anchor[0]); t1.setAttribute("y",anchor[1]-12);
+    t1.setAttribute("text-anchor","middle"); t1.setAttribute("fill","#5E5770"); t1.setAttribute("font-size","13");
     t1.textContent = signNo; svg.appendChild(t1);
-    let names = (byHouse[house]||[]).join(" ");
-    if(house===1) names = "As " + names;
+    const names = (byHouse[house]||[]).map(a=>KO[a]||a);
+    if(house===1 && !chandraMode) names.unshift("상승");
     const t2 = document.createElementNS(SVGNS,"text");
-    t2.setAttribute("x",anchor[0]); t2.setAttribute("y",anchor[1]+10);
-    t2.setAttribute("text-anchor","middle"); t2.setAttribute("fill","#2e2413"); t2.setAttribute("font-size","12");
-    t2.setAttribute("font-weight","600"); t2.textContent = names; svg.appendChild(t2);
+    t2.setAttribute("text-anchor","middle"); t2.setAttribute("fill","#1F1B3A");
+    t2.setAttribute("font-size","14"); t2.setAttribute("font-weight","700");
+    const y0 = anchor[1]+8-(names.length-1)*8.5;
+    names.forEach((nm,idx)=>{
+      const ts = document.createElementNS(SVGNS,"tspan");
+      ts.setAttribute("x",anchor[0]);
+      if(idx===0) ts.setAttribute("y",y0); else ts.setAttribute("dy","17");
+      ts.textContent = nm; t2.appendChild(ts);
+    });
+    svg.appendChild(t2);
   });
   if(chandraMode){
     const t = document.createElementNS(SVGNS,"text");
     t.setAttribute("x",180); t.setAttribute("y",352); t.setAttribute("text-anchor","middle");
-    t.setAttribute("fill","#8d7c58"); t.setAttribute("font-size","11"); t.textContent = "달 기준 차트";
+    t.setAttribute("fill","#5E5770"); t.setAttribute("font-size","13"); t.textContent = "달 기준 차트";
     svg.appendChild(t);
   }
 }
@@ -237,47 +388,79 @@ async function calc(){
   finally{ btn.disabled = false; btn.textContent = "내 차트 계산하기"; }
 }
 
+const TIPS = {
+  lagna: "태어난 순간 동쪽 지평선에 떠오른 별자리 — 차트를 읽는 출발점",
+  moon: "달이 있던 별자리 — 감정과 마음의 기본값",
+  maha: "긴 호흡의 큰 시기 — 몇 년 단위로 바뀌는 흐름",
+  antar: "큰 시기 안의 짧은 시기 — 요즘 체감되는 변화"
+};
+const INFO_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>';
+const DOT = {태양:"#C08A3E",달:"#93A5BB",화성:"#B27A6B",수성:"#86A184",목성:"#A68B4B",금성:"#B98A5E",토성:"#7D7A8C",라후:"#6E6A7E",케투:"#9A8F7A"};
+
 function render(d, tu){
-  document.getElementById('result').style.display = "block";
+  const res = document.getElementById('result');
+  res.classList.remove('show'); void res.offsetWidth; res.classList.add('show');
   const notice = document.getElementById('notice');
   if(d.notice){ notice.style.display="block"; notice.textContent = d.notice; } else notice.style.display="none";
+
+  const bd = document.getElementById('birthDate').value.replace(/-/g, ".");
+  const bt = tu ? "시간 모름" : (document.getElementById('birthTime').value || "시간 모름");
+  document.getElementById('chartMeta').textContent = bd + " · " + bt + " · " + placeSel.options[placeSel.selectedIndex].text;
 
   const lagnaIdx = d.lagna ? d.lagna.sign_index : d.moon.sign_index;
   drawChart(lagnaIdx, d.planets, tu || !d.lagna);
 
   const md = d.dasha.mahadasha, ad = d.dasha.antardasha;
   const f = document.getElementById('facts'); f.innerHTML = "";
-  const add = (k,what,v,range,detail)=>{ f.insertAdjacentHTML('beforeend',
-    `<details class="fact"><summary><span class="k">${k}</span><span class="t">${what}</span><span class="v">${v}</span>${range ? `<span class="r">${range}</span>` : ""}</summary><div class="d">${detail}</div></details>`); };
-  if(d.lagna) add("상승궁 (라그나)", "태어난 순간 동쪽 지평선에 떠오른 별자리 — 차트를 읽는 출발점",
-      d.lagna.sign_ko, "", `${d.lagna.nakshatra_ko} ${d.lagna.pada}파다 · ${d.lagna.description}`);
-  add("달 별자리", "달이 있던 별자리 — 감정과 마음의 기본값",
-      d.moon.sign_ko, "",
-      `달은 ${d.moon.sign_ko}에 있습니다. ${d.moon.description} 나크샤트라는 ${d.moon.nakshatra_ko}로, ${d.moon.nakshatra_description}`);
-  add("현재 마하다샤", "긴 호흡의 큰 시기 — 몇 년 단위로 바뀌는 흐름",
-      `${md.lord_ko} 시기`, `${md.start} ~ ${md.end}`,
-      `지금은 ${md.lord_ko} 마하다샤 기간입니다. ${md.description}`);
-  add("현재 안타르다샤", "큰 시기 안의 짧은 시기 — 요즘 체감되는 변화",
-      ad ? `${ad.lord_ko} 시기` : "-", ad ? `${ad.start} ~ ${ad.end}` : "",
-      ad ? `지금은 ${ad.lord_ko} 소운입니다. ${(ad.description || md.description || "")}` : "현재 소운 정보를 확인할 수 없습니다.");
-
-  // 상품 카드 클릭 → 관심 집계 후 알림 신청 폼으로 안내
-  document.querySelectorAll('[data-product]').forEach(btn => {
-    btn.onclick = () => {
-      fetch(API_BASE + '/api/interest', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({product: btn.dataset.product})
-      }).catch(()=>{});
-      document.getElementById('notifyCta').scrollIntoView({behavior:'smooth'});
-    };
-  });
+  const add = (k,tip,v,range,detail)=>{ f.insertAdjacentHTML('beforeend',
+    '<div class="fact"><div class="fact-head"><span class="fact-label">'+k+'</span>'+
+    '<button type="button" class="info" aria-label="'+k+' 설명" aria-expanded="false">'+INFO_SVG+'</button>'+
+    '<span class="tip" role="tooltip" hidden>'+tip+'</span></div>'+
+    '<div class="fact-value">'+v+'</div>'+
+    (range ? '<div class="fact-period">'+range+'</div>' : "")+
+    (detail ? '<details class="fdetail"><summary>해석 보기 <span class="chev"></span></summary><div class="d">'+detail+'</div></details>' : "")+
+    '</div>'); };
+  if(d.lagna) add("상승궁 (라그나)", TIPS.lagna, d.lagna.sign_ko, "",
+      d.lagna.nakshatra_ko + " " + d.lagna.pada + "파다 · " + d.lagna.description);
+  add("달 별자리", TIPS.moon, d.moon.sign_ko, "",
+      "달은 " + d.moon.sign_ko + "에 있습니다. " + d.moon.description + " 나크샤트라는 " + d.moon.nakshatra_ko + "로, " + d.moon.nakshatra_description);
+  add("현재 마하다샤", TIPS.maha, md.lord_ko + " 시기", md.start + " ~ " + md.end,
+      "지금은 " + md.lord_ko + " 마하다샤 기간입니다. " + md.description);
+  add("현재 안타르다샤", TIPS.antar, ad ? ad.lord_ko + " 시기" : "-", ad ? ad.start + " ~ " + ad.end : "",
+      ad ? "지금은 " + ad.lord_ko + " 소운입니다. " + (ad.description || md.description || "") : "현재 소운 정보를 확인할 수 없습니다.");
 
   const tb = document.getElementById('planets'); tb.innerHTML = "";
-  d.planets.forEach(p=>{ tb.insertAdjacentHTML('beforeend',
-    `<tr><td>${p.name_ko}</td><td>${p.sign_ko}</td><td>${p.house? p.house+"하우스":"-"}</td></tr>`); });
+  d.planets.forEach(p=>{ const c = DOT[p.name_ko] || "#8F889C"; tb.insertAdjacentHTML('beforeend',
+    '<tr><td><span class="dot" style="background:'+c+'"></span>'+p.name_ko+'</td><td>'+p.sign_ko+'</td><td>'+(p.house ? p.house+"하우스" : "-")+'</td></tr>'); });
 
-  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+  res.scrollIntoView({behavior:'smooth'});
 }
+
+// ⓘ 툴팁 토글
+document.getElementById('facts').addEventListener('click', e=>{
+  const b = e.target.closest('.info');
+  if(!b) return;
+  const tip = b.parentElement.querySelector('.tip');
+  const willOpen = tip.hidden;
+  document.querySelectorAll('#facts .tip').forEach(t=>{ t.hidden = true; });
+  document.querySelectorAll('#facts .info').forEach(x=>{ x.setAttribute('aria-expanded','false'); });
+  tip.hidden = !willOpen;
+  b.setAttribute('aria-expanded', String(willOpen));
+});
+
+// 상품 카드 클릭 → 관심 집계 후 알림 박스로 안내 + 이메일 포커스
+document.querySelectorAll('[data-product]').forEach(el => {
+  const go = () => {
+    fetch((window.API_BASE || '') + '/api/interest', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({product: el.dataset.product})
+    }).catch(()=>{});
+    document.getElementById('notifyCta').scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(()=>{ document.getElementById('email').focus({preventScroll:true}); }, 700);
+  };
+  el.addEventListener('click', go);
+  el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+});
 
 async function notify(){
   const em = document.getElementById('email').value;
@@ -292,6 +475,7 @@ async function notify(){
 }
 document.getElementById('timeUnknown').addEventListener('change', e=>{
   document.getElementById('birthTime').disabled = e.target.checked;
+  document.getElementById('tuNote').hidden = !e.target.checked;
 });
 
 // 전생테스트 유입 핸드오프 (?src=pastlife&dob=YYYY-MM-DD&tob=HH:MM&place=지역명&ch=캐릭터명)
@@ -320,7 +504,7 @@ document.getElementById('timeUnknown').addEventListener('change', e=>{
   const ch = q.get('ch');
   if(ch){
     // textContent만 사용 (XSS 방지)
-    document.getElementById('deepReportTitle').textContent = '📜 전생의 "' + ch + '", 이번 생의 설계도가 궁금하신가요?';
+    document.getElementById('deepReportTitle').textContent = '전생의 "' + ch + '", 이번 생의 설계도가 궁금하신가요?';
   }
   setTimeout(function(){ document.getElementById('go').click(); }, 500);
 })();
