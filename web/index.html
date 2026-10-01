@@ -134,7 +134,7 @@ details[open] .chev{transform:rotate(225deg)}
 
 /* 상품 카드 */
 .products{display:grid;gap:12px;margin-top:16px}
-.catsub{margin:26px 0 0;font-size:16px}
+.catsub{margin:26px 0 0;font-size:20px;font-weight:700}
 .catsubd{margin:6px 0 0;font-size:13px;color:var(--ink-sub)}
 .catgrid{display:grid;gap:12px;margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(min-width:1024px){.catgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
@@ -189,6 +189,7 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
 .drawer-body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:32px;
   -webkit-overflow-scrolling:touch}
 .dview{padding:0 0 8px}
+.dview .gloss{padding:2px 20px 0}
 .dpad{padding:16px 20px}
 .dpad .btn-secondary{width:100%}
 .back{display:inline-flex;align-items:center;background:none;border:none;color:var(--gold-dark);
@@ -343,10 +344,10 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
           <span class="pdesc">평생 소장하는 당신의 전체 지도 — 기질, 시기의 흐름, 나아갈 방향을 한 권에</span>
           <span class="pricerow"><span class="was">33,000원</span><span class="now">16,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="yearly" role="button" tabindex="0" aria-label="올해의 운세 출시 알림 신청">
+        <div class="product" data-product="yearly" role="button" tabindex="0" aria-label="1년 운세 출시 알림 신청">
           <span class="badge">런칭 EVENT 50% 할인</span>
-          <span class="pname">올해의 운세</span>
-          <span class="pdesc">2026년 10월 ~ 2027년 9월 — 소운이 바뀌는 고비마다 읽는 12개월</span>
+          <span class="pname">1년 운세</span>
+          <span class="pdesc">원하는 12개월을 지정하면, 그 기간의 운세를 알려드립니다</span>
           <span class="pricerow"><span class="was">22,000원</span><span class="now">11,000원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
       </div>
@@ -356,25 +357,25 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
         <div class="product" data-product="cat_job" role="button" tabindex="0" aria-label="직업운 출시 알림 신청">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">직업운</span>
-          <span class="pdesc">10궁과 그 궁의 주인, 토성의 위치로 일의 방향과 흐름을 봅니다</span>
+          <span class="pdesc">토성으로 읽는 일하는 방식, 태양으로 보는 당신이 설 자리</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
         <div class="product" data-product="cat_wealth" role="button" tabindex="0" aria-label="금전운 출시 알림 신청">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">금전운</span>
-          <span class="pdesc">2궁·11궁과 목성·금성의 자리로 재물의 흐름을 봅니다</span>
+          <span class="pdesc">목성이 키우는 재물의 그릇, 금성이 이끄는 돈의 흐름</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
         <div class="product" data-product="cat_love" role="button" tabindex="0" aria-label="애정운 출시 알림 신청">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">애정운</span>
-          <span class="pdesc">7궁과 금성, 달의 자리로 관계의 결을 봅니다</span>
+          <span class="pdesc">금성이 그리는 연애의 결, 달이 말해주는 마음의 언어</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
         <div class="product" data-product="cat_health" role="button" tabindex="0" aria-label="건강운 출시 알림 신청">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">건강운</span>
-          <span class="pdesc">1궁·6궁과 달의 상태로 컨디션의 흐름을 봅니다</span>
+          <span class="pdesc">달로 읽는 컨디션의 리듬, 화성으로 보는 에너지의 흐름</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
       </div>
@@ -403,6 +404,7 @@ Object.keys(CITIES).forEach(c=>{ const o=document.createElement('option'); o.val
 const HOUSES = [
   [[180,0],[270,90],[180,180],[90,90],[180,55]],
   [[0,0],[90,90],[180,0],[90,35]],
+  [[0,0],[90,90],[0,180],[35,90]],
   [[0,180],[90,90],[180,180],[90,270],[95,180]],
   [[0,180],[90,270],[0,360],[35,270]],
   [[0,360],[90,270],[180,360],[90,325]],
@@ -412,7 +414,6 @@ const HOUSES = [
   [[360,180],[270,90],[180,180],[270,270],[265,180]],
   [[360,0],[360,180],[270,90],[325,90]],
   [[360,0],[270,90],[180,0],[270,35]],
-  [[180,0],[90,90],[0,0],[90,35]],
 ];
 const SVGNS = "http://www.w3.org/2000/svg";
 const KO = {As:"상승",Su:"태양",Mo:"달",Ma:"화성",Me:"수성",Ju:"목성",Ve:"금성",Sa:"토성",Ra:"라후",Ke:"케투"};
@@ -939,7 +940,7 @@ function viewTerms(){
   return '<div class="dview">' + backBtn() + '<h3 class="dtitle">이용약관</h3>'
     + '<div class="terms">'
     + '<h4>1. 서비스 소개</h4><p>이 사이트는 베딕 점성술(인도 전통 점성술) 기반의 무료 출생 차트 계산기입니다. 가입 없이 이용할 수 있습니다.</p>'
-    + '<h4>2. 무료와 유료</h4><p>현재 제공되는 차트 계산, 요약 카드, 행성 배치, 용어 설명은 무료입니다. 심층 리포트(총운·올해의 운세·카테고리별 운세)는 출시 준비 중이며, 출시 시 별도로 안내합니다.</p>'
+    + '<h4>2. 무료와 유료</h4><p>현재 제공되는 차트 계산, 요약 카드, 행성 배치, 용어 설명은 무료입니다. 심층 리포트(총운·1년 운세·카테고리별 운세)는 출시 준비 중이며, 출시 시 별도로 안내합니다.</p>'
     + '<h4>3. 결과의 성격</h4><p>계산은 항성 황도(라히리 아야남사)를 기준으로 하며, 모든 해석 결과는 참고용입니다. 중요한 결정은 결과에만 의존하지 마세요.</p>'
     + '<h4>4. 계정</h4><p>로그인하면 차트를 저장하고 다시 볼 수 있습니다. 계정과 저장 데이터의 관리는 이용자 본인의 책임이며, 타인의 정보를 도용해서는 안 됩니다.</p>'
     + '<h4>5. 금지 행위</h4><p>자동화 도구를 이용한 비정상적인 대량 요청, 타인의 차트 무단 열람·수집을 금합니다.</p>'
