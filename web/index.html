@@ -587,7 +587,7 @@ document.getElementById('timeUnknown').addEventListener('change', e=>{
   const ch = q.get('ch');
   if(ch){
     // textContent만 사용 (XSS 방지)
-    document.getElementById('deepReportTitle').textContent = '전생의 "' + ch + '", 이번 생의 베딕 풀이가 궁금하신가요?';
+    document.getElementById('deepReportTitle').textContent = '전생의 "' + ch + '"님, 이번 생의 베딕 풀이가 궁금하신가요?';
   }
   setTimeout(function(){ document.getElementById('go').click(); }, 500);
 })();
