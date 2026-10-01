@@ -60,6 +60,12 @@ label.lbl{display:block;font-size:14px;font-weight:700;margin:16px 0 8px}
 .check{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:14px;cursor:pointer}
 .check input{width:20px;height:20px;flex:none;accent-color:var(--gold);padding:0}
 .tunote{font-size:13px;color:var(--ink-sub);margin-top:8px}
+.gseg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gseg label{margin:0;position:relative;cursor:pointer}
+.gseg input{position:absolute;opacity:0;pointer-events:none}
+.gseg span{display:flex;align-items:center;justify-content:center;height:52px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:16px;color:var(--ink-sub)}
+.gseg input:checked+span{border-color:var(--gold);background:var(--gold-soft);color:var(--gold-dark);font-weight:700}
+.gseg input:focus-visible+span{box-shadow:0 0 0 4px rgba(184,134,43,.16)}
 .btn-primary{width:100%;height:56px;margin-top:24px;border:none;border-radius:12px;
   background:var(--gold);color:#fff;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit}
 .btn-primary:hover{background:var(--gold-dark)}
@@ -301,6 +307,11 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
       <p class="tunote" id="tuNote" hidden>상승궁과 하우스는 표시되지 않아요. 달 기준으로 간이 계산합니다.</p>
       <label class="lbl" for="place">출생지</label>
       <select class="field" id="place"></select>
+      <label class="lbl" id="genderLbl">성별</label>
+      <div class="gseg" role="radiogroup" aria-labelledby="genderLbl">
+        <label><input type="radio" name="gender" value="여성" checked><span>여성</span></label>
+        <label><input type="radio" name="gender" value="남성"><span>남성</span></label>
+      </div>
       <button class="btn-primary" id="go" onclick="calc()">내 차트 계산하기</button>
       <div class="err" id="err"></div>
     </div>
@@ -323,6 +334,7 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
 
     <section class="block" aria-labelledby="ph">
       <h2 id="ph">행성 배치</h2>
+      <p class="hsub">입력하신 출생일시를 기준으로 계산한, 그 순간 하늘의 행성 위치입니다.</p>
       <details class="toggle">
         <summary><span class="ticon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg></span><span class="tlabel">전체 행성 배치 보기</span><span class="chev"></span></summary>
         <div class="toggle-body">
@@ -501,7 +513,8 @@ function render(d, tu){
 
   const bd = document.getElementById('birthDate').value.replace(/-/g, ".");
   const bt = tu ? "시간 모름" : (document.getElementById('birthTime').value || "시간 모름");
-  document.getElementById('chartMeta').textContent = bd + " · " + bt + " · " + placeSel.options[placeSel.selectedIndex].text;
+  const gd = (document.querySelector('input[name="gender"]:checked')||{}).value || "";
+  document.getElementById('chartMeta').textContent = bd + " · " + bt + " · " + placeSel.options[placeSel.selectedIndex].text + (gd ? " · " + gd : "");
 
   const lagnaIdx = d.lagna ? d.lagna.sign_index : d.moon.sign_index;
   drawChart(lagnaIdx, d.planets, tu || !d.lagna);
@@ -600,7 +613,7 @@ document.getElementById('timeUnknown').addEventListener('change', e=>{
   const ch = q.get('ch');
   if(ch){
     // textContent만 사용 (XSS 방지)
-    document.getElementById('deepReportTitle').textContent = '전생의 "' + ch + '", 이번 생의 설계도가 궁금하신가요?';
+    document.getElementById('deepReportTitle').textContent = '전생의 "' + ch + '", 이번 생의 베딕 풀이가 궁금하신가요?';
   }
   setTimeout(function(){ document.getElementById('go').click(); }, 500);
 })();
