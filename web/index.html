@@ -160,16 +160,10 @@ details[open] .chev{transform:rotate(225deg)}
 .now{font-size:18px;font-weight:700;flex:1}
 .parr{color:var(--gold);display:inline-flex;align-self:center}
 
-/* 출시 알림 */
-.notify{background:var(--gold-soft);border-radius:16px;padding:24px;margin-top:16px}
-.notify p{font-size:15px;font-weight:700;margin:0 0 16px}
-.notify-row{display:flex;flex-direction:column;gap:12px}
-@media(min-width:640px){.notify-row{flex-direction:row}.notify-row .field{flex:1}}
 .btn-secondary{height:52px;padding:0 24px;border-radius:12px;background:#fff;
   border:1.5px solid var(--gold);color:var(--gold-dark);font-size:16px;font-weight:700;
   cursor:pointer;white-space:nowrap;font-family:inherit}
 .btn-secondary:hover{background:var(--gold-soft)}
-#notifyMsg{font-size:13px;color:var(--ink-sub);margin-top:8px;min-height:20px}
 
 footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
   font-size:13px;color:var(--ink-sub);text-align:center}
@@ -350,19 +344,19 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
       <h2 id="deepReportTitle">더 깊이 읽고 싶다면</h2>
       <p class="hsub">지금 본 차트를 바탕으로 한 심층 리포트가 곧 출시됩니다.</p>
       <div class="products">
-        <div class="product" data-product="total" role="button" tabindex="0" aria-label="총운 리포트 출시 알림 신청">
+        <div class="product" data-product="total" role="button" tabindex="0" aria-label="총운 리포트 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">총운 리포트</span>
           <span class="pdesc">평생 소장하는 당신의 전체 지도 — 기질, 시기의 흐름, 나아갈 방향을 한 권에</span>
           <span class="pricerow"><span class="was">33,000원</span><span class="now">16,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="yearly" role="button" tabindex="0" aria-label="1년 운세 출시 알림 신청">
+        <div class="product" data-product="yearly" role="button" tabindex="0" aria-label="1년 운세 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">1년 운세</span>
           <span class="pdesc">원하는 12개월을 지정하면, 그 기간의 운세를 알려드립니다</span>
           <span class="pricerow"><span class="was">22,000원</span><span class="now">11,000원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="compat" role="button" tabindex="0" aria-label="궁합 상세풀이 출시 알림 신청">
+        <div class="product" data-product="compat" role="button" tabindex="0" aria-label="궁합 상세풀이 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">궁합 상세풀이</span>
           <span class="pdesc">전생 인연 테스트보다 한층 깊게 — 두 사람의 베딕 차트를 겹쳐 읽습니다</span>
@@ -370,40 +364,32 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
         </div>
       </div>
       <h3 class="catsub">카테고리별 운세</h3>
-      <p class="catsubd">하나를 골라 깊게 — 각 리포트별 출시 알림을 신청하세요</p>
+      <p class="catsubd">하나를 골라 깊게 — 관심 있는 리포트를 눌러보세요</p>
       <div class="catgrid">
-        <div class="product" data-product="cat_job" role="button" tabindex="0" aria-label="직업운 출시 알림 신청">
+        <div class="product" data-product="cat_job" role="button" tabindex="0" aria-label="직업운 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">직업운</span>
           <span class="pdesc">토성으로 읽는 일하는 방식, 태양으로 보는 당신이 설 자리</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="cat_wealth" role="button" tabindex="0" aria-label="금전운 출시 알림 신청">
+        <div class="product" data-product="cat_wealth" role="button" tabindex="0" aria-label="금전운 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">금전운</span>
           <span class="pdesc">목성이 키우는 재물의 그릇, 금성이 이끄는 돈의 흐름</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="cat_love" role="button" tabindex="0" aria-label="애정운 출시 알림 신청">
+        <div class="product" data-product="cat_love" role="button" tabindex="0" aria-label="애정운 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">애정운</span>
           <span class="pdesc">금성이 그리는 연애의 결, 달이 말해주는 마음의 언어</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="cat_health" role="button" tabindex="0" aria-label="건강운 출시 알림 신청">
+        <div class="product" data-product="cat_health" role="button" tabindex="0" aria-label="건강운 관심 등록">
           <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">건강운</span>
           <span class="pdesc">달로 읽는 컨디션의 리듬, 화성으로 보는 에너지의 흐름</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-      </div>
-      <div class="notify" id="notifyCta">
-        <p>출시되면 가장 먼저, 런칭 특가로 알려드릴게요</p>
-        <div class="notify-row">
-          <input class="field" type="email" id="email" placeholder="이메일 주소" autocomplete="email" aria-label="이메일 주소">
-          <button class="btn-secondary" onclick="notify()">출시 알림 신청</button>
-        </div>
-        <div id="notifyMsg"></div>
       </div>
     </section>
   </div>
@@ -557,31 +543,19 @@ document.getElementById('facts').addEventListener('click', e=>{
   b.setAttribute('aria-expanded', String(willOpen));
 });
 
-// 상품 카드 클릭 → 관심 집계 후 알림 박스로 안내 + 이메일 포커스
+// 상품 카드 클릭 → 관심 집계 + 토스트
 document.querySelectorAll('[data-product]').forEach(el => {
   const go = () => {
     fetch((window.API_BASE || '') + '/api/interest', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({product: el.dataset.product})
     }).catch(()=>{});
-    document.getElementById('notifyCta').scrollIntoView({behavior:'smooth', block:'center'});
-    setTimeout(()=>{ document.getElementById('email').focus({preventScroll:true}); }, 700);
+    toast('관심 상품으로 기록했어요');
   };
   el.addEventListener('click', go);
   el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
 });
 
-async function notify(){
-  const em = document.getElementById('email').value;
-  const m = document.getElementById('notifyMsg');
-  try{
-    const r = await fetch((window.API_BASE || '') + '/api/notify',
-      {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email: em})});
-    const d = await r.json();
-    if(!r.ok) throw new Error(d.detail || "신청 실패");
-    m.textContent = "신청됐습니다. 출시 소식을 전해드릴게요.";
-  }catch(e){ m.textContent = "이메일 주소를 확인해 주세요."; }
-}
 document.getElementById('timeUnknown').addEventListener('change', e=>{
   document.getElementById('birthTime').disabled = e.target.checked;
   document.getElementById('tuNote').hidden = !e.target.checked;
