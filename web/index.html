@@ -34,7 +34,9 @@ h1,h2{font-family:var(--serif)}
 .hero-inner{position:relative}
 .hero-icon{color:var(--gold);display:inline-flex}
 h1{font-size:28px;font-weight:700;line-height:1.35;margin:16px 0 12px}
+h1 span{display:block}
 .hero-sub{color:var(--ink-sub);font-size:16px}
+@media(max-width:480px){h1{font-size:23px}}
 @media(min-width:1024px){.hero{padding:96px 0 16px}h1{font-size:36px}}
 
 /* 전생테스트 배너 */
@@ -195,7 +197,7 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
       <span class="hero-icon" aria-hidden="true">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path></svg>
       </span>
-      <h1>태어난 순간의 하늘로 읽는,<br>이번 생의 설계도</h1>
+      <h1><span>태어난 순간의 하늘로 읽는,</span><span>이번 생의 설계도</span></h1>
       <p class="hero-sub">인도 정통 베딕 점성술 · 가입 없이 30초</p>
     </div>
   </header>
