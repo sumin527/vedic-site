@@ -163,6 +163,84 @@ details[open] .chev{transform:rotate(225deg)}
 
 footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
   font-size:13px;color:var(--ink-sub);text-align:center}
+
+/* 서랍 메뉴 */
+.hamb{position:fixed;top:16px;right:16px;z-index:60;width:44px;height:44px;border-radius:50%;
+  background:var(--surface);border:1.5px solid var(--gold);color:var(--ink);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);padding:0}
+.hamb:hover{background:var(--gold-soft)}
+.drawer-veil{position:fixed;inset:0;background:rgba(31,27,58,.4);z-index:70;opacity:0;
+  pointer-events:none;transition:opacity .25s ease}
+.drawer-veil.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:320px;max-width:85vw;z-index:71;
+  background:var(--surface);transform:translateX(105%);transition:transform .28s ease;
+  display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(31,27,58,.12)}
+.drawer.open{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 12px 12px 20px;border-bottom:1px solid var(--line);flex:none}
+.drawer-head h2{margin:0;font-size:18px}
+.dx{background:none;border:none;color:var(--ink-sub);cursor:pointer;padding:8px;
+  display:inline-flex;border-radius:50%;line-height:0}
+.dx:hover{color:var(--ink)}
+.drawer-body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:32px;
+  -webkit-overflow-scrolling:touch}
+.dview{padding:0 0 8px}
+.dpad{padding:16px 20px}
+.dpad .btn-secondary{width:100%}
+.back{display:inline-flex;align-items:center;background:none;border:none;color:var(--gold-dark);
+  font-size:13px;font-weight:700;cursor:pointer;padding:14px 20px 4px;font-family:inherit}
+.dtitle{font-family:var(--serif);font-size:20px;margin:8px 20px 4px}
+.dnote{font-size:14px;color:var(--ink-sub);margin:8px 20px;line-height:1.6}
+.dform{padding:4px 20px 0}
+.ditem{display:flex;align-items:center;gap:12px;width:100%;padding:15px 20px;background:none;
+  border:none;border-top:1px solid var(--line);font-size:15px;font-weight:700;color:var(--ink);
+  cursor:pointer;text-align:left;font-family:inherit}
+.ditem:last-of-type{border-bottom:1px solid var(--line)}
+.ditem:hover{background:var(--bg)}
+.ditem .dic{color:var(--gold);display:inline-flex;flex:none;line-height:0}
+.ditem .dlbl{flex:1}
+.ditem .chev{color:var(--ink-mute)}
+.duser{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--bg)}
+.dname{font-size:16px;font-weight:700}
+.dprov{font-size:13px;color:var(--ink-sub);margin-top:2px}
+.dfoot{padding:20px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.dlink{background:none;border:none;color:var(--ink-sub);font-size:14px;cursor:pointer;
+  padding:4px 0;font-family:inherit;text-decoration:underline}
+.dlink.dim{font-size:13px}
+.btn-kakao{width:100%;height:52px;border:none;border-radius:12px;background:#FEE500;color:#3C1E1E;
+  font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:8px;font-family:inherit}
+.btn-kakao:hover{filter:brightness(.96)}
+.divi{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--ink-mute);font-size:13px}
+.divi::before,.divi::after{content:"";flex:1;height:1px;background:var(--line)}
+.agree{list-style:none;margin:12px 20px;display:flex;flex-direction:column;gap:12px}
+.agree li{font-size:14px;color:var(--ink-sub);line-height:1.6}
+.agree li b{color:var(--ink)}
+.terms{margin:12px 20px;font-size:14px;color:var(--ink-sub);line-height:1.7}
+.terms h4{font-size:15px;color:var(--ink);margin:16px 0 6px;font-family:var(--sans)}
+.terms h4:first-child{margin-top:0}
+.terms p{margin:0 0 8px}
+.crow{display:flex;align-items:center;gap:8px;padding:14px 20px;border-top:1px solid var(--line)}
+.crow:last-child{border-bottom:1px solid var(--line)}
+.cinfo{flex:1;min-width:0}
+.clabel{font-size:15px;font-weight:700}
+.csub{font-size:13px;color:var(--ink-sub);margin-top:2px}
+.btn-mini{flex:none;height:40px;padding:0 14px;border-radius:10px;background:#fff;
+  border:1.5px solid var(--gold);color:var(--gold-dark);font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-mini.ghost{border-color:var(--line);color:var(--ink-sub)}
+.log{list-style:none;margin:12px 20px;display:flex;flex-direction:column;gap:14px}
+.log li{font-size:14px;color:var(--ink-sub);line-height:1.6}
+.log li b{display:block;color:var(--ink);font-size:13px}
+.tlink{background:none;border:none;color:var(--gold-dark);font-size:14px;font-weight:700;
+  cursor:pointer;padding:0;font-family:inherit;text-decoration:underline}
+.tarea{height:auto;min-height:120px;padding:12px;resize:vertical}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(12px);z-index:90;
+  background:var(--ink);color:#fff;font-size:14px;padding:12px 20px;border-radius:999px;
+  white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;
+  opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.btn-save{width:100%;margin-top:12px}
 </style>
 </head>
 <body>
@@ -232,6 +310,7 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
           <p class="chartmeta" id="chartMeta"></p>
           <svg id="chart" viewBox="0 0 360 360" role="img" aria-label="북인도식 베딕 차트"></svg>
           <figcaption class="chartcap">금색 칸이 1하우스(라그나) · 작은 숫자는 별자리 번호(1 = 양자리)</figcaption>
+          <button class="btn-secondary btn-save" id="saveChart" onclick="saveChart()">이 차트 저장하기</button>
         </figure>
         <div class="facts" id="facts"></div>
       </div>
@@ -510,6 +589,428 @@ document.getElementById('timeUnknown').addEventListener('change', e=>{
   }
   setTimeout(function(){ document.getElementById('go').click(); }, 500);
 })();
+
+/* ---------- 서랍 메뉴 · 로그인 · 저장 차트 ---------- */
+const JWT_KEY = 'vedic_jwt';
+const Auth = { token: null, user: null, next: 'menu', loginNotice: '' };
+try{ Auth.token = localStorage.getItem(JWT_KEY); }catch(e){}
+window.pendingSave = null;
+let chartCache = [];
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+async function api(path, opts){
+  opts = opts || {};
+  const headers = {'Content-Type':'application/json'};
+  if(opts.headers) for(const k in opts.headers) headers[k] = opts.headers[k];
+  if(Auth.token) headers['Authorization'] = 'Bearer ' + Auth.token;
+  const r = await fetch((window.API_BASE || '') + path,
+    {method: opts.method || 'GET', headers: headers, body: opts.body});
+  if(r.status === 401 && Auth.token){
+    Auth.token = null; Auth.user = null;
+    try{ localStorage.removeItem(JWT_KEY); }catch(e){}
+  }
+  let d = null; try{ d = await r.json(); }catch(e){}
+  return {ok: r.ok, status: r.status, data: d};
+}
+
+let toastTimer = null;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+function openDrawer(view){
+  showView(view || 'menu');
+  document.getElementById('drawerVeil').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer(){
+  document.getElementById('drawerVeil').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeDrawer(); });
+
+const IC = {
+  chart: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M7 15l4-6 4 3 5-8"></path></svg>',
+  spark: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8 5.8 1.9-5.8 1.9L12 18.4l-1.9-5.8-5.8-1.9 5.8-1.9z"></path></svg>',
+  share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg>',
+  chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+  doc: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>',
+  lock: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>'
+};
+function dic(n){ return '<span class="dic">' + IC[n] + '</span>'; }
+function backBtn(){ return '<button class="back" onclick="showView(\'menu\')">‹ 메뉴로</button>'; }
+
+function showView(name){
+  const V = {menu: viewMenu, login: viewLogin, consent: viewConsent, mycharts: viewMyCharts,
+             changelog: viewChangelog, terms: viewTerms, privacy: viewPrivacy,
+             inquiry: viewInquiry, share: viewShare};
+  const b = document.getElementById('drawerBody');
+  b.innerHTML = (V[name] || viewMenu)();
+  b.scrollTop = 0;
+  if(name === 'mycharts') loadCharts();
+}
+
+function viewMenu(){
+  let h = '<div class="dview">';
+  if(Auth.user){
+    const prov = Auth.user.provider === 'kakao' ? '카카오 로그인' : '이메일 로그인';
+    h += '<div class="duser"><div class="dname">' + escapeHtml(Auth.user.nickname || '회원') + '님</div>'
+       + '<div class="dprov">' + prov + '</div></div>'
+       + '<button class="ditem" onclick="showView(\'mycharts\')">' + dic('chart')
+       + '<span class="dlbl">내 차트</span><span class="chev"></span></button>';
+  } else {
+    h += '<div class="dpad"><button class="btn-secondary" onclick="openLogin(\'menu\')">로그인하기</button>'
+       + '<p class="dnote" style="margin:8px 0 0">차트 저장과 보관 기능을 이용하려면 로그인해주세요.</p></div>'
+       + '<button class="ditem" onclick="openLogin(\'mycharts\',\'로그인하면 저장한 차트를 볼 수 있어요\')">'
+       + dic('chart') + '<span class="dlbl">내 차트</span><span class="chev"></span></button>';
+  }
+  h += '<button class="ditem" onclick="showView(\'changelog\')">' + dic('spark')
+     + '<span class="dlbl">새로 바뀐 것</span><span class="chev"></span></button>'
+     + '<button class="ditem" onclick="showView(\'share\')">' + dic('share')
+     + '<span class="dlbl">친구에게 알리기</span><span class="chev"></span></button>'
+     + '<button class="ditem" onclick="showView(\'inquiry\')">' + dic('chat')
+     + '<span class="dlbl">문의하기</span><span class="chev"></span></button>'
+     + '<button class="ditem" onclick="showView(\'terms\')">' + dic('doc')
+     + '<span class="dlbl">이용약관</span><span class="chev"></span></button>'
+     + '<button class="ditem" onclick="showView(\'privacy\')">' + dic('lock')
+     + '<span class="dlbl">개인정보처리방침</span><span class="chev"></span></button>';
+  if(Auth.user){
+    h += '<div class="dfoot"><button class="dlink" onclick="logout()">로그아웃</button>'
+       + '<button class="dlink dim" onclick="deleteAccount()">회원탈퇴</button></div>';
+  }
+  return h + '</div>';
+}
+
+function openLogin(next, notice){
+  Auth.next = next || 'menu';
+  Auth.loginNotice = notice || '';
+  openDrawer('login');
+}
+
+function viewLogin(){
+  const key = window.KAKAO_JS_KEY || '';
+  let h = '<div class="dview">' + backBtn() + '<h3 class="dtitle">로그인</h3>';
+  if(Auth.loginNotice) h += '<p class="dnote">' + escapeHtml(Auth.loginNotice) + '</p>';
+  h += '<div class="dform">';
+  if(key){
+    h += '<button class="btn-kakao" onclick="kakaoLogin()">'
+       + '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 5.64 2 10.13c0 2.88 1.9 5.4 4.74 6.82-.17.62-.63 2.26-.72 2.61-.12.42.15.42.37.3.26-.12 1.63-1.1 2.29-1.58.76.1 1.54.16 2.32.16 5.52 0 10-3.64 10-8.13S17.52 2 12 2z"/></svg>'
+       + '카카오로 계속하기</button>'
+       + '<div class="divi"><span>또는</span></div>';
+  }
+  h += '<form id="emailForm" onsubmit="return emailLogin(event)">'
+     + '<label class="lbl" for="loginEmail">이메일</label>'
+     + '<input class="field" type="email" id="loginEmail" placeholder="이메일 주소" autocomplete="email" required>'
+     + '<button class="btn-secondary" style="width:100%;margin-top:12px" type="submit">로그인 링크 받기</button></form>'
+     + '<div id="emailSent" hidden><p class="dnote" style="margin:8px 0 0">메일함에서 로그인 링크를 확인해주세요. (15분 유효)</p></div>'
+     + '</div></div>';
+  return h;
+}
+
+function ensureKakaoSDK(cb){
+  if(window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized()){ cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+  s.onload = function(){
+    try{ window.Kakao.init(window.KAKAO_JS_KEY); cb(); }
+    catch(e){ toast('카카오 로그인을 불러오지 못했어요'); }
+  };
+  s.onerror = function(){ toast('카카오 로그인을 불러오지 못했어요'); };
+  document.head.appendChild(s);
+}
+function kakaoLogin(){
+  ensureKakaoSDK(function(){
+    window.Kakao.Auth.authorize({redirectUri: location.origin + '/'});
+  });
+}
+async function emailLogin(e){
+  e.preventDefault();
+  const em = document.getElementById('loginEmail').value.trim();
+  if(!em) return false;
+  const r = await api('/api/auth/email/request',
+    {method:'POST', body: JSON.stringify({email: em})});
+  if(!r.ok){ toast('요청에 실패했어요. 잠시 후 다시 시도해주세요.'); return false; }
+  document.getElementById('emailForm').hidden = true;
+  document.getElementById('emailSent').hidden = false;
+  return false;
+}
+
+async function handleAuthCallback(){
+  const q = new URLSearchParams(location.search);
+  const code = q.get('code'), lt = q.get('login_token');
+  if(!code && !lt) return;
+  q.delete('code'); q.delete('login_token');
+  const rest = q.toString();
+  history.replaceState(null, '', location.pathname + (rest ? '?' + rest : ''));
+  try{
+    let r;
+    if(code){
+      r = await api('/api/auth/kakao', {method:'POST', body: JSON.stringify({code: code})});
+    } else {
+      r = await api('/api/auth/email/consume', {method:'POST', body: JSON.stringify({token: lt})});
+    }
+    if(!r.ok) throw new Error((r.data && r.data.detail) || '로그인에 실패했어요');
+    const token = r.data && (r.data.token || r.data.access_token || r.data.jwt);
+    if(!token) throw new Error('로그인에 실패했어요');
+    Auth.token = token;
+    try{ localStorage.setItem(JWT_KEY, token); }catch(e){}
+    await afterLogin();
+  }catch(e){ toast(e.message); }
+}
+
+async function afterLogin(){
+  const r = await api('/api/me');
+  if(!r.ok){ toast('로그인 정보를 불러오지 못했어요'); return; }
+  const u = r.data || {};
+  Auth.user = u;
+  if(u.need_consent || u.is_new){ openDrawer('consent'); return; }
+  toast('로그인됐어요');
+  if(window.pendingSave){
+    const p = window.pendingSave; window.pendingSave = null;
+    await doSaveChart(p);
+    showView('mycharts');
+  } else {
+    showView(Auth.next === 'mycharts' ? 'mycharts' : 'menu');
+  }
+}
+
+function viewConsent(){
+  return '<div class="dview">'
+    + '<h3 class="dtitle">개인정보 수집·이용 동의</h3>'
+    + '<ul class="agree">'
+    + '<li><b>수집 항목</b> — 로그인 식별자(카카오 회원번호·닉네임 또는 이메일 주소), 저장한 출생정보(생년월일·시간·출생지)와 차트, 문의 내용</li>'
+    + '<li><b>이용 목적</b> — 차트 저장·조회, 로그인 유지, 문의 응대</li>'
+    + '<li><b>보유 및 파기</b> — 회원 탈퇴 시 즉시 파기합니다</li>'
+    + '</ul>'
+    + '<div class="dform"><label class="check"><input type="checkbox" id="consentCheck"> 위 내용에 동의합니다</label>'
+    + '<button class="btn-secondary" style="width:100%;margin-top:16px" onclick="submitConsent()">동의하고 시작하기</button></div>'
+    + '<p class="dnote">자세한 내용은 <button class="tlink" onclick="showView(\'privacy\')">개인정보처리방침 전문 보기</button></p>'
+    + '</div>';
+}
+async function submitConsent(){
+  const c = document.getElementById('consentCheck');
+  if(!c || !c.checked){ toast('동의에 체크해주세요'); return; }
+  const r = await api('/api/auth/consent', {method:'POST', body: JSON.stringify({agree: true})});
+  if(!r.ok){ toast('동의 처리에 실패했어요'); return; }
+  if(Auth.user){ Auth.user.need_consent = false; Auth.user.is_new = false; }
+  toast('로그인됐어요');
+  if(window.pendingSave){
+    const p = window.pendingSave; window.pendingSave = null;
+    await doSaveChart(p);
+    showView('mycharts');
+  } else {
+    showView(Auth.next === 'mycharts' ? 'mycharts' : 'menu');
+  }
+}
+
+function logout(){
+  Auth.token = null; Auth.user = null; window.pendingSave = null;
+  try{ localStorage.removeItem(JWT_KEY); }catch(e){}
+  toast('로그아웃됐어요');
+  showView('menu');
+}
+async function deleteAccount(){
+  if(!confirm('정말 탈퇴할까요? 저장한 차트와 문의 내역이 모두 삭제돼요.')) return;
+  if(!confirm('탈퇴하면 복구할 수 없어요. 계속할까요?')) return;
+  const r = await api('/api/auth/delete', {method:'POST'});
+  Auth.token = null; Auth.user = null; window.pendingSave = null;
+  try{ localStorage.removeItem(JWT_KEY); }catch(e){}
+  toast(r.ok ? '탈퇴됐어요' : '탈퇴 처리됐어요');
+  showView('menu');
+}
+
+function currentChartValues(){
+  const tu = document.getElementById('timeUnknown').checked;
+  return {
+    dob: document.getElementById('birthDate').value,
+    tob: tu ? null : (document.getElementById('birthTime').value || null),
+    place: placeSel.options[placeSel.selectedIndex].text,
+    chandra_mode: tu
+  };
+}
+async function saveChart(){
+  const v = currentChartValues();
+  if(!v.dob){ toast('생년월일을 먼저 입력해주세요'); return; }
+  if(!Auth.token){
+    window.pendingSave = v;
+    openLogin('mycharts', '로그인하면 이 차트를 저장할 수 있어요');
+    return;
+  }
+  await doSaveChart(v);
+}
+async function doSaveChart(v){
+  const r = await api('/api/charts', {method:'POST', body: JSON.stringify(v)});
+  if(!r.ok){ toast('저장에 실패했어요'); return; }
+  toast('차트가 저장됐어요');
+}
+
+function viewMyCharts(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">내 차트</h3><div id="chartList"></div></div>';
+}
+async function loadCharts(){
+  const list = document.getElementById('chartList');
+  if(!list) return;
+  list.innerHTML = '<p class="dnote">불러오는 중…</p>';
+  const r = await api('/api/charts');
+  if(!r.ok){ list.innerHTML = '<p class="dnote">목록을 불러오지 못했어요.</p>'; return; }
+  const items = (r.data && (r.data.charts || r.data.items)) || [];
+  chartCache = items;
+  if(!items.length){
+    list.innerHTML = '<p class="dnote">아직 저장한 차트가 없어요. 차트를 계산한 뒤 저장해보세요.</p>';
+    return;
+  }
+  list.innerHTML = items.map(function(c){
+    const id = String(c.id).replace(/'/g, "\\'");
+    const label = [c.dob, c.tob, c.place].filter(Boolean).join(' · ') || ('차트 ' + c.id);
+    const sd = c.created_at || c.saved_at || '';
+    return '<div class="crow"><div class="cinfo"><div class="clabel">' + escapeHtml(label) + '</div>'
+      + (sd ? '<div class="csub">' + escapeHtml(String(sd).slice(0, 10)) + '</div>' : '')
+      + '</div><button class="btn-mini" onclick="loadChart(\'' + id + '\')">불러오기</button>'
+      + '<button class="btn-mini ghost" onclick="delChart(\'' + id + '\')">삭제</button></div>';
+  }).join('');
+}
+async function delChart(id){
+  if(!confirm('이 차트를 삭제할까요?')) return;
+  const r = await api('/api/charts/' + encodeURIComponent(id), {method:'DELETE'});
+  if(!r.ok){ toast('삭제에 실패했어요'); return; }
+  toast('삭제됐어요');
+  loadCharts();
+}
+function loadChart(id){
+  const c = chartCache.find(function(x){ return String(x.id) === String(id); });
+  if(!c) return;
+  if(c.dob) document.getElementById('birthDate').value = c.dob;
+  const tu = document.getElementById('timeUnknown');
+  if(c.tob){ tu.checked = false; document.getElementById('birthTime').value = c.tob; }
+  else { tu.checked = true; }
+  tu.dispatchEvent(new Event('change'));
+  if(c.place){
+    const sel = document.getElementById('place');
+    for(const o of sel.options){ if(o.text === c.place){ sel.value = o.value; break; } }
+  }
+  closeDrawer();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  setTimeout(function(){ document.getElementById('go').click(); }, 350);
+}
+
+function viewChangelog(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">새로 바뀐 것</h3>'
+    + '<ul class="log">'
+    + '<li><b>2026-10-01</b>새 디자인 적용, 차트 한글 표기, 런칭 50% 가격 안내</li>'
+    + '<li><b>2026-09-30</b>유료 리포트 상품 카드 추가, 결과 화면 정리</li>'
+    + '<li><b>2026-09-29</b>계산 엔진 업데이트</li>'
+    + '</ul></div>';
+}
+
+function viewTerms(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">이용약관</h3>'
+    + '<div class="terms">'
+    + '<h4>1. 서비스 소개</h4><p>이 사이트는 베딕 점성술(인도 전통 점성술) 기반의 무료 출생 차트 계산기입니다. 가입 없이 이용할 수 있습니다.</p>'
+    + '<h4>2. 무료와 유료</h4><p>현재 제공되는 차트 계산, 요약 카드, 행성 배치, 용어 설명은 무료입니다. 심층 리포트(총운·올해의 운세·카테고리별 운세)는 출시 준비 중이며, 출시 시 별도로 안내합니다.</p>'
+    + '<h4>3. 결과의 성격</h4><p>계산은 항성 황도(라히리 아야남사)를 기준으로 하며, 모든 해석 결과는 참고용입니다. 중요한 결정은 결과에만 의존하지 마세요.</p>'
+    + '<h4>4. 계정</h4><p>로그인하면 차트를 저장하고 다시 볼 수 있습니다. 계정과 저장 데이터의 관리는 이용자 본인의 책임이며, 타인의 정보를 도용해서는 안 됩니다.</p>'
+    + '<h4>5. 금지 행위</h4><p>자동화 도구를 이용한 비정상적인 대량 요청, 타인의 차트 무단 열람·수집을 금합니다.</p>'
+    + '<h4>6. 문의</h4><p>서비스 이용 중 문의는 메뉴의 문의하기를 이용해주세요.</p>'
+    + '</div></div>';
+}
+
+function viewPrivacy(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">개인정보처리방침</h3>'
+    + '<div class="terms">'
+    + '<h4>1. 수집 항목</h4><p>카카오 로그인 시 카카오 회원번호·닉네임, 이메일 로그인 시 이메일 주소, 차트 저장 시 생년월일·태어난 시간·출생지, 문의하기 이용 시 연락처와 문의 내용을 수집합니다.</p>'
+    + '<h4>2. 수집 목적</h4><p>수집한 정보는 로그인 유지, 저장한 차트의 저장·조회, 문의 응대에만 이용합니다.</p>'
+    + '<h4>3. 보유 및 파기</h4><p>회원 탈퇴 시 수집된 개인정보를 즉시 파기합니다. 법령상 보존이 필요한 경우에는 해당 기간 동안 보관합니다.</p>'
+    + '<h4>4. 위탁 업체</h4><p>서비스 운영을 위해 다음 업체에 처리를 위탁합니다. Railway(서버), Cloudflare(웹 호스팅), Resend(이메일 발송), 카카오(로그인).</p>'
+    + '<h4>5. 이용자의 권리</h4><p>저장된 개인정보의 열람·정정·삭제를 요청할 수 있으며, 메뉴의 회원탈퇴로 언제든 탈퇴할 수 있습니다.</p>'
+    + '<h4>6. 문의</h4><p>개인정보 관련 문의: [문의 이메일]</p>'
+    + '</div></div>';
+}
+
+function viewInquiry(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">문의하기</h3>'
+    + '<div class="dform"><form id="inqForm" onsubmit="return sendInquiry(event)">'
+    + '<label class="lbl" for="inqContact">연락처</label>'
+    + '<input class="field" type="text" id="inqContact" placeholder="답변받을 이메일 또는 연락처">'
+    + '<label class="lbl" for="inqMsg">내용</label>'
+    + '<textarea class="field tarea" id="inqMsg" rows="5" placeholder="문의 내용을 적어주세요" required></textarea>'
+    + '<button class="btn-secondary" style="width:100%;margin-top:16px" type="submit">보내기</button>'
+    + '</form>'
+    + '<div id="inqDone" hidden><p class="dnote" style="margin:8px 0 0">문의가 접수됐어요. 확인 후 연락드릴게요.</p></div>'
+    + '</div></div>';
+}
+async function sendInquiry(e){
+  e.preventDefault();
+  const contact = document.getElementById('inqContact').value.trim();
+  const message = document.getElementById('inqMsg').value.trim();
+  if(!message){ toast('내용을 입력해주세요'); return false; }
+  const r = await api('/api/inquiry', {method:'POST', body: JSON.stringify({contact: contact, message: message})});
+  if(!r.ok){ toast('접수에 실패했어요'); return false; }
+  document.getElementById('inqForm').hidden = true;
+  document.getElementById('inqDone').hidden = false;
+  return false;
+}
+
+function viewShare(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">친구에게 알리기</h3>'
+    + '<p class="dnote">태어난 순간의 하늘로 읽는 이번 생의 설계도 — 친구도 30초 만에 확인할 수 있어요.</p>'
+    + '<div class="dform">'
+    + '<button class="btn-secondary" style="width:100%" onclick="copyLink()">링크 복사하기</button>'
+    + '<button class="btn-secondary" style="width:100%;margin-top:12px" onclick="sharePage()">공유하기</button>'
+    + '</div></div>';
+}
+function copyLink(){
+  const url = location.origin + '/';
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(
+      function(){ toast('링크가 복사됐어요'); },
+      function(){ toast('복사에 실패했어요'); });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('링크가 복사됐어요'); }
+    catch(e){ toast('복사에 실패했어요'); }
+    ta.remove();
+  }
+}
+function sharePage(){
+  const url = location.origin + '/';
+  if(navigator.share){ navigator.share({title: document.title, url: url}).catch(function(){}); }
+  else copyLink();
+}
+
+/* 인증 콜백 + 세션 복원 */
+(function(){
+  handleAuthCallback().then(function(){
+    if(Auth.token && !Auth.user){
+      api('/api/me').then(function(r){ if(r.ok) Auth.user = r.data || null; });
+    }
+  });
+})();
 </script>
+
+<button class="hamb" id="hamb" aria-label="메뉴 열기" onclick="openDrawer('menu')">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+</button>
+<div class="drawer-veil" id="drawerVeil" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="메뉴">
+  <div class="drawer-head">
+    <h2>메뉴</h2>
+    <button class="dx" onclick="closeDrawer()" aria-label="메뉴 닫기">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

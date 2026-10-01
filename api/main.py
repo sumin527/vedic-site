@@ -36,6 +36,7 @@ from free_content import (                            # noqa: E402
     DASHA_KO, NAKSHATRA_KO, PLANET_ABBR, PLANET_KO,
     RASHI_KO, SIGN_ORDER, TIME_UNKNOWN_NOTICE,
 )
+from auth import router as auth_router               # noqa: E402  (선택 로그인/저장; 기존 엔드포인트 불변)
 
 CONSTANTS = load_constants(ENGINE_DIR / "constants.yaml")
 EPHE_PATH = ENGINE_DIR / "ephe_sky"  # 2026-09-29: DE430 BSP (skyfield). 배포 시 다운로드 필요.
@@ -45,6 +46,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
+app.include_router(auth_router)  # /api/auth/*, /api/me, /api/charts, /api/inquiry, /api/admin/*
 
 # --- 간단 rate limit (IP당 분당 60회) ---
 _hits: dict[str, list[float]] = defaultdict(list)
