@@ -134,6 +134,10 @@ details[open] .chev{transform:rotate(225deg)}
 
 /* 상품 카드 */
 .products{display:grid;gap:12px;margin-top:16px}
+.catsub{margin:26px 0 0;font-size:16px}
+.catsubd{margin:6px 0 0;font-size:13px;color:var(--ink-sub)}
+.catgrid{display:grid;gap:12px;margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:1024px){.catgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}
 @media(min-width:1024px){.products{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
 .product{background:var(--surface);border:1px solid var(--line);border-radius:16px;
   box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:8px;
@@ -329,44 +333,48 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
       </details>
     </section>
 
-    <section class="block" aria-labelledby="gh">
-      <h2 id="gh">용어 설명</h2>
-      <details class="toggle">
-        <summary><span class="ticon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg></span><span class="tlabel">처음 보시는 분을 위한 여섯 가지 용어</span><span class="chev"></span></summary>
-        <div class="toggle-body gloss">
-          <dl>
-            <dt>라그나(상승궁)</dt><dd>태어난 순간 동쪽 지평선에 떠오르던 별자리. 차트를 읽는 출발점입니다. 생일로 말하는 별자리와는 기준이 다릅니다.</dd>
-            <dt>궁(하우스)</dt><dd>삶의 영역을 나눈 열두 자리입니다. 10궁은 직업·사회적 역할, 2궁은 재산·가족·말, 7궁은 배우자·동반자 관계 등을 봅니다.</dd>
-            <dt>궁의 주인</dt><dd>그 궁의 별자리를 다스리는 행성입니다. 예를 들어 10궁이 염소자리이면 토성이 직업 해석의 기준이 됩니다.</dd>
-            <dt>자기 별자리</dt><dd>행성이 자신이 다스리는 별자리에 있는 것. 전통적으로 힘을 얻는 조건으로 봅니다.</dd>
-            <dt>다샤</dt><dd>삶의 시기별 흐름을 읽는 체계입니다. 마하다샤(대운)는 긴 기간, 안타르다샤(소운)는 그 안의 짧은 기간입니다.</dd>
-            <dt>나크샤트라</dt><dd>황도를 27개로 나눈 달의 별자리 체계. 달이 있는 나크샤트라로 마음의 결을 읽습니다.</dd>
-          </dl>
-          <p class="gdisc">베딕 점성술은 전통적인 상징과 해석 체계입니다. 위 결과는 그 관점에서 읽은 경향이며, 미래의 결과를 확정하는 설명은 아닙니다.</p>
-        </div>
-      </details>
-    </section>
-
     <section class="block" aria-labelledby="dh">
       <h2 id="deepReportTitle">더 깊이 읽고 싶다면</h2>
-      <p class="hsub">지금 본 차트를 바탕으로 한 심층 리포트 3종이 곧 출시됩니다.</p>
+      <p class="hsub">지금 본 차트를 바탕으로 한 심층 리포트가 곧 출시됩니다.</p>
       <div class="products">
         <div class="product" data-product="total" role="button" tabindex="0" aria-label="총운 리포트 출시 알림 신청">
-          <span class="badge">런칭 50%</span>
+          <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">총운 리포트</span>
           <span class="pdesc">평생 소장하는 당신의 전체 지도 — 기질, 시기의 흐름, 나아갈 방향을 한 권에</span>
           <span class="pricerow"><span class="was">33,000원</span><span class="now">16,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
         <div class="product" data-product="yearly" role="button" tabindex="0" aria-label="올해의 운세 출시 알림 신청">
-          <span class="badge">런칭 50%</span>
+          <span class="badge">런칭 EVENT 50% 할인</span>
           <span class="pname">올해의 운세</span>
           <span class="pdesc">2026년 10월 ~ 2027년 9월 — 소운이 바뀌는 고비마다 읽는 12개월</span>
           <span class="pricerow"><span class="was">22,000원</span><span class="now">11,000원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
-        <div class="product" data-product="category" role="button" tabindex="0" aria-label="카테고리별 운세 출시 알림 신청">
-          <span class="badge">런칭 50%</span>
-          <span class="pname">카테고리별 운세</span>
-          <span class="pdesc">커리어 · 금전 · 관계 · 컨디션 — 하나를 골라 깊게</span>
+      </div>
+      <h3 class="catsub">카테고리별 운세</h3>
+      <p class="catsubd">하나를 골라 깊게 — 각 리포트별 출시 알림을 신청하세요</p>
+      <div class="catgrid">
+        <div class="product" data-product="cat_job" role="button" tabindex="0" aria-label="직업운 출시 알림 신청">
+          <span class="badge">런칭 EVENT 50% 할인</span>
+          <span class="pname">직업운</span>
+          <span class="pdesc">10궁과 그 궁의 주인, 토성의 위치로 일의 방향과 흐름을 봅니다</span>
+          <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
+        </div>
+        <div class="product" data-product="cat_wealth" role="button" tabindex="0" aria-label="금전운 출시 알림 신청">
+          <span class="badge">런칭 EVENT 50% 할인</span>
+          <span class="pname">금전운</span>
+          <span class="pdesc">2궁·11궁과 목성·금성의 자리로 재물의 흐름을 봅니다</span>
+          <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
+        </div>
+        <div class="product" data-product="cat_love" role="button" tabindex="0" aria-label="애정운 출시 알림 신청">
+          <span class="badge">런칭 EVENT 50% 할인</span>
+          <span class="pname">애정운</span>
+          <span class="pdesc">7궁과 금성, 달의 자리로 관계의 결을 봅니다</span>
+          <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
+        </div>
+        <div class="product" data-product="cat_health" role="button" tabindex="0" aria-label="건강운 출시 알림 신청">
+          <span class="badge">런칭 EVENT 50% 할인</span>
+          <span class="pname">건강운</span>
+          <span class="pdesc">1궁·6궁과 달의 상태로 컨디션의 흐름을 봅니다</span>
           <span class="pricerow"><span class="was">11,000원</span><span class="now">5,500원</span><span class="parr" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></span>
         </div>
       </div>
@@ -645,7 +653,8 @@ const IC = {
   share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg>',
   chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
   doc: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg>',
-  lock: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>'
+  lock: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>',
+  book: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>'
 };
 function dic(n){ return '<span class="dic">' + IC[n] + '</span>'; }
 function backBtn(){ return '<button class="back" onclick="showView(\'menu\')">‹ 메뉴로</button>'; }
@@ -653,7 +662,7 @@ function backBtn(){ return '<button class="back" onclick="showView(\'menu\')">�
 function showView(name){
   const V = {menu: viewMenu, login: viewLogin, consent: viewConsent, mycharts: viewMyCharts,
              changelog: viewChangelog, terms: viewTerms, privacy: viewPrivacy,
-             inquiry: viewInquiry, share: viewShare};
+             inquiry: viewInquiry, share: viewShare, glossary: viewGlossary};
   const b = document.getElementById('drawerBody');
   b.innerHTML = (V[name] || viewMenu)();
   b.scrollTop = 0;
@@ -674,7 +683,9 @@ function viewMenu(){
        + '<button class="ditem" onclick="openLogin(\'mycharts\',\'로그인하면 저장한 차트를 볼 수 있어요\')">'
        + dic('chart') + '<span class="dlbl">내 차트</span><span class="chev"></span></button>';
   }
-  h += '<button class="ditem" onclick="showView(\'changelog\')">' + dic('spark')
+  h += '<button class="ditem" onclick="showView(\'glossary\')">' + dic('book')
+     + '<span class="dlbl">용어 설명</span><span class="chev"></span></button>'
+     + '<button class="ditem" onclick="showView(\'changelog\')">' + dic('spark')
      + '<span class="dlbl">새로 바뀐 것</span><span class="chev"></span></button>'
      + '<button class="ditem" onclick="showView(\'share\')">' + dic('share')
      + '<span class="dlbl">친구에게 알리기</span><span class="chev"></span></button>'
@@ -901,6 +912,18 @@ function loadChart(id){
   closeDrawer();
   window.scrollTo({top: 0, behavior: 'smooth'});
   setTimeout(function(){ document.getElementById('go').click(); }, 350);
+}
+
+function viewGlossary(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">용어 설명</h3>'
+    + '<div class="gloss"><dl>'
+    + '<dt>라그나(상승궁)</dt><dd>태어난 순간 동쪽 지평선에 떠오르던 별자리. 차트를 읽는 출발점입니다. 생일로 말하는 별자리와는 기준이 다릅니다.</dd>'
+    + '<dt>궁(하우스)</dt><dd>삶의 영역을 나눈 열두 자리입니다. 10궁은 직업·사회적 역할, 2궁은 재산·가족·말, 7궁은 배우자·동반자 관계 등을 봅니다.</dd>'
+    + '<dt>궁의 주인</dt><dd>그 궁의 별자리를 다스리는 행성입니다. 예를 들어 10궁이 염소자리이면 토성이 직업 해석의 기준이 됩니다.</dd>'
+    + '<dt>자기 별자리</dt><dd>행성이 자신이 다스리는 별자리에 있는 것. 전통적으로 힘을 얻는 조건으로 봅니다.</dd>'
+    + '<dt>다샤</dt><dd>삶의 시기별 흐름을 읽는 체계입니다. 마하다샤(대운)는 긴 기간, 안타르다샤(소운)는 그 안의 짧은 기간입니다.</dd>'
+    + '<dt>나크샤트라</dt><dd>황도를 27개로 나눈 달의 별자리 체계. 달이 있는 나크샤트라로 마음의 결을 읽습니다.</dd>'
+    + '</dl><p class="gdisc">베딕 점성술은 전통적인 상징과 해석 체계입니다. 위 결과는 그 관점에서 읽은 경향이며, 미래의 결과를 확정하는 설명은 아닙니다.</p></div></div>';
 }
 
 function viewChangelog(){
