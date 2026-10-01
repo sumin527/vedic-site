@@ -77,9 +77,9 @@ _stats_started = dt.datetime.now(dt.timezone.utc).isoformat()
 
 
 def _bump(key: str) -> None:
-    _stats_total[key] += 1
+    _stats_total[key] = _stats_total.get(key, 0) + 1
     day = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-    _stats_by_day[day][key] += 1
+    _stats_by_day[day][key] = _stats_by_day[day].get(key, 0) + 1
     print(f"[stats] {day} {key} total={_stats_total[key]}", flush=True)
 
 
