@@ -228,7 +228,7 @@ def notify(req: NotifyRequest):
     return {"ok": True}
 
 
-_INTEREST_PRODUCTS = {"total", "yearly", "category",
+_INTEREST_PRODUCTS = {"total", "yearly", "compat", "category",
                     "cat_job", "cat_wealth", "cat_love", "cat_health"}
 
 
