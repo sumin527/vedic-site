@@ -580,10 +580,14 @@ document.getElementById('timeUnknown').addEventListener('change', e=>{
   // 전생테스트 17개 시·도 → 계산기 10개 도시 매핑
   const PLACE_MAP = {서울:'서울',부산:'부산',대구:'대구',인천:'인천',광주:'광주',대전:'대전',울산:'울산',세종:'세종',제주:'제주',경기:'수원',강원:'서울',충북:'대전',충남:'대전',전북:'광주',전남:'광주',경북:'대구',경남:'부산'};
   const want = PLACE_MAP[q.get('place')] || '서울';
+  const placeEst = q.get('place_est') === '1'; // 전생테스트에서 출생지를 몰라 서울로 임시 계산
   const sel = document.getElementById('place');
   for(const o of sel.options){ if(o.text === want){ sel.value = o.value; break; } }
   const banner = document.getElementById('pastlifeBanner');
   banner.style.display = 'block';
+  if(placeEst){
+    banner.insertAdjacentHTML('beforeend', '<br><span class="small">※ 출생지를 모르셔서 서울 기준으로 임시 계산했어요. 정확한 차트는 출생지를 선택해 주세요.</span>');
+  }
   const ch = q.get('ch');
   if(ch){
     // textContent만 사용 (XSS 방지)
