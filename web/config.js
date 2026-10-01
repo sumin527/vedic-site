@@ -3,5 +3,5 @@
 window.API_BASE = "https://vedic-site-production.up.railway.app";
 // 카카오 로그인용 JavaScript 키 (developers.kakao.com에서 발급).
 // 비어 있으면 메뉴의 카카오 로그인 버튼이 숨겨집니다.
-window.KAKAO_JS_KEY = "";
+window.KAKAO_JS_KEY = "33d51fa84ab97e1539cf1e52c9995b1";
 
