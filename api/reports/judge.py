@@ -13,6 +13,8 @@ when 조건 문법 (전부 AND):
   sav_house: {house: n, min: x, max: y}   상한 미포함
   varga_sign_house / varga_contrast        바르가
   yoga: {planet, signs, houses}           요가 성립 조건
+  maha_lord_of: N / antar_lord_of: N      현재 마하/안타르다샤 로드가 N하우스 로드와 동일
+  maha_lord: planet / antar_lord: planet  현재 마하/안타르다샤 로드가 특정 행성
 
 사용:
     python judge.py engine_output.json
@@ -62,6 +64,8 @@ class Chart:
         self.varga = ji["varga"]["positions"]
         self.karaka = ji["karaka"]
         self.dasha = ji["dasha"]["birth_periods"]
+        self.maha_lord, self.antar_lord = _current_dasha_lords(
+            ji["dasha"].get("full_timeline", []))
 
     def dignity(self, planet: str) -> str:
         s = self.sign_of.get(planet)
@@ -95,6 +99,31 @@ class Chart:
         if asc is None or s is None:
             return None
         return (s - asc) % 12 + 1
+
+
+def _current_dasha_lords(timeline: list) -> tuple[str | None, str | None]:
+    """full_timeline에서 현재 시점이 속한 마하/안타르다샤 로드."""
+    import datetime as dt
+    now = dt.datetime.now(dt.timezone.utc)
+    for md in timeline or []:
+        try:
+            s = dt.datetime.fromisoformat(str(md["start"]).replace("Z", "+00:00"))
+            e = dt.datetime.fromisoformat(str(md["end"]).replace("Z", "+00:00"))
+        except (KeyError, ValueError):
+            continue
+        if s <= now < e:
+            antar = None
+            for ad in md.get("antardashas", []):
+                try:
+                    as_ = dt.datetime.fromisoformat(str(ad["start"]).replace("Z", "+00:00"))
+                    ae = dt.datetime.fromisoformat(str(ad["end"]).replace("Z", "+00:00"))
+                except (KeyError, ValueError):
+                    continue
+                if as_ <= now < ae:
+                    antar = ad.get("lord")
+                    break
+            return md.get("lord"), antar
+    return None, None
 
 
 def sav_grade(value: int, cfg: dict) -> str:
@@ -191,6 +220,29 @@ def match(rule: dict, ch: Chart, cfg: dict) -> tuple[bool, dict]:
         info["요가"] = (f"{PKO[p]} — {SIGN[ch.sign_of[p]]} "
                       f"{ch.house_of[p]}하우스 (켄드라)")
 
+    # --- 다샤: 현재 마하/안타르다샤 로드 ---
+    if "maha_lord_of" in w:
+        n = w["maha_lord_of"]
+        if ch.maha_lord != ch.lord_of(n):
+            return False, info
+        info["마하다샤"] = f"{PKO.get(ch.maha_lord, ch.maha_lord)} ({n}로드)"
+
+    if "antar_lord_of" in w:
+        n = w["antar_lord_of"]
+        if ch.antar_lord != ch.lord_of(n):
+            return False, info
+        info["안타르다샤"] = f"{PKO.get(ch.antar_lord, ch.antar_lord)} ({n}로드)"
+
+    if "maha_lord" in w:
+        if ch.maha_lord != w["maha_lord"]:
+            return False, info
+        info["마하다샤"] = PKO.get(ch.maha_lord, ch.maha_lord)
+
+    if "antar_lord" in w:
+        if ch.antar_lord != w["antar_lord"]:
+            return False, info
+        info["안타르다샤"] = PKO.get(ch.antar_lord, ch.antar_lord)
+
     if "varga_contrast" in w:
         p = _resolve_planet(w["varga_contrast"]["planet"], ch)
         parts = [f"D1 {SIGN[ch.sign_of[p]]} {ch.house_of[p]}H ({ch.dignity(p)})"]
@@ -231,8 +283,13 @@ def judge(data: dict, rules: dict, cfg: dict) -> dict:
         else:
             tiers[tier] = {"present": True, "direction": "support", "auto": "full"}
 
-    for tier, g in rules.get("gaps", {}).items():
-        review.append(f"{tier}: 규칙 부재 ({g['issue']}) — 자동 판정 불가")
+    gaps = rules.get("gaps", {})
+    if isinstance(gaps, dict):
+        for tier, g in gaps.items():
+            review.append(f"{tier}: 규칙 부재 ({g.get('issue', '?')}) — 자동 판정 불가")
+    elif isinstance(gaps, list):
+        for g in gaps:
+            review.append(f"규칙 부재 ({g.get('issue', '?')}) — 자동 판정 불가")
 
     return {"chart": ch, "tiers": tiers, "hits": hits, "review": review}
 

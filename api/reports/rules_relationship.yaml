@@ -1,291 +1,877 @@
-# =============================================================================
-# rules_relationship.yaml — 연애·관계 판정 규칙 DB (파일럿 범위)
-# =============================================================================
-# 범위: 파일럿 관계 카테고리에서 자동 판정 가능한 규칙만 수록한다.
-#       16_하우스7.md / 44_BPHS_카라카_특수점.md / 43_BPHS_아쉬타카바르가.md
-#       원문 서술을 그대로 옮기거나 충실히 요약한 것만 넣었다.
-#
-# 원칙:
-#   §2.1  원본 문서를 수정하지 않는다. 여기에는 서술을 인용만 한다.
-#   §6.1  문서에 없는 규칙을 만들지 않는다. text 는 원문 서술을 그대로 옮긴다.
-#   §9.1  tier 는 계열 하나만 지정한다. 한 규칙이 두 계열을 채우지 않는다.
-#
-# 안전 (16 헤더·evidence_map_relationship.md §2):
-#   - 7하우스는 마라카(2·7) — 수명·사망·이별 확정 뉘앙스의 규칙은 절대 금지.
-#     관계의 "패턴/성향/리듬" 서술에 그친다.
-#   - 16 §4.5(별거·이혼 지표)·§8.5(배우자 건강)는 볼트 지식 — 규칙에 넣지 않는다.
-#   - 배우자 서술의 주어는 사람이 아니라 관계다 (ISSUE-027).
-#   - "만갈리크" 용어는 리포트에 쓰지 않고 효과만 서술한다 (16 §4.3, §2-3).
-#
-# when 조건 문법 (전부 AND) — judge.py 가 지원하는 키만 사용:
-#   lord_house: {lord_of: N, in_house: M}   N하우스 로드가 M하우스에 위치
-#   lord_dignity: {lord_of: N, dignity: own|exalted|debilitated|other}
-#   house_sign: {house: N, sign: S}         N하우스의 사인 번호 (1=양..12=물고기)
-#   karaka_house: {karaka: dk, in_house: N} 차라 카라카(DK 등) 행성의 하우스
-#   planet_in_house: {행성: 하우스}          sun moon mars mercury jupiter
-#                                           venus saturn rahu ketu
-#   sav_house: {house: n}                   + direction: support_if_grade_above
-#                                           + grade_threshold (constants.yaml 하한)
-#   yoga: {planet, signs, houses}           요가 성립 조건
-#     ※ R_MANGAL_DOSHA 는 하우스 기반 도샤라 signs 에 12사인 전부를 넣어
-#       사실상 하우스 조건으로만 동작하게 했다.
-#   varga_contrast: {planet, vargas}        + direction: computed (D1·D9 강약 비교)
-# =============================================================================
-
 meta:
-  version: 0.1.0
-  scope: relationship_pilot
-  source_docs: [16_하우스7.md, 44_BPHS_카라카_특수점.md, 43_BPHS_아쉬타카바르가.md]
-  coverage_note: >
-    파일럿: T1(7로드 주요 배치·7H 재실 핵심 4행)·T2(DK)·T3(D9 대조)·
-    T5(7H SAV)·T6(말라비야·함사·만갈리크 완곡) 자동 판정.
-    T4(다샤·트랜짓 시기)는 judge when 문법 미지원이라 사람 확정.
-    16 §5.1 7H 사인 12행·7로드 나머지 배치(1·3·4·6·11·12H)는 v0.2 확장 후보.
-    16 §4.5·§8.5 는 문서 지정 볼트 지식 — 리포트 사용 금지.
-
-# =============================================================================
-# T1 — D1 하우스/로드/재실  (L1)
-# =============================================================================
+  version: 2.0.0
+  description: rules_relationship — 심화판 (evidence map R1~R6)
+  source: report_module-2 worksheet_spec.yaml evidence map + kb-sources 원전
+  shallow_backup: _backup_shallow/
 rules:
+- id: R_R1_7L_1H
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 1
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 1하우스에 있습니다. 관계에서 주도적으로 나서고 파트너십을 자기 삶의 중심축으로 여기는 경향이 있습니다. 상대의 존재감이
+    크고 밀접하게 얽히는 구조이므로, 관계 안에서도 '나'의 영역을 지키는 리듬을 돌아볼 수 있습니다.
+  note: '16 §1: 배우자가 native와 밀접·존재감 강함·자아 형성에 영향 / 손상 시 지배적 관계 또는 정체성 갈등 — 완곡 서술'
+- id: R_R1_7L_3H
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 3
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 3하우스에 있습니다. 상대와의 소통이 활발하고 상대를 파트너이자 조언자로 여기는 경향이 있습니다. 짧은 여행이나 이동을
+    함께 즐기는 리듬이 관계에 활력을 줍니다.
+- id: R_R1_7L_4H
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 4
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 4하우스에 있습니다. 상대와 함께 정착하고 가정을 일구는 방향으로 관계가 흘러가는 경향이 있습니다. 안정된 보금자리를
+    함께 만드는 데서 유대가 깊어지는 구조입니다.
+- id: R_R1_7L_6H
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 6
+  direction: caution
+  source: 16 §1
+  text: 7하우스 로드가 6하우스에 있습니다. 관계에서 의견 충돌이나 역할 다툼이 불거지기 쉬운 구조이므로, '인내와 소통이 특별히 중요한 국면'으로
+    봅니다. 갈등을 피하기보다 다루는 방식을 함께 정해두면 후반으로 갈수록 안정되는 흐름입니다.
+  caution: '16 §1: 갈등·소송 위험 / 우파차야로 후반 극복 — 확정 예언 금지, 완곡 필수'
+- id: R_R1_7L_11H
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 11
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 11하우스에 있습니다. 사교 모임·그룹·친구의 소개를 통해 인연이 이어지는 경향이 있습니다. 넓은 교우 관계 안에서
+    관계가 자라나고, 결합 후에도 사회적 확장이 따르는 구조입니다.
+- id: R_R1_7L_12H
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 12
+  direction: neutral
+  source: 16 §1
+  text: 7하우스 로드가 12하우스에 있습니다. 조용하고 사적인 결합, 또는 해외·원거리와 결부된 인연의 경향이 있습니다. 둘만의 시간을 깊이
+    나누는 관계에서 만족이 커지는 구조입니다.
+  caution: '16 §1: 별거·원거리·성적 문제 — 확정 예언 금지, 완곡 서술'
+- id: R_R1_7H_SUN
+  tier: t1_d1
+  conclusion: R1
+  when:
+    planet_in_house:
+      sun: 7
+  direction: support
+  source: 16 §2
+  text: 태양이 7하우스에 있습니다. 관계에서 서로의 자존심을 세워주는 리듬이 중요한 구조입니다. 사회적 지위가 있는 상대와의 인연, 또는 관계
+    자체가 공적 얼굴이 되는 경향이 있습니다.
+  caution: 손상 시 자존심 다툼 — '서로의 입장을 세워주는 대화' 프레임으로 서술
+- id: R_R1_7H_MOON
+  tier: t1_d1
+  conclusion: R1
+  when:
+    planet_in_house:
+      moon: 7
+  direction: support
+  source: 16 §2
+  text: 달이 7하우스에 있습니다. 감정적 유대가 관계의 중심이 되는 구조입니다. 상대의 기분을 세심히 읽고 보살피는 따뜻함이 있지만, 감정의
+    파도에 함께 흔들리지 않도록 각자의 리듬을 지키는 것도 돌아볼 수 있습니다.
+- id: R_R1_7H_MERCURY
+  tier: t1_d1
+  conclusion: R1
+  when:
+    planet_in_house:
+      mercury: 7
+  direction: support
+  source: 16 §2
+  text: 수성이 7하우스에 있습니다. 대화와 지적 교류가 관계의 윤활유인 구조입니다. 재치 있는 소통으로 갈등을 풀어가는 경향이 있고, 사업
+    파트너로서의 호흡도 함께 좋은 배치입니다.
+  caution: 손상 시 계산적 관계·언쟁 — 완곡 서술
+- id: R_R1_7H_RAHU
+  tier: t1_d1
+  conclusion: R1
+  when:
+    planet_in_house:
+      rahu: 7
+  direction: neutral
+  source: 16 §2
+  text: 라후가 7하우스에 있습니다. 관습에서 벗어난 형태의 인연 — 나이 차·문화 차·만남 계기의 이례성 — 이 나타나는 경향이 있습니다.
+    관계의 시작이 갑작스러울 수 있으나, 그 자체가 이 관계의 개성으로 읽힙니다.
+  caution: 손상 시 삼각관계·급변 — 확정 예언 금지, 16 §9.3 프레임
+- id: R_R1_7H_KETU
+  tier: t1_d1
+  conclusion: R1
+  when:
+    planet_in_house:
+      ketu: 7
+  direction: caution
+  source: 16 §2
+  text: 케투가 7하우스에 있습니다. 관계 안에서 혼자만의 시간과 심리적 거리가 필요한 리듬이 있습니다. 영적·내면적 가치를 공유할 때 유대가
+    깊어지며, 상대에게도 같은 여백을 주는 것이 관계의 숨통이 됩니다.
+  caution: '16 §2: 무관심·거리감·회피 — ''여백이 필요한 리듬''으로 완곡화, 확정 예언 금지'
+- id: R_R1_VENUS_OWN
+  tier: t2_karaka
+  conclusion: R1
+  when:
+    planet_in_house:
+      venus: 2
+  direction: support
+  source: 16 헤더 · §4.2
+  text: 금성이 황소자리(자기 별자리)에 있습니다. 관계의 주 카라카가 힘을 받는 배치로, 애정을 표현하고 조화를 만드는 능력이 안정적으로 작동하는
+    경향이 있습니다.
+- id: R_R1_VENUS_EXALTED
+  tier: t2_karaka
+  conclusion: R1
+  when:
+    planet_in_house:
+      venus: 12
+  direction: support
+  source: 16 헤더 · §4.2
+  text: 금성이 물고기자리(고양)에 있습니다. 관계의 주 카라카가 가장 높은 자리에서 빛나는 배치로, 헌신적이고 낭만적인 애정의 흐름이 강한
+    경향이 있습니다.
+- id: R_R1_7L_DEBILITATED
+  tier: t1_d1
+  conclusion: R1
+  when:
+    lord_dignity:
+      lord_of: 7
+      dignity: debilitated
+  direction: caution
+  source: 16 §1
+  text: 7하우스 로드가 쇠약한 상태에 있습니다. 관계의 토대를 다지는 데 시간이 걸리는 구조이므로, 서두르기보다 신뢰를 차곡차곡 쌓는 국면으로
+    볼 수 있습니다. 나밤샤(D9)에서의 회복 여부를 함께 확인합니다.
+  note: '16 §1 나밤샤 병행 규칙: 라시 훼손 + D9 켄드라·트리코나 = 회복'
+- id: R_R1_D9_7L_CONTRAST
+  tier: t3_varga
+  conclusion: R1
+  when:
+    varga_contrast:
+      planet: lord_of_7
+      vargas:
+      - d9
+  direction: computed
+  source: 16 §8.1 · 헤더
+  text_strong_weak: D1(관계의 외적 상황)과 D9(관계의 실질적 질·지속성)에서 7하우스 로드의 강약을 비교합니다. 겉모습과 실제
+    질이 다를 수 있으므로 두 층을 함께 보는 것이 이 관계 판단의 핵심입니다.
+  automation: partial
+  automation_note: '강약 판정은 사람 확정. 16 §8.1 반전 규칙: 라시에서 좋아도 D9 6/8/12이면 반전(외양은 좋으나 실질은
+    어려움), 라시에서 훼손돼도 D9 켄드라·트리코나이면 회복(초기 어려움 후 안정).
 
-  # --- 16 §1  7하우스 로드의 12하우스 배치 (파일럿: 관계 진단 핵심 6배치) ---
-  - id: R_7L_IN_7H
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { lord_house: { lord_of: 7, in_house: 7 } }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "결혼의 signification 강화 — 자기 별자리·고양이면 강력한 결혼 요가"
+    '
+- id: R_R2_SIGN_1
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 1
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 양자리입니다. 관계에서 주도권과 속도감이 두드러지는 구조입니다. 먼저 다가가고 결정을 이끄는 리듬이 있으며, 상대에게도 같은
+    솔직함과 추진력을 기대하는 경향이 있습니다.
+- id: R_R2_SIGN_2
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 2
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 황소자리입니다. 안정과 감각적 유대를 중시하는 구조입니다. 천천히 신뢰를 쌓아가는 관계에서 만족이 크고, 꾸준함이 이 관계의
+    언어가 됩니다.
+- id: R_R2_SIGN_3
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 3
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 쌍둥이자리입니다. 소통과 지적 교류가 관계의 중심축인 구조입니다. 대화가 끊이지 않는 관계에서 활력을 얻고, 서로의 이야기에
+    귀 기울이는 것이 유대를 키웁니다.
+- id: R_R2_SIGN_4
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 4
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 게자리입니다. 정서적 돌봄과 가정의 울타리를 중시하는 구조입니다. 상대의 마음을 헤아리고 보살피는 데서 관계의 깊이가 만들어집니다.
+- id: R_R2_SIGN_5
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 5
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 사자자리입니다. 서로를 인정하고 빛나게 하려는 리듬이 있는 구조입니다. 따뜻한 표현과 자존감을 세워주는 교환이 관계의 온도를
+    유지합니다.
+- id: R_R2_SIGN_6
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 6
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 처녀자리입니다. 세심한 배려와 실질적인 도움으로 애정을 표현하는 구조입니다. 일상의 작은 챙김이 쌓여 신뢰가 되는 관계입니다.
+- id: R_R2_SIGN_7
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 7
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 천칭자리입니다. 조화와 공정함을 관계의 원칙으로 삼는 구조입니다. 서로의 입장을 맞추려는 노력이 자연스럽고, 균형 잡힌 파트너십을
+    지향합니다.
+- id: R_R2_SIGN_8
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 8
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 전갈자리입니다. 깊고 강렬한 유대를 추구하는 구조입니다. 표면적인 교류보다 본질을 나누는 관계에서 만족이 크며, 서로에게
+    전념하는 밀도가 높습니다.
+- id: R_R2_SIGN_9
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 9
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 사수자리입니다. 이상과 자유를 함께 키워가는 구조입니다. 서로의 성장과 탐험을 응원하는 낙천적 리듬이 있으며, 철학·신앙의
+    공유가 유대를 깊게 합니다.
+- id: R_R2_SIGN_10
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 10
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 염소자리입니다. 책임과 인내로 관계를 지켜가는 구조입니다. 약속을 중시하고 시간을 들여 쌓아가는 관계에서 안정이 만들어집니다.
+- id: R_R2_SIGN_11
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 11
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 물병자리입니다. 서로의 독립성을 존중하는 수평적 구조입니다. 관습에 얽매이지 않는 만남의 형태가 자연스러우며, 우정에서 시작되는
+    인연의 경향도 있습니다.
+- id: R_R2_SIGN_12
+  tier: t1_d1
+  conclusion: R2
+  when:
+    house_sign:
+      house: 7
+      sign: 12
+  direction: support
+  source: 16 §5.1
+  text: 7하우스가 물고기자리입니다. 공감과 헌신적 돌봄이 흐르는 구조입니다. 상대의 감정에 깊이 동화되는 낭만적 리듬이 있으며, 영적·예술적
+    교감이 유대를 키웁니다.
+- id: R_R2_DK_1H
+  tier: t2_karaka
+  conclusion: R2
+  when:
+    karaka_house:
+      karaka: dk
+      in_house: 1
+  direction: support
+  source: 16 §5.3 · 44 §5.1
+  text: 다라카라카가 1하우스에 있습니다. 장기 관계에서 만나는 상대가 자기 정체성과 깊이 맞닿아 있는 경향이 있습니다. 상대를 통해 자신을
+    배우는 관계 — 거울 같은 인연의 구조입니다.
+  note: '44 §5.1 고객용: 이 행성은 장기 관계에서 만나는 상대의 핵심 성향뿐 아니라, 관계를 통해 배우게 되는 태도를 함께 보여줍니다.'
+- id: R_R2_DK_5H
+  tier: t2_karaka
+  conclusion: R2
+  when:
+    karaka_house:
+      karaka: dk
+      in_house: 5
+  direction: support
+  source: 16 §5.3 · 44 §5.1
+  text: 다라카라카가 5하우스에 있습니다. 연애적 설렘과 창조적 교감을 통해 이어지는 인연의 경향이 있습니다. 이 관계에서 배우게 되는 태도는
+    '즐거움을 함께 만드는 법'입니다.
+  note: '44 §5.1 판독 순서: D1 7H·7L → 금성/목성 → D9 7H·7L → DK의 D1·D9 위치'
+- id: R_R2_D9_VENUS
+  tier: t3_varga
+  conclusion: R2
+  when:
+    varga_contrast:
+      planet: venus
+      vargas:
+      - d9
+  direction: computed
+  source: 16 §8.1
+  text_strong_weak: 관계의 주 카라카인 금성을 D1과 D9에서 비교합니다. 외적 조건(D1)과 실질적 질(D9)의 차이를 함께 보는
+    것이 이 관계 판단의 핵심입니다.
+  automation: partial
+  automation_note: '16 §8.1 필수 확인: D9에서의 금성·목성 상태. 강약 판정은 사람 확정.'
+- id: R_R3_MAHA_7LORD
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord_of: 7
+  direction: support
+  source: 16 §3.2
+  text: 현재 마하다샤 로드가 7하우스 로드와 같은 행성입니다. 관계·파트너십의 주제가 인생의 전면에 부각되는 큰 흐름의 시기입니다. 만남·결혼·동업
+    등 '짝'과 관련된 결정이 이 시기에 무게를 갖는 경향이 있습니다.
+  caution: 16 §9.2 — 다샤 단독 신호는 '가능성 있는 시기'로 완곡화. 확정 예언 금지
+- id: R_R3_ANTAR_7LORD
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    antar_lord_of: 7
+  direction: support
+  source: 16 §3.2
+  text: 현재 안타르다샤 로드가 7하우스 로드와 같은 행성입니다. 관계의 주제가 구체적으로 움직이는 시기입니다. 인연의 진전이나 관계의 재정비가
+    이 기간에 일어나는 경향이 있습니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_MAHA_VENUS
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord: venus
+  direction: support
+  source: 16 §3.2
+  text: 현재 금성의 마하다샤가 흐르고 있습니다. 관계의 주 카라카가 활성화되는 시기로, 애정·결혼·파트너십의 주제가 길게 부각되는 흐름입니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_ANTAR_VENUS
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    antar_lord: venus
+  direction: support
+  source: 16 §3.2
+  text: 현재 금성의 안타르다샤가 흐르고 있습니다. 관계의 온도가 올라가는 시기로, 인연의 진전이나 관계 개선의 움직임이 나타나기 쉬운 국면입니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_MAHA_JUPITER
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord: jupiter
+  direction: support
+  source: 16 §3.2
+  text: 현재 목성의 마하다샤가 흐르고 있습니다. 결혼의 축복과 확장성을 관장하는 행성의 시기로, 관계가 성숙하고 넓어지는 흐름입니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_MAHA7_ANTAR1
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord_of: 7
+    antar_lord_of: 1
+  direction: support
+  source: 16 §3.4
+  text: 7하우스 로드의 마하다샤 안에 라그나 로드의 안타르다샤가 겹치는 시기입니다. 스스로 능동적으로 인연을 찾고 관계를 결정하는 움직임이
+    강해지는 국면입니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_MAHA7_ANTAR5
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord_of: 7
+    antar_lord_of: 5
+  direction: support
+  source: 16 §3.4
+  text: 7하우스 로드의 마하다샤 안에 5하우스 로드의 안타르다샤가 겹치는 시기입니다. 연애의 감정이 결합으로 이어지기 쉬운 국면으로, 로맨스를
+    통한 인연의 흐름이 있습니다.
+  caution: 16 §9.2 — '연애결혼 성사'를 확정하지 않고 가능성으로 서술
+- id: R_R3_MAHA7_ANTAR11
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord_of: 7
+    antar_lord_of: 11
+  direction: support
+  source: 16 §3.4
+  text: 7하우스 로드의 마하다샤 안에 11하우스 로드의 안타르다샤가 겹치는 시기입니다. 사교 모임·소개를 통한 만남이 활발해지는 국면으로,
+    인연망이 넓어지는 흐름입니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_MAHA7_ANTAR2
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord_of: 7
+    antar_lord_of: 2
+  direction: support
+  source: 16 §3.4
+  text: 7하우스 로드의 마하다샤 안에 2하우스 로드의 안타르다샤가 겹치는 시기입니다. 가족의 개입이나 재정적 결부가 따르는 만남의 국면으로,
+    양가의 연결이 주제가 되는 흐름입니다.
+  caution: 16 §9.2 — 확정 예언 금지
+- id: R_R3_MAHA7_ANTAR8
+  tier: t4_dasha
+  conclusion: R3
+  when:
+    maha_lord_of: 7
+    antar_lord_of: 8
+  direction: caution
+  source: 16 §3.4
+  text: 7하우스 로드의 마하다샤 안에 8하우스 로드의 안타르다샤가 겹치는 시기입니다. 관계의 전개가 갑작스럽거나 강도가 높아지는 국면이므로,
+    속도를 조절하며 서로를 확인하는 자세가 도움됩니다.
+  caution: '16 §3.4: 급전개 또는 위기 — 16 §9.3 프레임으로 완곡화, 확정 예언 금지'
+- id: R_R3_SAV7_STRONG
+  tier: t5_ashtaka
+  conclusion: R3
+  when:
+    sav_house:
+      house: 7
+  direction: support
+  grade_threshold: 28
+  source: 43 §9
+  text: 7하우스의 아쉬타카바르가 점수가 평균 이상으로 받쳐줍니다. 다샤의 활성화 신호와 환경적 지지가 겹치는 국면에서는 관계의 진전이 비교적
+    순조롭게 현실화되는 흐름입니다.
+  note: '43 §9 매트릭스: 다샤 강함 × SAV 강함 = 약속된 결과가 비교적 빠르고 안정적으로 현실화'
+- id: R_R4_7L_6H
+  tier: t1_d1
+  conclusion: R4
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 6
+  direction: caution
+  source: 16 §1 · §4.2
+  text: 7하우스 로드가 6하우스에 있습니다. 관계에서 의견 충돌이나 역할 다툼이 불거지기 쉬운 구조이므로, '인내와 소통이 특별히 중요한 국면'으로
+    봅니다. 갈등 자체보다 다루는 방식을 함께 정해두는 것이 이 국면을 지나가는 열쇠입니다.
+  caution: 16 §9.3 — 직접적 부정 예언 금지, 성장·소통 관점
+- id: R_R4_7L_8H_WEAK
+  tier: t1_d1
+  conclusion: R4
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 8
+    lord_dignity:
+      lord_of: 7
+      dignity: debilitated
+  direction: caution
+  source: 16 §1 · §4.2
+  text: 7하우스 로드가 8하우스에서 쇠약한 상태입니다. 관계에 급변·비밀·예상 밖 변수가 끼어들기 쉬운 구조이므로, 서로에게 투명하게 터놓는
+    소통이 특히 중요한 시기로 봅니다.
+  caution: '16 §1: 매우 민감 — 리포트 완곡화 필수. 7H는 마라카 — 수명·건강 뉘앙스 절대 금지'
+- id: R_R4_VENUS_DEB
+  tier: t2_karaka
+  conclusion: R4
+  when:
+    planet_in_house:
+      venus: 6
+  direction: caution
+  source: 16 §4.2
+  text: 금성이 처녀자리에서 쇠약합니다. 관계의 주 카라카가 힘을 잃은 배치로, 애정 표현이 엇나가거나 기대와 현실의 간극이 벌어지기 쉬운 국면입니다.
+    상대의 의도를 재확인하는 습관이 도움됩니다.
+  note: '16 §4.2: 금성의 훼손 + 7H 로드의 훼손 → 결혼 지연 — 완곡 서술'
+  caution: 확정 예언 금지
+- id: R_R4_SATURN_7H
+  tier: t1_d1
+  conclusion: R4
+  when:
+    planet_in_house:
+      saturn: 7
+  direction: caution
+  source: 16 §2 · §4.2
+  text: 토성이 7하우스에 있습니다. 관계의 결정에 신중함이 요구되는 배치로, 서두른 결합보다 시간을 들여 검증하는 것이 이 구조에 맞습니다.
+    늦어지는 만큼 단단해지는 관계의 리듬으로 볼 수 있습니다.
+  note: '16 §2: 결혼 지연 — 늦은 결합, 진지한 관계 / 16 §4.2 완곡화'
+  caution: '''결혼 지연'' 원문은 완곡 서술. 부정 확정 예언 금지'
+- id: R_R4_7L_12H_WEAK
+  tier: t1_d1
+  conclusion: R4
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 12
+    lord_dignity:
+      lord_of: 7
+      dignity: debilitated
+  direction: caution
+  source: 16 §1
+  text: 7하우스 로드가 12하우스에서 쇠약합니다. 원거리·침묵·엇갈림이 관계에 끼어들기 쉬운 구조이므로, 의도적으로 소통의 시간을 확보하는
+    것이 이 국면을 지나가는 열쇠입니다.
+  caution: '16 §1: 별거·이주로 인한 원거리 — 확정 예언 금지, 완곡 서술'
+- id: R_R4_KETU_7H
+  tier: t1_d1
+  conclusion: R4
+  when:
+    planet_in_house:
+      ketu: 7
+  direction: caution
+  source: 16 §2
+  text: 케투가 7하우스에 있습니다. 관계 안에서 혼자만의 시간과 심리적 거리가 필요한 리듬이 있습니다. 이를 서로 인정하고 여백을 주는 약속을
+    하면, 오히려 유대가 깊어지는 구조입니다.
+  caution: '16 §2: 결혼 회피·거리감 — ''여백이 필요한 리듬''으로 완곡화'
+- id: R_R4_MAHA_RAHU
+  tier: t4_dasha
+  conclusion: R4
+  when:
+    maha_lord: rahu
+  direction: caution
+  source: 16 §3.5
+  text: 현재 라후의 마하다샤가 흐르고 있습니다. 만남과 헤어짐의 리듬이 빨라지고 이례적인 인연이 드나들기 쉬운 시기입니다. 관계의 결정을 서두르기보다
+    흐름을 관망하며 서로를 확인하는 국면으로 봅니다.
+  caution: '16 §3.5: 라후 다샤에서 만남·헤어짐 반복 — 확정 예언 금지'
+- id: R_R4_ANTAR_RAHU
+  tier: t4_dasha
+  conclusion: R4
+  when:
+    antar_lord: rahu
+  direction: caution
+  source: 16 §3.5
+  text: 현재 라후의 안타르다샤가 흐르고 있습니다. 관계에 변화와 자극이 많아지는 시기로, 감정의 파도에 휩쓸린 결정을 피하고 한 박자 쉬어가는
+    것이 도움됩니다.
+  caution: 확정 예언 금지
+- id: R_R4_ANTAR_8L
+  tier: t4_dasha
+  conclusion: R4
+  when:
+    antar_lord_of: 8
+  direction: caution
+  source: 16 §3.4
+  text: 현재 8하우스 로드의 안타르다샤가 흐르고 있습니다. 관계의 강도가 높아지거나 예상 밖 전개가 나타날 수 있는 국면이므로, 중요한 결정은
+    감정이 가라앉은 뒤에 내리는 것이 좋습니다.
+  caution: '16 §3.4: 급전개 또는 위기 — 16 §9.3 프레임으로 완곡화'
+- id: R_R4_MANGAL_MITIGATED
+  tier: t6_yoga
+  conclusion: R4
+  when:
+    yoga:
+      planet: mars
+      signs:
+      - 1
+      - 8
+      - 10
+      houses:
+      - 1
+      - 2
+      - 4
+      - 7
+      - 8
+      - 12
+  direction: support
+  source: 16 §4.3
+  text: 화성이 관계에 강한 에너지를 주는 위치에 있으나 자기 별자리(양·전갈) 또는 고양(염소)에 있어 그 강도가 완화된 배치입니다. 관계의
+    열정과 추진력은 살아있되, 스스로 조절되는 구조이므로 감정 표현의 속도만 살피면 됩니다.
+  caution: '''만갈리크'' 용어 사용 금지 — 효과만 서술. 완화 조건 병기 필수: 양쪽 다 해당이면 상쇄, 금성 동반·좋은 각이면 완화,
+    30세 이후 영향 감소. 확정 예언 금지, 결혼 자체의 부정 금지.
 
-  - id: R_7L_IN_7H_OWN
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when:
-      lord_house: { lord_of: 7, in_house: 7 }
-      lord_dignity: { lord_of: 7, dignity: own }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "강력한 결혼 요가 — 좋은 배우자, 성공적 파트너십"
-
-  - id: R_7L_IN_9H
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { lord_house: { lord_of: 7, in_house: 9 } }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "이상적·법적·종교적 결혼 — 배우자가 스승·조언자적, 신앙·철학의 공유"
-
-  - id: R_7L_IN_5H
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { lord_house: { lord_of: 7, in_house: 5 } }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "연애결혼 — 로맨스를 통한 결합, 배우자와의 지적·창조적 유대 지속"
-
-  - id: R_7L_IN_10H
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { lord_house: { lord_of: 7, in_house: 10 } }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "결혼이 사회적 지위 상승과 연결 — 배우자가 커리어에 도움"
-
-  - id: R_7L_IN_2H
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { lord_house: { lord_of: 7, in_house: 2 } }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "배우자로 인한 재산 유입, 가족적 유대 강화"
-
-  - id: R_7L_IN_8H
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { lord_house: { lord_of: 7, in_house: 8 } }
-    direction: support
-    source: "16_하우스7.md §1"
-    text: "관계의 급변·비밀 요소에 민감한 국면 — '관계에서 인내와 소통이 특별히 중요한 시기' 프레임으로 서술"
-    caution: "확정 예언 금지 (16 §9.3). 7하우스는 마라카 — 수명·건강·사별 뉘앙스 서술 절대 금지"
-
-  # --- 16 §2  7하우스 재실 행성 (파일럿: 핵심 4행) ---
-  - id: R_7H_VENUS
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { planet_in_house: { venus: 7 } }
-    direction: support
-    source: "16_하우스7.md §2"
-    text: "로맨틱·조화로운 결혼"
-    caution: "훼손 시 결혼 지연·관계의 복잡성 — 완곡 서술 필수"
-
-  - id: R_7H_JUPITER
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { planet_in_house: { jupiter: 7 } }
-    direction: support
-    source: "16_하우스7.md §2"
-    text: "결혼의 축복 — 지혜롭고 신실한 배우자, 결혼 후 확장"
-
-  - id: R_7H_MARS
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { planet_in_house: { mars: 7 } }
-    direction: support
-    source: "16_하우스7.md §2·§4.3"
-    text: "화성의 7하우스 위치 — '결혼의 열정과 강도가 강한 성향', 감정 표현과 관계 조율에 주의가 필요한 배치"
-    caution: >
-      리포트에 '만갈리크' 용어 사용 금지 — 효과만 서술 (16 §4.3).
-      완화 조건 병기: 화성이 자기 별자리(양·전갈)·고양(염소)이면 약화,
-      금성 동반·좋은 각이면 완화, 30세 이후 영향 감소.
-
-  - id: R_7H_SATURN
-    tier: t1_d1
-    conclusion: RELATIONSHIP_PATTERN
-    when: { planet_in_house: { saturn: 7 } }
-    direction: support
-    source: "16_하우스7.md §2"
-    text: "결혼 시기의 신중한 선택이 권장되는 배치 — 장기적 안정과 헌신을 중시하는 관계 패턴"
-    caution: "원문 '결혼 지연'은 완곡 서술. 부정 확정 예언 금지"
-
-# =============================================================================
-# T2 — 카라카  (자연 카라카 + DK)
-# =============================================================================
-  - id: R_DK_IN_7H
-    tier: t2_karaka
-    conclusion: RELATIONSHIP_PATTERN
-    when: { karaka_house: { karaka: dk, in_house: 7 } }
-    direction: support
-    source: "44_BPHS_카라카_특수점.md §5.1"
-    text: "이 행성은 당신이 장기 관계에서 만나게 되는 상대의 핵심 성향뿐 아니라, 관계를 통해 배우게 되는 태도를 함께 보여줍니다."
-    note: "다라카라카(DK) = 라시 7행성 중 최소 도수 행성 (16 §5.3). 고객용 문구는 44 §5.1 원문 인용."
-
-# =============================================================================
-# T3 — 바르가  (D1·D9 대조. 16 헤더: D1만으로 부족 — D9 병행 필수)
-# =============================================================================
-  - id: R_D1_D9_7LORD_CONTRAST
-    tier: t3_varga
-    conclusion: RELATIONSHIP_PATTERN
-    when: { varga_contrast: { planet: lord_of_7, vargas: [d9] } }
-    direction: computed                  # 강약 비교 결과에 따라 support/oppose
-    source: "16_하우스7.md §8.1"
-    text_strong_weak: "D1(결혼의 외적 상황)과 D9(관계의 실질적 질·지속성)의 강약 비교 — 반전 시 외양과 실제 질이 다를 수 있음"
-    automation: partial
-    automation_note: >
-      D1 과 D9 에서 7로드의 사인·하우스는 엔진이 산출하지만,
-      "강함/약함" 판정에는 존엄(자기·고양·우호·적대)과 하우스 성격(켄드라·두스타나)
-      규칙이 필요하다. 후보를 제시하고 방향은 사람이 확정한다.
-      D9 반전 규칙(16 §1 나밤샤 병행 규칙): 라시에서 좋아도 D9 6/8/12이면 반전,
-      라시에서 훼손돼도 D9 켄드라·트리코나이면 회복.
-
-  - id: R_D1_D9_VENUS_CONTRAST
-    tier: t3_varga
-    conclusion: RELATIONSHIP_PATTERN
-    when: { varga_contrast: { planet: venus, vargas: [d9] } }
-    direction: computed
-    source: "16_하우스7.md §8.1"
-    text_strong_weak: "결혼의 주 카라카 금성 — D1과 D9에서의 강약 비교"
-    automation: partial
-    automation_note: >
-      16 §8.1 필수 확인 항목: D9에서의 금성·목성 상태.
-      강약 판정은 사람 확정 (R_D1_D9_7LORD_CONTRAST 와 동일).
-
-# =============================================================================
-# T5 — 아쉬타카바르가  (강도 지표. counts_as_evidence: false)
-# =============================================================================
-  - id: R_SAV_7H
-    tier: t5_ashtaka
-    conclusion: RELATIONSHIP_PATTERN
-    when: { sav_house: { house: 7 } }
-    direction: support_if_grade_above
-    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
-    source: "43_BPHS_아쉬타카바르가.md §5.2"
-    text_template: "7하우스 SAV {value}점 — {grade}"
-    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
-
-# =============================================================================
-# T6 — 요가
-# =============================================================================
-  - id: R_YOGA_MALAVYA
-    tier: t6_yoga
-    conclusion: RELATIONSHIP_PATTERN
-    when:
-      yoga:
-        planet: venus
-        signs: [2, 7, 12]                # 황소·천칭(자기) / 물고기(고양)
-        houses: [1, 4, 7, 10]            # 켄드라
-    direction: support
-    source: "16_하우스7.md §4.1"
-    text: "아름답고 조화로운 배우자, 예술적 감각, 결혼의 축복"
-
-  - id: R_YOGA_HAMSA
-    tier: t6_yoga
-    conclusion: RELATIONSHIP_PATTERN
-    when:
-      yoga:
-        planet: jupiter
-        signs: [9, 12, 4]                # 궁수·물고기(자기) / 게(고양)
-        houses: [1, 4, 7, 10]            # 켄드라
-    direction: support
-    source: "16_하우스7.md §4.1"
-    text: "이상적 결혼의 축복 — 지혜로운 파트너십 (여성 차트에서 특히 이상적 남편의 신호)"
-
-  - id: R_MANGAL_DOSHA
-    tier: t6_yoga
-    conclusion: RELATIONSHIP_PATTERN
-    when:
-      yoga:
-        planet: mars
-        signs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  # 하우스 기반 도샤 — 사인 무관
-        houses: [1, 2, 4, 7, 8, 12]                     # 16 §4.3 정의
-    direction: support
-    source: "16_하우스7.md §4.3"
-    text: "결혼의 열정과 강도가 강한 성향 — 감정 표현과 관계 조율에 주의가 필요한 배치"
-    caution: >
-      리포트에 '만갈리크' 용어 사용 금지 — 효과만 서술 (evidence_map §2-3).
-      완화 조건 병기 필수: 양쪽 다 해당이면 상쇄, 화성이 자기 별자리(양·전갈)·
-      고양(염소)이면 약화, 금성 동반·좋은 각이면 완화, 30세 이후 영향 감소.
-      확정 예언 금지, 결혼 자체의 부정 금지.
-
-# =============================================================================
-# 자동화 불가 — 규칙 부재 / 엔진·문법 한계
-# =============================================================================
+    '
+- id: R_R5_7L_OWN
+  tier: t1_d1
+  conclusion: R5
+  when:
+    lord_dignity:
+      lord_of: 7
+      dignity: own
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 자기 별자리에 있습니다. 관계의 중심축이 단단한 배치로, 파트너십이 흔들려도 기본 토대로 회복되는 구조입니다. 지속성의
+    핵심 자원이 튼튼합니다.
+- id: R_R5_7L_EXALTED
+  tier: t1_d1
+  conclusion: R5
+  when:
+    lord_dignity:
+      lord_of: 7
+      dignity: exalted
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 고양된 상태입니다. 관계의 질적 수준이 높게 유지되는 배치로, 서로를 끌어올리는 상승 작용이 지속의 동력이 됩니다.
+- id: R_R5_7L_7H
+  tier: t1_d1
+  conclusion: R5
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 7
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 7하우스 자기 자리에 있습니다. 파트너십의 signification이 가장 강하게 뿌리내린 배치로, 관계의 지속성이
+    이 차트의 강점입니다.
+- id: R_R5_7L_4H
+  tier: t1_d1
+  conclusion: R5
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 4
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 4하우스에 있습니다. 함께 정착하고 보금자리를 일구는 것이 관계 지속의 핵심 동력인 구조입니다. 안정된 일상이 유대를
+    지켜줍니다.
+- id: R_R5_7L_9H
+  tier: t1_d1
+  conclusion: R5
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 9
+  direction: support
+  source: 16 §1
+  text: 7하우스 로드가 9하우스에 있습니다. 신앙·철학·인생관의 공유가 관계를 지탱하는 기둥인 구조입니다. 같은 방향을 바라보는 믿음이 지속의
+    토대입니다.
+- id: R_R5_JUPITER_7H
+  tier: t1_d1
+  conclusion: R5
+  when:
+    planet_in_house:
+      jupiter: 7
+  direction: support
+  source: 16 §2
+  text: 목성이 7하우스에 있습니다. 관계 위에 결혼의 축복이 놓인 배치로, 어려움이 와도 지혜롭게 풀어가는 회복력이 있습니다. 서로를 향한
+    선의가 지속의 버팀목입니다.
+- id: R_R5_VENUS_OWN
+  tier: t2_karaka
+  conclusion: R5
+  when:
+    planet_in_house:
+      venus: 2
+  direction: support
+  source: 16 헤더
+  text: 금성이 황소자리(자기 별자리)에 있습니다. 관계의 주 카라카가 안정적으로 작동하여 애정의 토양이 비옥한 구조입니다.
+- id: R_R5_VENUS_EXALTED
+  tier: t2_karaka
+  conclusion: R5
+  when:
+    planet_in_house:
+      venus: 12
+  direction: support
+  source: 16 헤더
+  text: 금성이 물고기자리(고양)에 있습니다. 관계의 주 카라카가 최상의 상태로, 헌신과 조화의 흐름이 관계를 오래 지탱합니다.
+- id: R_R5_SAV7_STRONG
+  tier: t5_ashtaka
+  conclusion: R5
+  when:
+    sav_house:
+      house: 7
+  direction: support
+  grade_threshold: 28
+  source: 43 §5.2 · §9
+  text: 7하우스의 아쉬타카바르가 점수가 평균 이상으로, 파트너십의 영역이 환경적으로 받쳐주는 구조입니다. 관계 지속의 토대가 됩니다.
+  note: 등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다.
+- id: R_R5_MALAVYA
+  tier: t6_yoga
+  conclusion: R5
+  when:
+    yoga:
+      planet: venus
+      signs:
+      - 2
+      - 7
+      - 12
+      houses:
+      - 1
+      - 4
+      - 7
+      - 10
+  direction: support
+  source: 16 §4.1
+  text: 말라비야 요가가 성립합니다. 조화롭고 아름다운 파트너십의 축복이 있어, 관계의 지속을 뒷받침하는 힘이 됩니다.
+- id: R_R5_HAMSA
+  tier: t6_yoga
+  conclusion: R5
+  when:
+    yoga:
+      planet: jupiter
+      signs:
+      - 9
+      - 12
+      - 4
+      houses:
+      - 1
+      - 4
+      - 7
+      - 10
+  direction: support
+  source: 16 §4.1
+  text: 함사 요가가 성립합니다. 지혜로운 파트너십의 축복이 있어 서로를 성장시키는 관계로 이어지는 힘이 됩니다.
+- id: R_R6_7L_2H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 2
+  direction: support
+  source: 16 §1 · §7
+  text: 7하우스 로드가 2하우스에 있습니다. 파트너십이 재산의 영역과 연결되는 구조로, 동업·공동 사업에서 금전적 결실이 따르는 경향이 있습니다.
+- id: R_R6_2L_7H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    lord_house:
+      lord_of: 2
+      in_house: 7
+  direction: support
+  source: 16 §7
+  text: 2하우스 로드가 7하우스에 있습니다. 재산의 주인이 파트너십의 자리에 앉은 배치로, 함께 버는 구조의 동업에 유리한 흐름입니다.
+- id: R_R6_7L_10H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 10
+  direction: support
+  source: 16 §1 · §7
+  text: 7하우스 로드가 10하우스에 있습니다. 파트너십이 사회적 지위·커리어와 연결되는 구조로, 공적 영역에서의 협업이 빛을 발하는 경향이
+    있습니다.
+- id: R_R6_7L_11H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 11
+  direction: support
+  source: 16 §1 · §7
+  text: 7하우스 로드가 11하우스에 있습니다. 그룹·조직·인맥을 통한 파트너십이 열리는 구조로, 함께 이루는 이득의 규모가 커지는 경향이 있습니다.
+- id: R_R6_MERCURY_7H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    planet_in_house:
+      mercury: 7
+  direction: support
+  source: 16 §2 · §7
+  text: 수성이 7하우스에 있습니다. 계약·협상·소통의 능력이 파트너십의 핵심 자산인 구조로, 문서와 약속을 명확히 하는 동업에 강한 배치입니다.
+- id: R_R6_JUPITER_7H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    planet_in_house:
+      jupiter: 7
+  direction: support
+  source: 16 §7
+  text: 목성이 7하우스에 있습니다. 신뢰와 신의가 파트너십의 바탕인 구조로, 장기적인 동업 관계에서 빛을 발하는 흐름입니다.
+- id: R_R6_7L_6H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    lord_house:
+      lord_of: 7
+      in_house: 6
+  direction: caution
+  source: 16 §7
+  text: 7하우스 로드가 6하우스에 있습니다. 파트너가 경쟁자로 돌아설 수 있는 구조이므로, 계약서와 역할 분담·정산 방식을 처음부터 명확히
+    문서화하는 것이 필수적입니다.
+  caution: '16 §7: 7H 로드가 6H(적)와 결합 → 파트너가 적으로 변할 위험 — 확정 예언 금지'
+- id: R_R6_RAHU_7H
+  tier: t1_d1
+  conclusion: R6
+  when:
+    planet_in_house:
+      rahu: 7
+  direction: caution
+  source: 16 §7
+  text: 라후가 7하우스에 있습니다. 파트너십에 이례적 변수나 불투명한 요소가 끼기 쉬운 구조이므로, 투명한 정산 구조와 상호 검증 장치를 마련하는
+    것이 도움됩니다.
+  caution: '16 §7: 배신·사기 위험 — 확정 예언 금지, 16 §9.3 프레임'
+- id: R_R6_SAV7
+  tier: t5_ashtaka
+  conclusion: R6
+  when:
+    sav_house:
+      house: 7
+  direction: support
+  grade_threshold: 28
+  source: 43 §5.2
+  text: 7하우스의 아쉬타카바르가 점수가 평균 이상으로, 파트너십의 영역이 환경적으로 받쳐주는 구조입니다.
+  note: 등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다.
 gaps:
-  t2_karaka_gender:
-    issue: N/A
-    reason: >
-      16 헤더의 성별 조건부 카라카(목성=여성 차트 남편, 태양=여성 차트 남편 보조,
-      달=남성 차트 아내 보조)는 엔진 JSON에 성별이 없어 자동 판정 불가.
-      성별 입력 정책이 정해지면 규칙 추가 가능.
+  t2_karaka_dignity:
+    reason: 'karaka 행성(금성·목성 등) 자체의 dignity를 직접 묻는 키가 없다. planet_in_house 로 사인 배치는
+      표현 가능하나 일반적인 존엄 판정은 불가. judge.py 에 planet_dignity: {planet, dignity} 키 추가 필요.
+
+      '
+  t3_d9_house:
+    reason: 'D9 7H·D9 라그나 자체의 사인·로드 상태를 묻는 키가 없다 (16 §8.1 필수 확인 항목 1·2). varga_contrast:
+      {house: 7, vargas: [d9]} 형태의 확장 또는 별도 키 필요.
+
+      '
   t3_dk_d9:
-    issue: N/A
-    reason: >
-      16 §5.3 "나밤샤에서 다라카라카의 위치가 배우자의 실제 성격을 결정" —
-      judge 의 varga_contrast 가 카라카 지정자(dk)를 해석하지 못해 자동화 불가.
-      judge.py 수정 또는 별도 when 키 필요.
-  t4_dasha:
-    issue: N/A
-    reason: >
-      16 §3.2 결혼 성립 다샤 조합·§3.4 결합별 결과는 문서에 있으나
-      judge 에 다샤 when 키가 없어 자동 판정 불가.
-      16 §9.2 — 다샤·트랜짓·이중 트랜짓이 모두 일치할 때만 시기로 확정,
-      하나만 신호이면 "가능성 있는 시기"로 완곡화. 사람 확정 필수.
-  t1_sign_table:
-    issue: N/A
-    reason: >
-      16 §5.1 7H 사인별 배우자 기본 성향 12행 — house_sign 키로 자동화 가능하나
-      파일럿 분량상 v0.2 확장 후보. 서술 시 주어를 관계로 환원(ISSUE-027) 필요.
-  t1_lord_rest:
-    issue: N/A
-    reason: >
-      7로드 나머지 배치(1·3·4·6·11·12H) — 16 §1에 문서 있으나 파일럿 제외.
-      v0.2 확장 후보.
+    reason: 'judge 의 varga_contrast 가 카라카 지정자(dk)를 해석하지 못한다. judge.py 수정 또는 별도 when
+      키 필요.
+
+      '
   t3_ul:
     issue: ISSUE-028
-    reason: >
-      16 §5.4 우파파다 라그나(UL) — 엔진 미산출 특수점.
-      추가금 상품 사양 (evidence_map §3).
-  t6_ashtakuta:
-    issue: ISSUE-028
-    reason: >
-      16 §6 궁합(Ashtakuta) — 상대방 출생정보 필요, 접수 정책 변경 필요.
-      관계 카테고리 추가금의 핵심 상품. 기본 리포트는 이것 없이 완결.
+    reason: '16 §5.4 우파파다 라그나 — 엔진 미산출. UL의 사인·하우스, UL로부터 2H (16 §9.1 3단계 안정성 판단)는
+      추가금 상품 사양.
+
+      '
+  t4_double_transit:
+    reason: '목성·토성의 이중 트랜짓(7H·7L·라그나·달 지점 통과)은 엔진 미산출. 16 §9.2 — 다샤·트랜짓·이중 트랜짓 3중
+      일치가 시기 확정의 조건이므로, 트랜짓 없이는 모든 시기 판정을 "가능성 있는 시기"로 완곡화해야 한다.
+
+      '
+  t4_pratyantar:
+    reason: '16 §3.2 핵심 원칙(다샤·안타르·프라티안타르 3층 일치)은 프라티안타르 키가 없어 부분 적용. antar까지만 자동 판정,
+      프라티안타르는 사람 확정.
+
+      '
+  t4_moon_lagna_7l:
+    reason: '찬드라 라그나 기준 7H 로드를 구하는 키가 없다. when 문법 확장 필요.
+
+      '
+  t1_combo:
+    reason: 'when 에서 planet_in_house 를 두 번 쓸 수 없어 2행성 결합을 표현할 수 없다. planet_in_houses:
+      [{planet, house}, ...] 형태의 복수 키 또는 conjunction: {planets: [...], house: N} 키
+      필요.
+
+      '
+  t1_papakar_tari:
+    reason: '하우스의 양쪽 인접 하우스에 흉성이 있는지를 묻는 키가 없다. flanking: {house: 7, by: malefic}
+      형태의 키 필요.
+
+      '
+  t1_aspect:
+    reason: '행성 간 어스펙트를 묻는 키가 없다. aspect: {from: jupiter, to_house: 7} 형태의 키 필요.
+
+      '
+  t4_sade_sati:
+    reason: '달 위 토성 트랜짓(사드사티)은 트랜짓 계산이 없어 자동 판정 불가. 사람 확정.
+
+      '
+  t3_d10:
+    reason: 'varga 키에 d10 이 없다. 사업 파트너십 심화 시 vargas: [d10] 지원 필요.
+
+      '
+  t5_venus_bav:
+    reason: 'sav_house 만 있고 행성별 BAV 키가 없다. 43 §9 매트릭스의 완전한 적용에는 bav: {planet: venus}
+      키 필요.
+
+      '

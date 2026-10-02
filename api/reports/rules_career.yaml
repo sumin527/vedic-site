@@ -1,234 +1,697 @@
-# =============================================================================
-# rules_career.yaml — 커리어 판정 규칙 DB (파일럿 범위)
-# =============================================================================
-# 범위: 파일럿 2회차 C1 에서 실제로 사용된 규칙만 수록한다.
-#       손으로 채워본 결과를 기준으로 옮긴 것이며, 안 쓰인 행은 넣지 않았다.
-#
-# 원칙:
-#   §2.1  원본 문서를 수정하지 않는다. 여기에는 서술을 인용만 한다.
-#   §6.1  문서에 없는 규칙을 만들지 않는다. text 는 원문 서술을 그대로 옮긴다.
-#   §9.1  tier 는 계열 하나만 지정한다. 한 규칙이 두 계열을 채우지 않는다.
-#
-# when 조건 문법 (전부 AND):
-#   tenth_lord_house      10로드가 위치한 하우스 (라그나 기준)
-#   tenth_lord_planet     10로드 행성
-#   tenth_lord_dignity    own | exalted | debilitated | other
-#   planet_in_house       {행성: 하우스}
-#   tenth_sign            10하우스 사인 번호
-#   sav_house             {house: n, min: x, max: y}   상한 미포함
-#   varga_sign_house      {planet, varga, house}       바르가에서의 하우스
-#   yoga                  요가 성립 조건 (별도 평가)
-# =============================================================================
-
 meta:
-  version: 0.1.0
-  scope: career_C1_pilot
-  source_docs: [19_하우스10.md, 41_BPHS_바르가판독_1_.md, 43_BPHS_아쉬타카바르가.md]
-  coverage_note: >
-    C1(직업 성향)의 T1·T5·T6 은 자동 판정 가능. T3 은 강약 비교가 필요해
-    부분 자동(후보 제시 + 사람 확정). T2·T4 는 규칙 자체가 부재하다
-    (ISSUE-014 AmK 판독, ISSUE-013 노드 다샤).
-
-# =============================================================================
-# T1 — D1 하우스/로드/재실  (L1)
-# =============================================================================
+  version: 2.0.0
+  description: rules_career — 심화판 (evidence map C1~C6)
+  source: report_module-2 worksheet_spec.yaml evidence map + kb-sources 원전
+  shallow_backup: _backup_shallow/
 rules:
+- id: R_C1_10L_1H
+  tier: t1_d1
+  conclusion: C1
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 1
+  direction: support
+  source: 19 §1
+  text: 10하우스 로드가 라그나(1H)에 있어 직업과 자기 정체성이 일치하는 구조입니다. 자기 브랜드·프리랜서 형태의 성공과 인연이 있는 경향으로
+    봅니다.
+- id: R_C1_10L_9H
+  tier: t1_d1
+  conclusion: C1
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 9
+  direction: support
+  source: 19 §1
+  text: 10하우스 로드가 9하우스에 있어 다르마-카르마 요가가 성립하는 구조입니다. 정의로운 방향으로 큰 성취가 열리는 최고의 축복 중 하나로
+    봅니다.
+- id: R_C1_10L_11H
+  tier: t1_d1
+  conclusion: C1
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 11
+  direction: support
+  source: 19 §1
+  text: 10하우스 로드가 11하우스(이득)에 있어 커리어가 큰 이득으로 연결되는 구조입니다. 우파차야 하우스에 자리해 시간이 갈수록 성과가
+    커지는 경향으로 봅니다.
+- id: R_C1_10L_6H
+  tier: t1_d1
+  conclusion: C1
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 6
+  direction: support
+  source: 19 §1
+  caution: 19 §1 — 직장 갈등·소송 유의
+  text: 10하우스 로드가 6하우스에 있어 서비스·의료·법조·경쟁 분야와 인연이 있는 구조입니다. 경쟁에서 이겨내는 형태로 성취하는 경향으로
+    봅니다.
+- id: R_C1_10L_12H
+  tier: t1_d1
+  conclusion: C1
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 12
+  direction: neutral
+  source: 19 §1
+  text: 10하우스 로드가 12하우스에 있어 해외 커리어, 연구소·병원 같은 격리형 직업과 인연이 있는 구조입니다. 해외에서의 큰 성공 가능성도
+    함께 봅니다.
+- id: R_C1_10H_SUN_MARS
+  tier: t1_d1
+  conclusion: C1
+  when:
+    planet_in_house:
+      sun: 10
+      mars: 10
+  direction: support
+  source: 19 §2
+  text: 10하우스에 태양과 화성이 함께 있어 강한 리더십의 조합입니다. 정부·군사·기술 조직에서 두각을 나타내는 구조로 봅니다.
+- id: R_C1_10H_JUP_MER
+  tier: t1_d1
+  conclusion: C1
+  when:
+    planet_in_house:
+      jupiter: 10
+      mercury: 10
+  direction: support
+  source: 19 §2
+  text: 10하우스에 목성과 수성이 함께 있어 지혜로운 상인·저술가·교수의 조합입니다. 지식과 소통을 무기로 하는 커리어와 인연이 있는 구조로
+    봅니다.
+- id: R_C1_10SIGN_SAGITTARIUS
+  tier: t1_d1
+  conclusion: C1
+  when:
+    house_sign:
+      house: 10
+      sign: 9
+  direction: support
+  source: 19 §4.2
+  text: 10하우스가 사수자리에 있어 교육·법률·출판·외국 관련 분야의 성향으로 봅니다.
+- id: R_C1_10SIGN_SCORPIO
+  tier: t1_d1
+  conclusion: C1
+  when:
+    house_sign:
+      house: 10
+      sign: 8
+  direction: support
+  source: 19 §4.2
+  text: 10하우스가 전갈자리에 있어 조사·연구·심리·정보 분야의 성향으로 봅니다.
+- id: R_C1_AMK_10H
+  tier: t2_karaka
+  conclusion: C1
+  when:
+    karaka_house:
+      karaka: amk
+      in_house: 10
+  direction: support
+  source: 44 §4.1
+  text: 아마티야카라카(일을 수행하는 방식의 지시자)가 10하우스에 있어, 일하는 방식 자체가 커리어 성취와 직결되는 구조로 봅니다.
+- id: R_C1_D1_D10_CONTRAST
+  tier: t3_varga
+  conclusion: C1
+  when:
+    varga_contrast:
+      planet: tenth_lord
+      vargas:
+      - d9
+      - d10
+  direction: computed
+  source: 41_1_ §3.6
+  text_strong_weak: 잠재력은 있으나 직업 환경·역할 선택이 중요한 구조로 봅니다.
+  automation: partial
+  automation_note: 'D1·D9·D10에서 10로드의 사인·하우스는 엔진이 산출하나, 강약 판정에는 존엄(자기·고양·우호·적대)과 하우스
+    성격 규칙이 필요. 후보를 제시하고 방향은 사람이 확정한다.
 
-  - id: R_10L_IN_10H
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { tenth_lord_house: 10 }
-    direction: support
-    source: "19_하우스10.md §1"
-    text: "커리어 signification 강화 — 강한 커리어 지향"
-
-  - id: R_10L_IN_10H_OWN
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { tenth_lord_house: 10, tenth_lord_dignity: own }
-    direction: support
-    source: "19_하우스10.md §1"
-    text: "자기 별자리·고양이면 큰 지위·명예"
-
-  # --- §2 10하우스 재실 행성 9행 ---
-  - id: R_10H_SUN
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { sun: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "최상 배치 중 하나 — 정부·리더십·명예·권위"
-    caution: "관직 갈등, 명예 실추"
-
-  - id: R_10H_MOON
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { moon: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "대중적 직업, 유동성, 커리어 변화 잦음"
-    caution: "커리어 불안정, 감정적 결정"
-
-  - id: R_10H_MARS
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { mars: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "최상 배치 중 하나 — 기술·군사·엔지니어링·외과·경쟁"
-    caution: "성급한 결정, 폭력적 갈등"
-
-  - id: R_10H_MERCURY
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { mercury: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "상업·사무·저술·컨설팅 관련"
-    caution: "사기 위험, 계산적 관계"
-
-  - id: R_10H_JUPITER
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { jupiter: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "하마사 요가 성립 가능 — 자문·교육·법률"
-
-  - id: R_10H_VENUS
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { venus: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "예술·미용·오락·사치·서비스 관련"
-    caution: "사치·방종"
-
-  - id: R_10H_SATURN
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { saturn: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "매우 좋은 배치(우파차야 강화) — 노동·산업·서비스, 자수성가"
-    caution: "커리어 지연·부담·상관 갈등"
-
-  - id: R_10H_RAHU
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { rahu: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "국제·이례적 커리어, IT·투기·미디어"
-    caution: "사기·부정 관련"
-
-  - id: R_10H_KETU
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { planet_in_house: { ketu: 10 } }
-    direction: support
-    source: "19_하우스10.md §2"
-    text: "연구·기술·영적·의료"
-    caution: "커리어 방향 불안정, 이탈"
-
-  # --- §4.2 10하우스 사인 (파일럿에서 쓰인 행만) ---
-  - id: R_10SIGN_CAPRICORN
-    tier: t1_d1
-    conclusion: CAREER_DIRECTION
-    when: { tenth_sign: 10 }
-    direction: support
-    source: "19_하우스10.md §4.2"
-    text: "정부, 대기업, 관리직, 산업, 인내의 커리어"
-
-# =============================================================================
-# T5 — 아쉬타카바르가  (강도 지표. counts_as_evidence: false)
-# =============================================================================
-  - id: R_SAV_10H
-    tier: t5_ashtaka
-    conclusion: CAREER_DIRECTION
-    when: { sav_house: { house: 10 } }
-    direction: support_if_grade_above
-    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
-    source: "43_BPHS_아쉬타카바르가.md §5.2"
-    text_template: "10하우스 SAV {value}점 — {grade}"
-    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
-
-# =============================================================================
-# T6 — 요가 (마하푸루샤 5종)
-# =============================================================================
-  - id: R_YOGA_SASA
-    tier: t6_yoga
-    conclusion: CAREER_DIRECTION
-    when:
-      yoga:
-        planet: saturn
-        signs: [10, 11, 7]               # 염소·물병(자기) / 천칭(고양)
-        houses: [1, 4, 7, 10]            # 켄드라
-    direction: support
-    source: "19_하우스10.md §3"
-    text: "자수성가·인내의 대성취, 리더"
-    bonus_if_house_10: "10하우스에서 성립하면 특히 강한 커리어 활성화"
-
-  - id: R_YOGA_RUCHAKA
-    tier: t6_yoga
-    conclusion: CAREER_DIRECTION
-    when: { yoga: { planet: mars, signs: [1, 8, 10], houses: [1, 4, 7, 10] } }
-    direction: support
-    source: "19_하우스10.md §3"
-    text: "용기·경쟁력·기술 리더십"
-
-  - id: R_YOGA_BHADRA
-    tier: t6_yoga
-    conclusion: CAREER_DIRECTION
-    when: { yoga: { planet: mercury, signs: [3, 6], houses: [1, 4, 7, 10] } }
-    direction: support
-    source: "19_하우스10.md §3"
-    text: "지성·소통·상업 역량"
-
-  - id: R_YOGA_HAMSA
-    tier: t6_yoga
-    conclusion: CAREER_DIRECTION
-    when: { yoga: { planet: jupiter, signs: [9, 12, 4], houses: [1, 4, 7, 10] } }
-    direction: support
-    source: "19_하우스10.md §3"
-    text: "지혜·교육·자문 역량"
-
-  - id: R_YOGA_MALAVYA
-    tier: t6_yoga
-    conclusion: CAREER_DIRECTION
-    when: { yoga: { planet: venus, signs: [2, 7, 12], houses: [1, 4, 7, 10] } }
-    direction: support
-    source: "19_하우스10.md §3"
-    text: "예술·미감·매력"
-
-# =============================================================================
-# T3 — 바르가 (부분 자동)
-# =============================================================================
-  - id: R_D1_D10_CONTRAST
-    tier: t3_varga
-    conclusion: CAREER_DIRECTION
-    when: { varga_contrast: { planet: tenth_lord, vargas: [d9, d10] } }
-    direction: computed                  # 강약 비교 결과에 따라 support/oppose
-    source: "41_BPHS_바르가판독_1_.md §3.6"
-    text_strong_weak: "잠재력은 있으나 직업 환경·역할 선택이 중요"
-    automation: partial
-    automation_note: >
-      D1 과 D9·D10 에서 대상 행성의 사인·하우스는 엔진이 산출하지만,
-      "강함/약함" 판정에는 존엄(자기·고양·우호·적대)과 하우스 성격(켄드라·두스타나)
-      규칙이 필요하다. 후보를 제시하고 방향은 사람이 확정한다.
-
-# =============================================================================
-# 자동화 불가 — 규칙 부재
-# =============================================================================
+    '
+- id: R_C1_SAV10_STRONG
+  tier: t5_ashtaka
+  conclusion: C1
+  when:
+    sav_house:
+      house: 10
+      min: 31
+  direction: support
+  source: 43 §5.2
+  text: 10하우스 영역의 기반 점수가 31점 이상으로 강해, 차트가 약속한 직업적 성취의 실현력이 큰 구조로 봅니다.
+- id: R_C1_SAV10_WEAK
+  tier: t5_ashtaka
+  conclusion: C1
+  when:
+    sav_house:
+      house: 10
+      max: 25
+  direction: caution
+  source: 43 §5.2
+  text: 10하우스 영역의 기반 점수가 25점 미만으로, 커리어 영역은 구조적 관리가 필요한 형태로 봅니다. 무리한 확장보다 기반 다지기가 우선인
+    국면으로 봅니다.
+- id: R_C1_SASA_10H
+  tier: t6_yoga
+  conclusion: C1
+  when:
+    yoga:
+      planet: saturn
+      signs:
+      - 10
+      - 11
+      - 7
+      houses:
+      - 10
+  direction: support
+  source: 19 §3
+  text: 토성의 사사 마하푸루샤 요가가 10하우스에서 성립합니다. 자수성가·인내의 대성취를 이루는 리더의 구조로 봅니다.
+- id: R_C1_RUCHAKA_10H
+  tier: t6_yoga
+  conclusion: C1
+  when:
+    yoga:
+      planet: mars
+      signs:
+      - 1
+      - 8
+      - 10
+      houses:
+      - 10
+  direction: support
+  source: 19 §3
+  text: 화성의 루차카 마하푸루샤 요가가 10하우스에서 성립합니다. 용기와 경쟁력으로 기술·군사 분야를 이끄는 구조로 봅니다.
+- id: R_C2_SALARIED_SUN10
+  tier: t1_d1
+  conclusion: C2
+  when:
+    planet_in_house:
+      sun: 10
+  direction: support
+  source: 19 §4.4
+  text: 태양이 10하우스에 있어 조직 내 권위 구조와 인연이 있는 형태입니다. 공직·대기업 같은 봉급직 신호 중 하나로 봅니다.
+- id: R_C2_SALARIED_SATURN
+  tier: t1_d1
+  conclusion: C2
+  when:
+    planet_in_house:
+      saturn: 10
+    lord_dignity:
+      lord_of: 10
+      dignity: own
+  direction: support
+  source: 19 §4.4
+  text: 토성이 10하우스에서 10로드와 조화를 이뤄, 대조직 안에서 안정적으로 성취를 쌓는 봉급직 신호로 봅니다.
+- id: R_C2_SELF_3H
+  tier: t1_d1
+  conclusion: C2
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 3
+  direction: support
+  source: 19 §4.4
+  text: 10로드가 3하우스(모험·도전)에 있어 독립적으로 일을 벌이는 자영업 신호로 봅니다. 담대한 도전이 커리어가 되는 구조입니다.
+- id: R_C2_SELF_MARS10
+  tier: t1_d1
+  conclusion: C2
+  when:
+    planet_in_house:
+      mars: 10
+  direction: support
+  source: 19 §4.4
+  text: 화성이 10하우스에서 강해 경쟁력을 무기로 독립적으로 나서는 자영업 신호로 봅니다.
+- id: R_C2_BIZ_TRIPLE
+  tier: t1_d1
+  conclusion: C2
+  when:
+    planet_in_house:
+      mercury: 10
+      jupiter: 10
+    sav_house:
+      house: 11
+      min: 31
+  direction: support
+  source: 19 §4.4
+  text: 수성·목성이 10하우스에서 조화하고 11하우스 기반이 강해, 규모 있는 사업(대사업)의 신호로 봅니다.
+- id: R_C2_BIZ_RAHU10
+  tier: t1_d1
+  conclusion: C2
+  when:
+    planet_in_house:
+      rahu: 10
+  direction: support
+  source: 19 §4.4
+  text: 라후가 10하우스에 있어 대규모·국제적 사업과 인연이 있는 신호로 봅니다. 이례적 분야의 개척자로 보는 구조입니다.
+- id: R_C2_BIZ_10L_EXALTED
+  tier: t1_d1
+  conclusion: C2
+  when:
+    lord_dignity:
+      lord_of: 10
+      dignity: exalted
+  direction: support
+  source: 19 §8.2
+  text: 10로드가 고양되어 사업적 추진력의 축이 강한 구조로 봅니다. 스스로 판을 키우는 방향과 인연이 있습니다.
+- id: R_C2_INTL_10L_12H
+  tier: t1_d1
+  conclusion: C2
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 12
+  direction: support
+  source: 19 §8.6
+  text: 10로드가 12하우스와 연결되어 해외·국제 커리어와 인연이 있는 구조로 봅니다.
+- id: R_C2_AMK_LAGNA
+  tier: t2_karaka
+  conclusion: C2
+  when:
+    karaka_house:
+      karaka: amk
+      in_house: 1
+  direction: support
+  source: 44 §4.1
+  text: 아마티야카라카가 라그나에 있어 자기 주도적 실행 방식의 구조입니다. 독립적으로 일을 이끄는 형태와 인연이 있는 것으로 봅니다.
+- id: R_C2_SAV11_STRONG
+  tier: t5_ashtaka
+  conclusion: C2
+  when:
+    sav_house:
+      house: 11
+      min: 31
+  direction: support
+  source: 43 §5.2
+  text: 11하우스(이득) 영역의 기반 점수가 강해, 사업적 성취의 이득 구조가 받쳐주는 형태로 봅니다.
+- id: R_C2_SASA_SELFMADE
+  tier: t6_yoga
+  conclusion: C2
+  when:
+    yoga:
+      planet: saturn
+      signs:
+      - 10
+      - 11
+      - 7
+      houses:
+      - 1
+      - 4
+      - 7
+      - 10
+  direction: support
+  source: 19 §3
+  text: 토성의 사사 요가가 성립해 자수성가의 구조입니다. 조직에 속하기보다 스스로 일구는 형태와 인연이 있는 것으로 봅니다.
+- id: R_C3_10L_TRINE5
+  tier: t1_d1
+  conclusion: C3
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 5
+  direction: support
+  source: 19 §9.1
+  text: 10로드가 5하우스(트리코나)에 있어 성취의 규모가 커지는 구조로 봅니다. 트리코나의 활성화가 성공 규모를 키웁니다.
+- id: R_C3_10L_KENDRA4
+  tier: t1_d1
+  conclusion: C3
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 4
+  direction: support
+  source: 19 §9.1
+  text: 10로드가 켄드라(4H)에 있어 성취의 토대가 단단한 구조로 봅니다. 켄드라의 활성화가 지위를 안정시킵니다.
+- id: R_C3_10L_EXALTED
+  tier: t1_d1
+  conclusion: C3
+  when:
+    lord_dignity:
+      lord_of: 10
+      dignity: exalted
+  direction: support
+  source: 19 §9.1
+  text: 10로드가 고양되어 성취의 규모가 크게 열리는 구조로 봅니다.
+- id: R_C3_10L_DEBILITATED
+  tier: t1_d1
+  conclusion: C3
+  when:
+    lord_dignity:
+      lord_of: 10
+      dignity: debilitated
+  direction: caution
+  source: 19 §9.1
+  text: 10로드가 쇠약해 성취의 규모에 제약이 따르는 구조로 봅니다. 다만 다른 요가·다샤로 보완되는 경우가 많아 단정하지 않습니다.
+- id: R_C3_SAV10_35
+  tier: t5_ashtaka
+  conclusion: C3
+  when:
+    sav_house:
+      house: 10
+      min: 35
+  direction: support
+  source: 43 §5.2
+  text: 10하우스 영역의 기반 점수가 35점 이상으로 매우 강해, 차트가 약속한 성취의 실현력이 큰 구조로 봅니다.
+- id: R_C3_SAV10_MID
+  tier: t5_ashtaka
+  conclusion: C3
+  when:
+    sav_house:
+      house: 10
+      min: 28
+      max: 31
+  direction: support
+  source: 43 §5.2
+  text: 10하우스 영역의 기반 점수가 평균 이상(28~30점)으로, 노력 대비 결과가 비교적 안정적인 구조로 봅니다.
+- id: R_C3_HAMSA
+  tier: t6_yoga
+  conclusion: C3
+  when:
+    yoga:
+      planet: jupiter
+      signs:
+      - 9
+      - 12
+      - 4
+      houses:
+      - 1
+      - 4
+      - 7
+      - 10
+  direction: support
+  source: 19 §3
+  text: 목성의 함사 마하푸루샤 요가가 성립해 축복받은 지혜자로 존경받는 위치에 오르는 구조로 봅니다.
+- id: R_C3_MALAVYA
+  tier: t6_yoga
+  conclusion: C3
+  when:
+    yoga:
+      planet: venus
+      signs:
+      - 2
+      - 7
+      - 12
+      houses:
+      - 1
+      - 4
+      - 7
+      - 10
+  direction: support
+  source: 19 §3
+  text: 금성의 말라브야 마하푸루샤 요가가 성립해 아름다움·예술·물질적 축복이 따르는 성취 구조로 봅니다.
+- id: R_C3_10L_DUSTHANA
+  tier: t6_yoga
+  conclusion: C3
+  when:
+    lord_house:
+      lord_of: 10
+      in_house: 8
+  direction: caution
+  source: 19 §5.2
+  text: 10로드가 두스타나(8H)에 있어 지위의 지속성에 유의가 필요한 구조로 봅니다. 성취 후 관리가 중요한 형태로 봅니다.
+- id: R_C4_MD_10LORD
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    maha_lord_of: 10
+  direction: support
+  source: 19 §6.1
+  text: 현재 10하우스 로드의 마하다샤가 진행 중입니다. 커리어 활성화의 중심 시기로 봅니다. (19 §6.1 1층위)
+- id: R_C4_MD_SUN
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    maha_lord: sun
+  direction: support
+  source: 19 §6.1
+  text: 현재 태양의 마하다샤가 진행 중입니다. 카르마의 카라카인 태양의 층위가 활성화되어 권위·리더십 국면으로 봅니다. (19 §6.1 4층위)
+- id: R_C4_AD_10LORD
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    antar_lord_of: 10
+  direction: support
+  source: 19 §6.1
+  text: 현재 10하우스 로드의 안타르다샤가 진행 중입니다. 커리어 주제가 구체적으로 드러나는 국면으로 봅니다.
+- id: R_C4_MD10_AD10
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 10
+  direction: support
+  source: 19 §6.2
+  text: 10로드의 마하다샤에 10로드의 안타르다샤가 겹쳐 강한 커리어 활성화 시기로 봅니다.
+- id: R_C4_MD10_AD1
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 1
+  direction: support
+  source: 19 §6.2
+  text: 10로드 마하다샤에 라그나 로드의 안타르다샤가 겹쳐, 자기 정체성과 커리어가 일치하는 시기로 봅니다.
+- id: R_C4_MD10_AD2
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 2
+  direction: support
+  source: 19 §6.2
+  text: 10로드 마하다샤에 2로드의 안타르다샤가 겹쳐, 커리어가 재산으로 전환되는 시기로 봅니다.
+- id: R_C4_MD10_AD11
+  tier: t4_dasha
+  conclusion: C4
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 11
+  direction: support
+  source: 19 §6.2
+  text: 10로드 마하다샤에 11로드의 안타르다샤가 겹쳐, 커리어상 이득이 크게 증가하는 시기로 봅니다.
+- id: R_C4_SAV10_STRONG_NOW
+  tier: t5_ashtaka
+  conclusion: C4
+  when:
+    sav_house:
+      house: 10
+      min: 31
+  direction: support
+  source: 43 §9
+  text: 10하우스 영역의 기반이 강해 현재 국면의 노력이 결실로 이어지기 쉬운 구조로 봅니다. 약속된 결과가 비교적 빠르고 안정적으로 현실화되는
+    흐름입니다.
+- id: R_C5_MD_10LORD_BASE
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord_of: 10
+  direction: support
+  source: 19 §6.1
+  text: 10하우스 로드의 마하다샤가 진행 중이어서 커리어 도약의 기본 조건이 갖춰진 시기로 봅니다.
+- id: R_C5_MD10_AD9
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 9
+  direction: support
+  source: 19 §6.2
+  text: 10하우스 로드의 마하다샤에 9하우스 로드의 안타르다샤가 겹치면 다르마-카르마 요가가 활성화되는 시기로, 커리어상 가장 큰 성취가 열리는
+    국면으로 봅니다.
+- id: R_C5_MD9_AD10
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord_of: 9
+    antar_lord_of: 10
+  direction: support
+  source: 19 §6.2
+  text: 9로드 마하다샤에 10로드 안타르다샤가 겹치는 다르마-카르마 요가의 역방향 활성화로, 큰 성취가 열리는 도약 시기로 봅니다.
+- id: R_C5_MD5_AD10
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord_of: 5
+    antar_lord_of: 10
+  direction: support
+  source: 19 §6.2
+  text: 5로드 마하다샤에 10로드 안타르다샤가 겹쳐 창의적 커리어의 대성취가 열리는 시기로 봅니다.
+- id: R_C5_MD1_AD10
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord_of: 1
+    antar_lord_of: 10
+  direction: support
+  source: 19 §6.2
+  text: 라그나 로드 마하다샤에 10로드 안타르다샤가 겹쳐, 커리어가 결정적으로 움직이는 시기로 봅니다.
+- id: R_C5_MD_SUN_10H
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord: sun
+    planet_in_house:
+      sun: 10
+  direction: support
+  source: 19 §8.1
+  text: 태양의 마하다샤에 태양이 10하우스에 있어, 공적 영역에서의 큰 도약이 열리는 시기로 봅니다.
+- id: R_C5_SAV10_JUMP
+  tier: t5_ashtaka
+  conclusion: C5
+  when:
+    sav_house:
+      house: 10
+      min: 31
+  direction: support
+  source: 19 §6.4
+  text: 10하우스 영역의 기반이 강해(도약 조건 3), 도약을 위한 노력이 안정적으로 결실 맺는 구조로 봅니다.
+- id: R_C5_MD_JUPITER10
+  tier: t4_dasha
+  conclusion: C5
+  when:
+    maha_lord: jupiter
+    planet_in_house:
+      jupiter: 10
+  direction: support
+  source: 19 §6.1
+  text: 목성의 마하다샤가 진행 중이고 목성이 10하우스에 있어, 커리어 활성화 2층위의 도약 시기로 봅니다. 자문·교육·지식 기반 영역의 확장에
+    유리한 국면으로 봅니다.
+- id: R_C6_MD10_AD6
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 6
+  direction: caution
+  source: 19 §6.2
+  text: 10로드 마하다샤에 6로드 안타르다샤가 겹치는 시기입니다. 직장 내 갈등 구도에 유의하고, 커리어의 재정비가 필요한 국면으로 봅니다.
+- id: R_C6_MD10_AD8
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 8
+  direction: caution
+  source: 19 §6.2
+  text: 10로드 마하다샤에 8로드 안타르다샤가 겹치는 시기입니다. 커리어의 급변 국면으로, 새로운 방향의 모색이 필요한 시기로 봅니다.
+- id: R_C6_MD10_AD12
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    maha_lord_of: 10
+    antar_lord_of: 12
+  direction: caution
+  source: 19 §6.2
+  text: 10로드 마하다샤에 12로드 안타르다샤가 겹치는 시기입니다. 해외 이동이나 커리어 전환을 검토하는 국면으로 봅니다.
+- id: R_C6_AD8_DUSTHANA
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    antar_lord_of: 8
+  direction: caution
+  source: 19 §6.5
+  text: 8로드의 안타르다샤가 진행 중입니다. 커리어의 재편이 열리는 시기로, 재정비의 국면으로 봅니다.
+- id: R_C6_AD12_WITHDRAW
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    antar_lord_of: 12
+  direction: caution
+  source: 19 §6.5
+  text: 12로드의 안타르다샤가 진행 중입니다. 한 박자 쉬어가며 방향을 점검하는 국면으로 봅니다.
+- id: R_C6_MD_SATURN
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    maha_lord: saturn
+  direction: caution
+  source: 43 §11
+  text: 토성의 마하다샤가 진행 중입니다. 책임과 부담이 늘어나기 쉬운 구간으로, 무리하게 속도를 내기보다 기존 구조를 정비하는 것이 중요한
+    시기로 봅니다.
+- id: R_C6_MD_RAHU
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    maha_lord: rahu
+  direction: caution
+  source: 19 §9.3
+  text: 라후의 마하다샤가 진행 중입니다. 이례적 전환이 열리는 시기로, 기존 틀을 벗어난 새로운 방향의 모색이 필요한 국면으로 봅니다.
+- id: R_C6_MD_KETU
+  tier: t4_dasha
+  conclusion: C6
+  when:
+    maha_lord: ketu
+  direction: caution
+  source: 19 §9.3
+  text: 케투의 마하다샤가 진행 중입니다. 내면적 재정비와 방향 재설정의 시기로 봅니다.
+- id: R_C6_SAV10_LOW
+  tier: t5_ashtaka
+  conclusion: C6
+  when:
+    sav_house:
+      house: 10
+      max: 25
+  direction: caution
+  source: 43 §11
+  text: 10하우스 영역의 기반 점수가 낮아 결과가 바로 드러나기보다 조정과 준비 과정이 더 필요한 시기입니다. 일정을 여유 있게 잡고 꼼꼼히
+    관리하는 편이 좋습니다.
 gaps:
-  t2_karaka:
-    issue: ISSUE-014
-    reason: >
-      44 §4.1 에 AmK 산출 규칙은 있으나 "AmK 가 어느 행성이고 어느 하우스에 있을 때
-      직업 수행 방식이 어떠한가" 라는 판독 규칙이 없다. 파일럿 1·2회차 모두 공란.
-  t4_dasha:
-    issue: ISSUE-013
-    reason: >
-      19 §6.2 다샤 조합 11행표에 노드(라후·케투) 마하다샤 조합이 없다.
-      파일럿 차트가 케투 마하다샤라 해당 행이 존재하지 않는다.
-      빔쇼타리 120년 중 25년(약 21%)이 노드 마하다샤이므로 고객 5명 중 1명이 해당.
+- conclusion: C1
+  tier: t2_karaka
+  source: 44 §4.1
+  gap: AK–AmK 관계 판정 (결합·상호 어스펙트·켄드라·트리코나 vs 6/8·2/12). 행성 간 관계(결합/어스펙트/하우스 관계) 키가
+    문법에 없음.
+- conclusion: C1
+  tier: t2_karaka
+  source: 44 §6.3
+  gap: 카라캄샤 라그나(KL)의 10H 재실 행성·사인 판독. KL 산출 및 KL 기준 하우스 키가 문법에 없음.
+- conclusion: C1
+  tier: t3_varga
+  source: 41_1_ §3.6
+  gap: D10 행성별 커리어 톤 9행 (D10 내 행성의 강약·톤). 바르가 내부 행성 dignity 키가 문법에 없음.
+- conclusion: C1
+  tier: t6_yoga
+  source: 19 §5.1
+  gap: 결합형 라자요가 (다르마-카르마 9L+10L 결합, 찬드라-망갈라 달+화성 결합, 가자-케사리 달+목성 켄드라, 붓다-아디트야 수성+태양
+    결합, 아마라 길성 10H). 행성 간 결합·켄드라 관계 키가 문법에 없음.
+- conclusion: C2
+  tier: t2_karaka
+  source: 44 §4.1
+  gap: AK–AmK 6/8·2/12 관계 시 '하고 싶은 일과 현실 일 사이의 조정 과제' 프레임. 관계 키 없음.
+- conclusion: C2
+  tier: t3_varga
+  source: 41_1_ §3.6
+  gap: D10 라그나 로드·D10 10로드의 위치·상태 판독. D10 내부 구조 키가 문법에 없음.
+- conclusion: C3
+  tier: t3_varga
+  source: 41_1_ §6
+  gap: Vimsopaka Bala 등급 (20점 만점, 8등급). 바르가 종합 점수 키가 문법에 없음.
+- conclusion: C3
+  tier: t3_varga
+  source: 41_1_ §2.2
+  gap: D1·바르가 반복 dignity (D1 강함 + 바르가 약함 → 다샤 결과 약화). 바르가 내 dignity 키 없음.
+- conclusion: C4
+  tier: t3_varga
+  source: 19 §7.4
+  gap: 현재 마하다샤 로드의 D10 위치·상태로 국면 판단. 다샤 로드 × 바르가 교차 키가 문법에 없음.
+- conclusion: C4
+  tier: t5_ashtaka
+  source: 43 §9
+  gap: 다샤×BAV/SAV 4케이스 매트릭스 (다샤 강함×SAV 강함 등). 다샤 로드 강약 판정 키가 문법에 없음.
+- conclusion: C5
+  tier: t4_dasha
+  source: 19 §6.3
+  gap: 이중 트랜짓 (목성 10H 통과 12년 주기, 목성+토성 동시 축복, 토성 10H 통과). 트랜짓 키가 문법에 없음.
+- conclusion: C5
+  tier: t4_dasha
+  source: 19 §6.4
+  gap: 도약 4조건 중 트랜짓 조건 (목성 트랜짓 10H/10L 축복, 태양·카라카 트랜짓 조화). 트랜짓 키 없음.
+- conclusion: C5
+  tier: t4_dasha
+  source: 02 §1, §2
+  gap: 프라티안타르다샤 3단계 해상도, 목성 라시 진입일 트리거. 프라티안타르·트랜짓 일자 키가 문법에 없음.
+- conclusion: C6
+  tier: t4_dasha
+  source: 19 §6.5, §9.3
+  gap: 사드사티 진입·종료 시기. 트랜짓 토성의 달 기준 위치 키가 문법에 없음.
+- conclusion: C6
+  tier: t4_dasha
+  source: 02 §5
+  gap: 마하다샤–프라티안타르 6/8 관계 장애물. 프라티안타르 키 + 행성 간 하우스 관계 키가 문법에 없음.

@@ -1,345 +1,632 @@
-# =============================================================================
-# rules_condition.yaml — 컨디션 판정 규칙 DB (파일럿 범위)
-# =============================================================================
-# 범위: 컨디션 카테고리 D1~D4 중 자동 판정 가능한 규칙만 수록한다.
-#       evidence_map_condition.md 의 계열 표를 기준으로 옮긴 것이며,
-#       근거가 약하거나 자동화 불가인 행은 넣지 않았다 (gaps 참조).
-#
-# 원칙:
-#   §2.1  원본 문서를 수정하지 않는다. 여기에는 서술을 인용만 한다.
-#   §6.1  문서에 없는 규칙을 만들지 않는다. text 는 원문 서술을 그대로 옮기거나
-#         충실히 요약한다.
-#   §9.1  tier 는 계열 하나만 지정한다. 한 규칙이 두 계열을 채우지 않는다.
-#         conclusion 은 전부 CONDITION_RHYTHM 으로 통일한다.
-#
-# when 조건 문법 (전부 AND):
-#   lord_house            {lord_of: N, in_house: M}   N하우스 로드가 M하우스에 위치
-#   lord_dignity          {lord_of: N, dignity: own|exalted|debilitated|other}
-#   house_sign            {house: N, sign: S}         사인 번호 1=양자리..12=물고기자리
-#   planet_in_house       {행성: 하우스}              sun moon mars mercury jupiter
-#                                                   venus saturn rahu ketu
-#   sav_house             {house: n}                  상한 미포함
-#   yoga                  {planet, signs: [...], houses: [...]}  (별도 평가)
-#   varga_contrast        {planet: lord_of_N, vargas: [...]}     (별도 평가)
-#
-# direction:
-#   support               결론(컨디션 리듬)을 뒷받침하는 근거
-#   oppose                체력·리듬 측면에서 약화·주의 요인으로 작용하는 근거
-#   support_if_grade_above  SAV 등급 하한 이상일 때만 support
-#   computed              강약 비교 결과에 따라 support/oppose (사람 확정 필요)
-#
-# 안전 (evidence_map_condition.md §2 준수):
-#   - §6.3 병증 확정 절차 사용 금지. "심각한 병증 지표"로 귀결되는 규칙은 만들지
-#     않는다 (gaps blocked_63).
-#   - S3(수명) 영역 금지. §1·§2 내 S3 행(유산·상실·이혼·감금·병명)은 근거에서 제외.
-#   - 프레임은 "컨디션 리듬·체력 관리·회복 패턴"에 그친다. 진단·처방 뉘앙스 금지.
-#   - 병명 확정 금지 ("자가면역 질환", "성병" 등 제외). 부위·상태 수준 서술로 제한.
-#   - 달 항목의 정신 건강 서술은 본문에 넣지 않고 active_referral 문구로 대체한다.
-#   - "올해는 건강이 안정적입니다" 류의 안심시키는 표현 금지.
-#   - 필수 고지문·안내 문구(condition_category_policy.mandatory_disclaimer_scope:
-#     all_condition_statements)는 리포트 레벨에서 예외 없이 첨부한다
-#     (워크시트/서술 단계의 책임 — 본 파일의 규칙 text 에는 포함하지 않는다).
-# =============================================================================
-
 meta:
-  version: 0.1.0
-  scope: condition_C1_pilot
-  source_docs: [15_하우스6.md, 43_BPHS_아쉬타카바르가.md, 41_BPHS_바르가판독_1_.md]
-  coverage_note: >
-    D1(체질 성향·취약 영역)의 T1·T5 는 자동 판정 가능. T6(요가)는 성립 조건까지만
-    자동이며 순수성·훼손 판정은 사람 확정(부분 자동). T3 는 6로드 D1/D9 대조만
-    부분 자동이며, 트리도샤 원소 판정·칼라푸루샤 신체 매핑은 자동화 불가.
-    T2(카라카)는 카라카 행성(화·토·케)의 6H 재실 규칙에 포함되나,
-    라후의 중독·독소 서술은 손상 판정이 필요해 불가. T4(다샤·트랜짓)는 when 키
-    부재로 불가. §6.3 병증 확정 절차와 S3 영역은 의도적으로 규칙화하지 않음.
-
-# =============================================================================
-# T1 — D1 하우스/로드/재실  (L1)
-# 체력·활력의 기본 그릇 = 라그나(1H)와 1로드. 6H 로드와 재실 행성.
-# =============================================================================
+  version: 2.0.0
+  description: rules_condition — 심화판 (evidence map D1~D4)
+  source: report_module-2 worksheet_spec.yaml evidence map + kb-sources 원전
+  shallow_backup: _backup_shallow/
 rules:
+- id: R_D1_LAGNA_LORD_OWN
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_dignity:
+      lord_of: 1
+      dignity: own
+  direction: support
+  source: 15_하우스6.md §5.3
+  text: 라그나 로드가 자기 별자리에 있으면 체력·활력의 기본 그릇이 튼튼한 편으로 봅니다.
+- id: R_D1_LAGNA_LORD_EXALTED
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_dignity:
+      lord_of: 1
+      dignity: exalted
+  direction: support
+  source: 15_하우스6.md §5.3
+  text: 라그나 로드가 고양된 자리에 있으면 체력·활력의 기본 그릇이 튼튼한 편으로 봅니다.
+- id: R_D1_6L_IN_1H
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 1
+  direction: caution
+  source: 15_하우스6.md §1
+  text: 6하우스 로드가 라그나에 있으면 신체 자체가 병약하거나 저항력이 약한 편으로 봅니다. 체력 관리에 각별한 유의가 요구되는 국면입니다.
+  note: '원문 "스스로 적을 만드는 성향"은 관계·커리어 영역이라 제외.
 
-  # --- 1로드: 체력·활력의 기본 그릇 (§5.3 강도 비교의 한 축) ---
-  - id: R_LAGNA_LORD_OWN
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { lord_dignity: { lord_of: 1, dignity: own } }
-    direction: support
-    source: "15_하우스6.md §5.3"
-    text: "라그나 로드가 자기 별자리 — 체력·활력의 기본 그릇이 튼튼"
+    '
+- id: R_D1_6L_IN_2H
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 2
+  direction: caution
+  source: 15_하우스6.md §1
+  text: 6하우스 로드가 2하우스에 있으면 목소리·목 주변과 식습관 관련 리듬을 살펴볼 만합니다.
+  note: 부채 관련 서술은 금전 카테고리로 이관 (§3.2).
+- id: R_D1_6L_IN_4H
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 4
+  direction: neutral
+  source: 15_하우스6.md §1
+  text: 6하우스 로드가 4하우스에 있으면 가정 내 건강 관리에 관심을 두는 흐름으로 봅니다.
+  note: 원문 '모친의 병약'은 가족 건강 영역이므로 완곡 서술.
+- id: R_D1_6L_IN_6H
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 6
+  direction: support
+  source: 15_하우스6.md §1
+  text: 6하우스 로드가 자기 자리에 있으면 6하우스 주제가 뚜렷한 대신 극복하는 힘도 함께 강화되는 구조로 봅니다.
+- id: R_D1_6L_IN_9H
+  tier: t1_d1
+  conclusion: D1
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 9
+  direction: caution
+  source: 15_하우스6.md §1
+  text: 6하우스 로드가 9하우스에 있으면 장거리 이동 시 컨디션 난조에 유의하는 흐름으로 봅니다.
+  note: 원문 '부친 병약'은 가족 건강 영역이므로 제외하고 이동 시 유의로 서술.
+- id: R_D1_6H_SUN
+  tier: t1_d1
+  conclusion: D1
+  when:
+    planet_in_house:
+      sun: 6
+  direction: caution
+  source: 15_하우스6.md §2
+  text: 태양이 6하우스에 있으면 위장과 소화 관련 리듬을 살펴볼 만합니다. 식습관을 일정하게 유지하는 흐름을 검토할 수 있습니다.
+  note: 관직·정부 관련 서술은 커리어로 이관.
+- id: R_D1_6H_MOON
+  tier: t1_d1
+  conclusion: D1
+  when:
+    planet_in_house:
+      moon: 6
+  direction: caution
+  source: 15_하우스6.md §2
+  text: 달이 6하우스에 있으면 위장 쪽과 생활 리듬을 살펴볼 만합니다. 식사와 수면 시간을 일정하게 맞추는 흐름을 검토할 수 있습니다.
+  note: '달 항목의 정신 건강 서술("우울·불안", "심각한 정신 건강 문제")은 본문 서술 금지 — active_referral 문구로 대체
+    (워크시트/서술 단계).
 
-  - id: R_LAGNA_LORD_EXALTED
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { lord_dignity: { lord_of: 1, dignity: exalted } }
-    direction: support
-    source: "15_하우스6.md §5.3"
-    text: "라그나 로드가 고양 — 체력·활력의 기본 그릇이 튼튼"
+    '
+- id: R_D1_6H_MARS
+  tier: t1_d1
+  conclusion: D1
+  when:
+    planet_in_house:
+      mars: 6
+  direction: support
+  source: 15_하우스6.md §2
+  text: 화성이 6하우스에 있으면 강한 저항력과 극복력을 가진 배치로 봅니다.
+  note: 루차카 마하푸루샤 요가 조건은 커리어 카테고리로 이관.
+- id: R_D1_6H_SATURN
+  tier: t1_d1
+  conclusion: D1
+  when:
+    planet_in_house:
+      saturn: 6
+  direction: support
+  source: 15_하우스6.md §2
+  text: 토성이 6하우스에 있으면 만성적인 부담을 인내로 다스리는 배치로 봅니다.
+- id: R_D1_6H_RAHU
+  tier: t1_d1
+  conclusion: D1
+  when:
+    planet_in_house:
+      rahu: 6
+  direction: support
+  source: 15_하우스6.md §2
+  text: 라후가 6하우스에 있으면 이례적인 방법으로 부담을 제압하는 우파차야적 배치로 봅니다.
+  note: '§2 총원칙 "우파차야이므로 흉성이 6하우스에 있는 것은 상서로움" 적용. 손상 시(파파카르타리 등) 중독·독소 서술은 훼손 판정이
+    필요해 제외.
 
-  # --- §1 6하우스 로드의 12하우스 배치 (컨디션 해당 행만) ---
-  - id: R_6L_IN_1H
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 6, in_house: 1 } }
-    direction: oppose
-    source: "15_하우스6.md §1"
-    text: "6로드가 라그나에 위치 — 신체 자체가 병약·저항력 약함. 체력 관리에 각별한 유의가 요구되는 국면"
-    note: >
-      원문 "스스로 적을 만드는 성향"은 관계·커리어 영역이라 제외.
-      (+) 강화 시 "우파차야적 극복력 발현"은 존엄 판정이 필요해 별도 규칙화하지 않음.
+    '
+- id: R_D1_6H_KETU
+  tier: t1_d1
+  conclusion: D1
+  when:
+    planet_in_house:
+      ketu: 6
+  direction: caution
+  source: 15_하우스6.md §2
+  text: 케투가 6하우스에 있으면 원인 파악이 어려운 컨디션 난조에 유의하는 흐름으로 봅니다. 지속되면 의료기관 상담을 권유합니다.
+  note: 병명 확정 금지 — '자가면역 질환' 등 손상 시 병명은 제외.
+- id: R_D1_6L_D1_D9_CONTRAST
+  tier: t3_varga
+  conclusion: D1
+  when:
+    varga_contrast:
+      planet: lord_of_6
+      vargas:
+      - d9
+  direction: neutral
+  source: 41_BPHS_바르가판독_1_.md §3.6
+  text: 6하우스 로드의 D1·D9 강약 비교 — 체력 기반의 잠재력과 실제 발현 조건을 함께 봅니다.
+  automation: partial
+  automation_note: '"강함/약함" 판정에는 존엄·하우스 성격 규칙이 필요 — 후보를 제시하고 사람이 확정한다.
 
-  - id: R_6L_IN_6H
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 6, in_house: 6 } }
-    direction: support
-    source: "15_하우스6.md §1"
-    text: "6로드가 자기 자리 — 6하우스 주제가 뚜렷하나 극복력도 함께 강화. 순수 부정으로 보지 않음"
+    '
+- id: R_D1_SAV_6H
+  tier: t5_ashtaka
+  conclusion: D1
+  when:
+    sav_house:
+      house: 6
+  direction: support
+  grade_threshold: 28
+  source: 15_하우스6.md §4.5
+  text: 6하우스의 아쉬타카바르가 점수가 28점을 넘으면 부담을 다루는 힘이 강하게 받쳐 주는 구조로 봅니다.
+  note: 28점 초과 = 극복력 강함. 등급 문자열은 constants.yaml sav_grades 조회.
+- id: R_D1_SAV_1H
+  tier: t5_ashtaka
+  conclusion: D1
+  when:
+    sav_house:
+      house: 1
+  direction: support
+  grade_threshold: 28
+  source: 43_BPHS_아쉬타카바르가.md §5.2
+  text: 1하우스(라그나)의 아쉬타카바르가 점수가 28점을 넘으면 몸의 기본 바탕이 안정적으로 받쳐 주는 구조로 봅니다.
+  note: 라그나=신체 자체. SAV 는 발현의 수용력·마찰 정도만 보조한다.
+- id: R_D2_6L_DEBILITATED
+  tier: t1_d1
+  conclusion: D2
+  when:
+    lord_dignity:
+      lord_of: 6
+      dignity: debilitated
+  direction: support
+  source: 15_하우스6.md §5.3
+  text: 6하우스 로드가 쇠약한 자리에 있으면 부담을 주는 요인이 약해 다스리기 수월한 구조로 봅니다.
+  note: '§5.3 완전 비교(위엄·하우스 배치·결합/어스펙트·AV 4항목 종합)는 자동화 불가 — 본 규칙은 위엄 1항목만의 부분 판정이며
+    라그나 로드와의 상대 비교는 사람이 확정한다.
 
-  # --- §2 6하우스 재실 행성 (컨디션 해당 행만, S3·타 카테고리 제외) ---
-  - id: R_6H_SUN
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { planet_in_house: { sun: 6 } }
-    direction: support
-    source: "15_하우스6.md §2"
-    text: "태양 6하우스 — 적을 이김. 위장 관련 주의, 식습관·소화 리듬 관리에 유의"
+    '
+- id: R_D2_6L_EXALTED
+  tier: t1_d1
+  conclusion: D2
+  when:
+    lord_dignity:
+      lord_of: 6
+      dignity: exalted
+  direction: caution
+  source: 15_하우스6.md §5.3
+  text: 6하우스 로드가 고양된 자리에 있으면 6하우스 주제의 힘이 강해 예방과 관리를 강조하는 흐름으로 봅니다.
+  note: §5.3 '라그나 로드 < 6H 로드 → 적·병이 native를 압도, 예방과 관리 강조'의 부분 판정.
+- id: R_D2_6L_OWN_SIGN
+  tier: t1_d1
+  conclusion: D2
+  when:
+    lord_dignity:
+      lord_of: 6
+      dignity: own
+  direction: support
+  source: 15_하우스6.md §5.3
+  text: 6하우스 로드가 자기 별자리의 힘으로 있으면 부담을 다스리는 저력이 있는 구조로 봅니다.
+  note: §5.3 부분 판정 — 라그나 로드와의 상대 비교는 사람이 확정한다.
+- id: R_D2_ARISHTA_MARS
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    yoga:
+      planet: mars
+      signs:
+      - 1
+      - 8
+      - 10
+      houses:
+      - 6
+  direction: support
+  source: 15_하우스6.md §3.5
+  text: 아리스타 방가(위기 소멸) — 화성이 자기·고양 위치로 6하우스에 있어 위기·고비를 넘기는 회복탄력성의 구조로 봅니다.
+- id: R_D2_ARISHTA_SATURN
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    yoga:
+      planet: saturn
+      signs:
+      - 10
+      - 11
+      houses:
+      - 6
+  direction: support
+  source: 15_하우스6.md §3.5
+  text: 아리스타 방가(위기 소멸) — 토성이 자기 별자리로 6하우스에 있어 만성적인 부담을 인내로 극복하는 구조로 봅니다.
+- id: R_D2_HARSHA_8
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 8
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 하르샤 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조로 봅니다.
+  automation: partial
+  automation_note: '순수성 체크리스트(§3.1: 6·8·12 로드끼리만 결합·어스펙트, 켄드라·트리코나 로드와 결합 없음, 다른 로드십을
+    겸하지 않음)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
 
-  - id: R_6H_MOON
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { planet_in_house: { moon: 6 } }
-    direction: oppose
-    source: "15_하우스6.md §2"
-    text: "달 6하우스 — 위장 관련 문제, 생활 리듬 주의. 식사·수면 리듬 관리에 유의"
-    note: >
-      달 항목의 정신 건강 서술("우울·불안", "심각한 정신 건강 문제")은 §2-2에 따라
-      본문 서술 금지 — condition_category_policy.active_referral 문구로 대체한다
-      (자동화 미지원, gaps t2_mental_health 참조).
+    '
+- id: R_D2_HARSHA_12
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 12
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 하르샤 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조로 봅니다.
+  automation: partial
+  automation_note: 순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
+- id: R_D2_SARALA_6
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 8
+      in_house: 6
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 사랄라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조로 봅니다.
+  automation: partial
+  automation_note: 순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
+- id: R_D2_SARALA_12
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 8
+      in_house: 12
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 사랄라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조로 봅니다.
+  automation: partial
+  automation_note: 순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
+- id: R_D2_VIMALA_6
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 12
+      in_house: 6
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 비말라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조로 봅니다.
+  automation: partial
+  automation_note: 순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
+- id: R_D2_VIMALA_8
+  tier: t6_yoga
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 12
+      in_house: 8
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 비말라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조로 봅니다.
+  automation: partial
+  automation_note: 순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
+- id: R_D2_HARSHA_TIMING
+  tier: t4_dasha
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 8
+    maha_lord_of: 6
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 하르샤 요가 관련 시기로, 6하우스 로드의 다샤에서 위기가 기회로 전환되는 흐름을 검토할 수 있습니다.
+  automation: partial
+  automation_note: 요가 순수성(§3.1)은 사람이 확정해야 한다.
+- id: R_D2_SARALA_TIMING
+  tier: t4_dasha
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 8
+      in_house: 6
+    maha_lord_of: 8
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 사랄라 요가 관련 시기로, 8하우스 로드의 다샤에서 위기를 통과해 도약하는 흐름을 검토할 수 있습니다.
+  automation: partial
+  automation_note: 요가 순수성(§3.1)은 사람이 확정해야 한다.
+- id: R_D2_VIMALA_TIMING
+  tier: t4_dasha
+  conclusion: D2
+  when:
+    lord_house:
+      lord_of: 12
+      in_house: 6
+    maha_lord_of: 12
+  direction: support
+  source: 15_하우스6.md §3.1
+  text: 비말라 요가 관련 시기로, 12하우스 로드의 다샤에서 부담을 정리하고 도약하는 흐름을 검토할 수 있습니다.
+  automation: partial
+  automation_note: 요가 순수성(§3.1)은 사람이 확정해야 한다.
+- id: R_D3_MOON_RHYTHM
+  tier: t1_d1
+  conclusion: D3
+  when:
+    planet_in_house:
+      moon: 6
+  direction: caution
+  source: 15_하우스6.md §2
+  text: 달이 6하우스에 있으면 수면과 식사 시간이 흐트러지기 쉬운 리듬으로 봅니다. 취침·기상 시간을 일정하게 유지하는 흐름을 검토할 수 있습니다.
+- id: R_D3_SUN_DIGEST_RHYTHM
+  tier: t1_d1
+  conclusion: D3
+  when:
+    planet_in_house:
+      sun: 6
+  direction: neutral
+  source: 15_하우스6.md §2
+  text: 태양이 6하우스에 있으면 소화 리듬을 일정하게 유지하는 흐름을 검토할 수 있습니다.
+- id: R_D3_6L_IN_1H_RHYTHM
+  tier: t1_d1
+  conclusion: D3
+  when:
+    lord_house:
+      lord_of: 6
+      in_house: 1
+  direction: caution
+  source: 15_하우스6.md §1
+  text: 6하우스 로드가 라그나에 있으면 체력 소모가 빠른 편으로 봅니다. 무리한 일정을 피하고 회복 시간을 확보하는 흐름을 검토할 수 있습니다.
+- id: R_D3_SATURN_TOIL
+  tier: t2_karaka
+  conclusion: D3
+  when:
+    planet_in_house:
+      saturn: 6
+  direction: caution
+  source: 15_하우스6.md §2
+  text: 토성이 6하우스에 있으면 장시간·반복적인 노고가 쌓이기 쉬운 리듬으로 봅니다. 휴식 시간을 의도적으로 확보하는 흐름을 검토할 수 있습니다.
+  note: spec karakas 토성(만성) + 헤더 '일상의 노고'의 생활 언어 번역.
+- id: R_D3_MARS_ENERGY
+  tier: t2_karaka
+  conclusion: D3
+  when:
+    planet_in_house:
+      mars: 6
+  direction: neutral
+  source: 15_하우스6.md §2
+  text: 화성이 6하우스에 있으면 에너지가 한 번에 분출되기 쉬운 패턴으로 봅니다. 활동과 회복의 배분 리듬을 살펴볼 수 있습니다.
+- id: R_D3_RAHU_RHYTHM
+  tier: t2_karaka
+  conclusion: D3
+  when:
+    planet_in_house:
+      rahu: 6
+  direction: caution
+  source: 15_하우스6.md §2
+  text: 라후가 6하우스에 있으면 생활 일정이 불규칙해지기 쉬운 경향으로 봅니다. 수면·식사 시간을 고정하는 흐름을 검토할 수 있습니다.
+  note: '중독·독소 서술은 손상 시(파파카르타리 등)에만 해당하므로 제외. 기본 "이례적" signification의 생활 언어 번역.
 
-  - id: R_6H_MARS
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { planet_in_house: { mars: 6 } }
-    direction: support
-    source: "15_하우스6.md §2"
-    text: "화성 6하우스 — 매우 상서로움. 적을 이김, 강한 저항력·극복력 (아리스타 방가)"
-    note: "루차카 마하푸루샤 요가 조건은 커리어 카테고리로 이관 (evidence_map §3)."
+    '
+- id: R_D4_MAHA_6LORD
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord_of: 6
+  direction: caution
+  source: 15_하우스6.md §4.1
+  text: 6하우스 로드의 다샤가 진행 중이면 6하우스 주제가 활성화되는 시기로 봅니다. 컨디션 관리에 각별한 유의가 요구되는 국면입니다.
+  note: '원문 "병·부채·적의 시작" 중 부채·적은 타 카테고리로 이관하고 컨디션 영역만 완곡 서술.
 
-  - id: R_6H_SATURN
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { planet_in_house: { saturn: 6 } }
-    direction: support
-    source: "15_하우스6.md §2"
-    text: "토성 6하우스 — 매우 상서로움. 만성적이나 극복 가능, 인내로 대적을 물리침"
-
-  - id: R_6H_KETU
-    tier: t1_d1
-    conclusion: CONDITION_RHYTHM
-    when: { planet_in_house: { ketu: 6 } }
-    direction: oppose
-    source: "15_하우스6.md §2"
-    text: "케투 6하우스 — 원인 파악이 어려운 컨디션 난조에 유의. 지속되면 의료기관 상담 권유"
-    note: >
-      병명 확정 금지 — "자가면역 질환" 등 손상 시 병명은 제외하고
-      부위·상태 수준 서술로 제한한다.
-
-# =============================================================================
-# T5 — 아쉬타카바르가  (강도 지표. counts_as_evidence: false)
-# §4.5: 28점 초과 = 극복력 강함. constants.yaml sav_grades "평균 이상" 하한 28 적용.
-# =============================================================================
-  - id: R_SAV_6H
-    tier: t5_ashtaka
-    conclusion: CONDITION_RHYTHM
-    when: { sav_house: { house: 6 } }
-    direction: support_if_grade_above
-    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
-    source: "15_하우스6.md §4.5"
-    text_template: "6하우스 SAV {value}점 — {grade}"
-    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
-
-  - id: R_SAV_1H
-    tier: t5_ashtaka
-    conclusion: CONDITION_RHYTHM
-    when: { sav_house: { house: 1 } }
-    direction: support_if_grade_above
-    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
-    source: "43_BPHS_아쉬타카바르가.md §5.2"
-    text_template: "1하우스(라그나) SAV {value}점 — {grade}"
-    note: >
-      라그나=신체 자체 (15 헤더). SAV 는 발현의 수용력·마찰 정도만 보조한다
-      (constants.yaml ashtakavarga.role: intensity_modifier).
-
-# =============================================================================
-# T6 — 요가
-# 아리스타 방가(§3.5): 성립 조건까지 완전 자동.
-# 비파리트 라자요가(§3.1): 성립 조건만 자동, 순수성 체크리스트는 사람 확정.
-# =============================================================================
-  - id: R_YOGA_ARISHTA_MARS
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when:
-      yoga:
-        planet: mars
-        signs: [1, 8, 10]                # 양자리·전갈자리(자기) / 염소자리(고양)
-        houses: [6]
-    direction: support
-    source: "15_하우스6.md §3.5"
-    text: "아리스타 방가(위기 소멸) — 화성이 자기·고양 위치로 6하우스에 있어 위기·고비를 넘기는 회복탄력성"
-
-  - id: R_YOGA_ARISHTA_SATURN
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when:
-      yoga:
-        planet: saturn
-        signs: [10, 11]                  # 염소자리·물병자리(자기)
-        houses: [6]
-    direction: support
-    source: "15_하우스6.md §3.5"
-    text: "아리스타 방가(위기 소멸) — 토성이 자기 별자리로 6하우스에 있어 만성적 부담을 인내로 극복"
-
-  # --- §3.1 비파리트 라자요가 3종 (성립 조건만, 순수성은 사람 확정) ---
-  - id: R_YOGA_HARSHA_8
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 6, in_house: 8 } }
-    direction: support
-    source: "15_하우스6.md §3.1"
-    text: "하르샤 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조"
-    automation: partial
-    automation_note: >
-      순수성 체크리스트(§3.1: 6·8·12 로드끼리만 결합·어스펙트, 켄드라·트리코나
-      로드와 결합 없음, 다른 로드십 겸하지 않음)는 엔진 미산출 — 후보를 제시하고
-      사람이 확정한다.
-
-  - id: R_YOGA_HARSHA_12
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 6, in_house: 12 } }
-    direction: support
-    source: "15_하우스6.md §3.1"
-    text: "하르샤 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조"
-    automation: partial
-    automation_note: >
-      순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
-
-  - id: R_YOGA_SARALA_6
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 8, in_house: 6 } }
-    direction: support
-    source: "15_하우스6.md §3.1"
-    text: "사랄라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조"
-    automation: partial
-    automation_note: >
-      순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
-
-  - id: R_YOGA_SARALA_12
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 8, in_house: 12 } }
-    direction: support
-    source: "15_하우스6.md §3.1"
-    text: "사랄라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조"
-    automation: partial
-    automation_note: >
-      순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
-
-  - id: R_YOGA_VIMALA_6
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 12, in_house: 6 } }
-    direction: support
-    source: "15_하우스6.md §3.1"
-    text: "비말라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조"
-    automation: partial
-    automation_note: >
-      순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
-
-  - id: R_YOGA_VIMALA_8
-    tier: t6_yoga
-    conclusion: CONDITION_RHYTHM
-    when: { lord_house: { lord_of: 12, in_house: 8 } }
-    direction: support
-    source: "15_하우스6.md §3.1"
-    text: "비말라 요가 성립 조건 — 위기를 통과한 뒤 도약하는 극복 구조"
-    automation: partial
-    automation_note: >
-      순수성 체크리스트(§3.1)는 엔진 미산출 — 후보를 제시하고 사람이 확정한다.
-
-# =============================================================================
-# T3 — 바르가 (부분 자동)
-# =============================================================================
-  - id: R_6L_D1_D9_CONTRAST
-    tier: t3_varga
-    conclusion: CONDITION_RHYTHM
-    when: { varga_contrast: { planet: lord_of_6, vargas: [d9] } }
-    direction: computed                  # 강약 비교 결과에 따라 support/oppose
-    source: "41_BPHS_바르가판독_1_.md §3.6"
-    text_strong_weak: "6로드의 D1·D9 강약 비교 — 체력 기반의 잠재력과 실제 발현 조건을 함께 볼 것"
-    automation: partial
-    automation_note: >
-      D1 과 D9 에서 6로드의 사인·하우스는 엔진이 산출하지만,
-      "강함/약함" 판정에는 존엄(자기·고양·우호·적대)과 하우스 성격(켄드라·두스타나)
-      규칙이 필요하다. 후보를 제시하고 방향은 사람이 확정한다.
-
-# =============================================================================
-# 자동화 불가 — 규칙 부재 또는 의도적 제외
-# =============================================================================
+    '
+- id: R_D4_MAHA_MARS_6H
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    planet_in_house:
+      mars: 6
+    maha_lord: mars
+  direction: support
+  source: 15_하우스6.md §4.1
+  text: 6하우스에 있는 화성의 다샤에는 극복력이 발휘되는 흐름으로 봅니다.
+- id: R_D4_MAHA_SATURN_6H
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    planet_in_house:
+      saturn: 6
+    maha_lord: saturn
+  direction: support
+  source: 15_하우스6.md §4.1
+  text: 6하우스에 있는 토성의 다샤에는 인내로 부담을 다스리는 흐름으로 봅니다.
+- id: R_D4_MAHA_MOON_6H
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    planet_in_house:
+      moon: 6
+    maha_lord: moon
+  direction: caution
+  source: 15_하우스6.md §4.1
+  text: 6하우스에 있는 달의 다샤에는 식사·수면 리듬을 일정하게 유지하는 흐름을 검토할 수 있습니다.
+- id: R_D4_MAHA_KARAKA_MARS
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord: mars
+  direction: neutral
+  source: 15_하우스6.md §4.1
+  text: 화성의 다샤에는 6하우스 카라카가 활성화되어 활동량이 많아지는 시기로 봅니다. 무리하지 않는 리듬을 살펴볼 수 있습니다.
+  note: 층위 5 단독은 약한 근거 — 다른 6H 연관 근거와 함께 볼 것.
+- id: R_D4_MAHA_KARAKA_SATURN
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord: saturn
+  direction: neutral
+  source: 15_하우스6.md §4.1
+  text: 토성의 다샤에는 만성적인 부담을 점검하는 시기로 봅니다.
+  note: 층위 5 단독은 약한 근거 — 다른 6H 연관 근거와 함께 볼 것.
+- id: R_D4_6LORD_6LORD
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord_of: 6
+    antar_lord_of: 6
+  direction: caution
+  source: 15_하우스6.md §4.2
+  text: 6하우스 로드의 마하·안타르가 겹치는 시기에는 컨디션과 부담 관리의 분기점으로 봅니다.
+  note: 원문 '병·부채·적의 시작 또는 (우파차야 원리 시) 극복 시작' 중 컨디션 영역만 완곡 서술.
+- id: R_D4_6LORD_LAGNA
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord_of: 6
+    antar_lord_of: 1
+  direction: caution
+  source: 15_하우스6.md §4.2
+  text: 6하우스 로드 마하다샤에 라그나 로드 안타르가 겹치면 자기 몸의 관리가 우선인 시기로 봅니다.
+- id: R_D4_LAGNA_6LORD
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord_of: 1
+    antar_lord_of: 6
+  direction: caution
+  source: 15_하우스6.md §4.2
+  text: 라그나 로드 마하다샤에 6하우스 로드 안타르가 겹치면 컨디션 관리에 유의하는 시기로 봅니다.
+- id: R_D4_8LORD_6LORD
+  tier: t4_dasha
+  conclusion: D4
+  when:
+    maha_lord_of: 8
+    antar_lord_of: 6
+  direction: support
+  source: 15_하우스6.md §4.2
+  text: 8하우스 로드 마하다샤에 6하우스 로드 안타르가 겹치면 비파리트 요가가 활성화될 수 있는 시기로 봅니다.
+  automation: partial
+  automation_note: 요가 순수성(§3.1)은 사람이 확정해야 한다.
+- id: R_D4_SAV6_LOW
+  tier: t5_ashtaka
+  conclusion: D4
+  when:
+    sav_house:
+      house: 6
+      min: 0
+      max: 25
+  direction: caution
+  source: 15_하우스6.md §4.5
+  text: 6하우스 아쉬타카바르가 25점 미만 — 취약한 국면으로, 컨디션 관리에 유의하는 흐름으로 봅니다.
+  note: 원문 '특히 흉성 트랜싯 시 발현 확률 높음'은 트랜싯 판정이 필요해 제외.
 gaps:
-  t2_karaka:
-    issue: COND-001
-    reason: >
-      라후 6H 재실의 중독·독소 서술(15 §2)은 "손상 시" 조건
-      (파파카르타리·컴버스트·역행·흉각 판정)이 필요해 현재 judge 키로 자동화 불가.
-      카라카 행성(화·토·케)의 6H 재실은 T1 행성 규칙에 포함되어 있다.
-  t2_mental_health:
-    issue: COND-002
-    reason: >
-      달 6H 항목의 정신 건강 서술("우울·불안", "심각한 정신 건강 문제")은
-      evidence_map §2-2에 따라 본문 서술 금지 — condition_category_policy.active_referral
-      문구와 91_민감표현_치환표.md §10 위기 상황 문구로 대체해야 하며,
-      judge.py에는 정책 문구 주입 경로가 없어 자동화 불가.
-  t3_dosha:
-    issue: COND-003
-    reason: >
-      15 §5.1 트리도샤 원소 판정(6H·6H로드의 사인 → 바타/피타/카파)은
-      사인 목록 매칭 when 키가 없어 규칙화 불가.
-      judge.py에 sign_in_list 키 추가 시 9개 규칙(원소×사인)으로 확장 가능.
-  t3_kalapurusha:
-    issue: COND-004
-    reason: >
-      15 §5.2 칼라푸루샤 신체 매핑은 단독 근거 금지(evidence_map §0:
-      계열 1개이므로 withheld). 6H로드·6H재실·카라카·다샤가 같은 부위를
-      독립적으로 가리킬 때만 판정으로 승격되는데, 계열 간 교차 일치 판정
-      로직이 없어 자동화 불가.
-  t4_dasha:
-    issue: COND-005
-    reason: >
-      15 §4.1 6H 활성화 다샤(7개 층위), §4.2 결합표, §4.4 이중 트랜싯은
-      다샤·트랜짓 when 키가 없어 자동화 불가 (career의 ISSUE-013과 동형).
-  t6_purity:
-    issue: COND-006
-    reason: >
-      비파리트 라자요가 순수성 체크리스트(15 §3.1)는 결합·어스펙트 상대 판정이
-      필요해 부분 자동에 그친다 (후보 제시 + 사람 확정).
-  t1_lagna_vs_6lord:
-    issue: COND-007
-    reason: >
-      15 §5.3 라그나 로드 vs 6H 로드 강도 비교(위엄·하우스 배치·결합/어스펙트·AV
-      4항목 종합)는 완전 자동화 불가. 본 파일은 위엄(own/exalted) 1항목만으로
-      부분 판정한다 (R_LAGNA_LORD_OWN/EXALTED).
-  blocked_63:
-    issue: COND-008
-    reason: >
-      15 §6.3 병증 확정 절차("세 가지 이상 훼손 겹침 → 심각한 병증 지표")는
-      evidence_map §0에 따라 사용 금지 — 결론이 §5.1 S3에 귀결되므로
-      의도적으로 규칙화하지 않음.
-  blocked_s3:
-    issue: COND-009
-    reason: >
-      §5.1 S3(수명) 영역은 카테고리 범위 밖. §1 배치표의 3H "형제 상실",
-      5H "자녀 상실·유산", 7H "이혼 위기", 12H "유배·감금" 행과 §2의
-      "자가면역 질환", "성병", "심각한 정신 건강 문제"는 근거에서 제외함.
+  d1_t3_dosha:
+    issue: COND-D-001
+    reason: '15 §5.1 트리도샤 원소 판정(6H·6H로드의 사인 → 바타/피타/카파)은 사인 목록 매칭 when 키가 없어 규칙화 불가.
+      judge.py에 sign_in_list 키 추가 시 원소×사인 규칙으로 확장 가능. (기존 파일의 t3_dosha GAP과 동형)
+
+      '
+  d1_t3_kalapurusha:
+    issue: COND-D-002
+    reason: '15 §5.2 칼라푸루샤 신체 매핑(양→머리…물고기→발·림프)은 단독 근거 금지(spec D1 note: 사인→신체 1:1
+      매핑이라 계열 1개). 6H로드·6H재실· 카라카·다샤가 같은 부위를 독립적으로 가리킬 때만 판정으로 승격되는데, 계열 간 교차 일치 판정
+      로직이 없어 자동화 불가. (기존 파일의 t3_kalapurusha GAP과 동형)
+
+      '
+  d1_t2_mercury:
+    issue: COND-D-003
+    reason: '15 §2 수성 6H의 손상 시 "신경 계통 문제"는 파파카르타리·컴버스트·역행 등 훼손 판정이 필요해 규칙화 불가. 기본
+      결과(지적 경쟁력)는 커리어로 이관.
+
+      '
+  d1_s3_rows:
+    issue: COND-D-004
+    reason: '§1 배치표의 3H "형제 상실", 5H "자녀 상실·유산", 7H "이혼 위기", 12H "유배·감금" 행과 §2의 "자가면역
+      질환", "성병", "심각한 정신 건강 문제"는 S3 영역으로 의도적으로 규칙화하지 않음 (spec safety_rules).
+
+      '
+  d2_t1_dual_lens:
+    issue: COND-D-005
+    reason: '15 §6.1 이중 렌즈(트리크↔우파차야) — "인생 후반으로 갈수록 우파차야 성격 우세, 초반에는 트리크 성격 발현"은 나이·다샤
+      진행 단계 기반 판단으로 when 문법에 연령 키가 없어 규칙화 불가.
+
+      '
+  d2_t1_full_comparison:
+    issue: COND-D-006
+    reason: '15 §5.3 라그나 로드 vs 6H 로드 완전 비교(위엄·하우스 배치·결합/ 어스펙트·AV 4항목 종합)는 자동화 불가.
+      본 파일은 위엄 1항목만으로 부분 판정(R_D2_6L_DEBILITATED/EXALTED/OWN_SIGN)한다. (기존 파일의 t1_lagna_vs_6lord
+      GAP과 동형)
+
+      '
+  d2_t6_arishta_lords:
+    issue: COND-D-007
+    reason: '15 §3.5 아리스타 방가 조건 "6하우스 로드가 강함 + 라그나 로드도 강함"은 when 매핑에 lord_dignity
+      키가 중복되어 표현 불가. judge.py가 조건 리스트를 지원하면 규칙화 가능.
+
+      '
+  d2_t6_viparita_purity:
+    issue: COND-D-008
+    reason: '비파리트 라자요가 순수성 체크리스트(15 §3.1: 6·8·12 로드끼리만 결합·어스펙트, 켄드라·트리코나 로드와 결합 없음,
+      다른 로드십을 겸하지 않음)는 결합·어스펙트 상대 판정이 필요해 부분 자동에 그친다 (후보 제시 + 사람 확정). (기존 파일의 t6_purity
+      GAP과 동형)
+
+      '
+  d3_t1_header:
+    issue: COND-D-009
+    reason: '15 헤더의 "일상의 노고, 나쁜 습관, 부적절한 식습관"은 6하우스 일반 signification이라 차트 패턴 조건이 없어
+      규칙화 불가. 행성별 생활 리듬 규칙(R_D3_*)의 배경 서술로만 활용.
+
+      '
+  d3_t2_rahu_addiction:
+    issue: COND-D-010
+    reason: '15 §2 라후 6H의 손상 시 "중독·독소" 서술은 훼손 판정이 필요해 규칙화 불가. (기존 파일의 t2_karaka GAP과
+      동형)
+
+      '
+  d3_t3_dosha_lifestyle:
+    issue: COND-D-011
+    reason: '15 §5.1 도샤 성향 → 생활 패턴(바타=리듬 불규칙/피타=과열·속도/ 카파=관성·정체) 서술은 원소 판정(COND-D-001)이
+      선행되어야 해서 함께 불가.
+
+      '
+  d4_t1_damage_column:
+    issue: COND-D-012
+    reason: '15 §1 배치표의 (−) 손상 열(만성적 신체 문제, 채무 누적, 어머니의 만성병, 형제 상실, 유산, 이혼 위기, 부동산
+      압류 등)은 전부 "훼손 시" 조건(파파카르타리·컴버스트·역행·흉각 판정)이 필요해 규칙화 불가. S3 행은 의도적으로 제외.
+
+      '
+  d4_t4_skipped_combos:
+    issue: COND-D-013
+    reason: "15 §4.2 결합표 중 의도적으로 제외한 행: - 6H로드×2H로드 \"부채 발생 또는 확대\" → 금전 카테고리로 이관\
+      \ - 6H로드×7H로드 \"배우자·파트너 관련 소송, 관계 위기\" → 관계·커리어로 이관 - 6H로드×8H로드 \"큰 위기, 수술\"\
+      \ → 수술 확정 서술은 S3급으로 제외 - 6H로드×10H로드 \"직장 갈등·굴욕\" → 커리어로 이관 - 6H로드×11H로드 \"부채\
+      \ 해소\" → 금전 카테고리로 이관 - 6H로드×12H로드 \"해외·병원·격리 관련 사건, 큰 지출\" → 지출은 금전,\n  병원 확정\
+      \ 서술은 S3급으로 제외\n"
+  d4_t4_layers_3467:
+    issue: COND-D-014
+    reason: "15 §4.1 7층위 중 규칙화 불가 층위: - 층위 3 (6H에 어스펙트하는 행성) · 층위 4 (6H로드와 결합·어스펙트하는\n\
+      \  행성) — 어스펙트·결합 상대 판정 키 부재\n- 층위 6 (찬드라 라그나 기준 6H 로드) — 달 기준 하우스 재계산 키 부재 -\
+      \ 층위 7 (나밤샤 6H 로드) — D9 하우스 로드 키 부재\n"
+  d4_t4_transit:
+    issue: COND-D-015
+    reason: '15 §4.4 이중 트랜싯(토성·목성의 6H·6H로드·라그나 흉각/길각)과 §4.3 나밤샤 역배치 반전은 트랜싯·바르가 위치
+      키가 없어 규칙화 불가.
+
+      '
+  d4_t6_roga:
+    issue: COND-D-016
+    reason: '15 §3.4 병증(로가) 조합(만성·급성·사고성)은 전부 "훼손 시" 조건이 필요해 규칙화 불가. §6.3 병증 확정 절차는
+      의도적으로 규칙화하지 않음 (spec safety_rules, 기존 파일 blocked_63과 동형).
+
+      '

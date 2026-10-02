@@ -1,0 +1,234 @@
+# =============================================================================
+# rules_career.yaml — 커리어 판정 규칙 DB (파일럿 범위)
+# =============================================================================
+# 범위: 파일럿 2회차 C1 에서 실제로 사용된 규칙만 수록한다.
+#       손으로 채워본 결과를 기준으로 옮긴 것이며, 안 쓰인 행은 넣지 않았다.
+#
+# 원칙:
+#   §2.1  원본 문서를 수정하지 않는다. 여기에는 서술을 인용만 한다.
+#   §6.1  문서에 없는 규칙을 만들지 않는다. text 는 원문 서술을 그대로 옮긴다.
+#   §9.1  tier 는 계열 하나만 지정한다. 한 규칙이 두 계열을 채우지 않는다.
+#
+# when 조건 문법 (전부 AND):
+#   tenth_lord_house      10로드가 위치한 하우스 (라그나 기준)
+#   tenth_lord_planet     10로드 행성
+#   tenth_lord_dignity    own | exalted | debilitated | other
+#   planet_in_house       {행성: 하우스}
+#   tenth_sign            10하우스 사인 번호
+#   sav_house             {house: n, min: x, max: y}   상한 미포함
+#   varga_sign_house      {planet, varga, house}       바르가에서의 하우스
+#   yoga                  요가 성립 조건 (별도 평가)
+# =============================================================================
+
+meta:
+  version: 0.1.0
+  scope: career_C1_pilot
+  source_docs: [19_하우스10.md, 41_BPHS_바르가판독_1_.md, 43_BPHS_아쉬타카바르가.md]
+  coverage_note: >
+    C1(직업 성향)의 T1·T5·T6 은 자동 판정 가능. T3 은 강약 비교가 필요해
+    부분 자동(후보 제시 + 사람 확정). T2·T4 는 규칙 자체가 부재하다
+    (ISSUE-014 AmK 판독, ISSUE-013 노드 다샤).
+
+# =============================================================================
+# T1 — D1 하우스/로드/재실  (L1)
+# =============================================================================
+rules:
+
+  - id: R_10L_IN_10H
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { tenth_lord_house: 10 }
+    direction: support
+    source: "19_하우스10.md §1"
+    text: "커리어 signification 강화 — 강한 커리어 지향"
+
+  - id: R_10L_IN_10H_OWN
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { tenth_lord_house: 10, tenth_lord_dignity: own }
+    direction: support
+    source: "19_하우스10.md §1"
+    text: "자기 별자리·고양이면 큰 지위·명예"
+
+  # --- §2 10하우스 재실 행성 9행 ---
+  - id: R_10H_SUN
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { sun: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "최상 배치 중 하나 — 정부·리더십·명예·권위"
+    caution: "관직 갈등, 명예 실추"
+
+  - id: R_10H_MOON
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { moon: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "대중적 직업, 유동성, 커리어 변화 잦음"
+    caution: "커리어 불안정, 감정적 결정"
+
+  - id: R_10H_MARS
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { mars: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "최상 배치 중 하나 — 기술·군사·엔지니어링·외과·경쟁"
+    caution: "성급한 결정, 폭력적 갈등"
+
+  - id: R_10H_MERCURY
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { mercury: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "상업·사무·저술·컨설팅 관련"
+    caution: "사기 위험, 계산적 관계"
+
+  - id: R_10H_JUPITER
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { jupiter: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "하마사 요가 성립 가능 — 자문·교육·법률"
+
+  - id: R_10H_VENUS
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { venus: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "예술·미용·오락·사치·서비스 관련"
+    caution: "사치·방종"
+
+  - id: R_10H_SATURN
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { saturn: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "매우 좋은 배치(우파차야 강화) — 노동·산업·서비스, 자수성가"
+    caution: "커리어 지연·부담·상관 갈등"
+
+  - id: R_10H_RAHU
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { rahu: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "국제·이례적 커리어, IT·투기·미디어"
+    caution: "사기·부정 관련"
+
+  - id: R_10H_KETU
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { planet_in_house: { ketu: 10 } }
+    direction: support
+    source: "19_하우스10.md §2"
+    text: "연구·기술·영적·의료"
+    caution: "커리어 방향 불안정, 이탈"
+
+  # --- §4.2 10하우스 사인 (파일럿에서 쓰인 행만) ---
+  - id: R_10SIGN_CAPRICORN
+    tier: t1_d1
+    conclusion: CAREER_DIRECTION
+    when: { tenth_sign: 10 }
+    direction: support
+    source: "19_하우스10.md §4.2"
+    text: "정부, 대기업, 관리직, 산업, 인내의 커리어"
+
+# =============================================================================
+# T5 — 아쉬타카바르가  (강도 지표. counts_as_evidence: false)
+# =============================================================================
+  - id: R_SAV_10H
+    tier: t5_ashtaka
+    conclusion: CAREER_DIRECTION
+    when: { sav_house: { house: 10 } }
+    direction: support_if_grade_above
+    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
+    source: "43_BPHS_아쉬타카바르가.md §5.2"
+    text_template: "10하우스 SAV {value}점 — {grade}"
+    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
+
+# =============================================================================
+# T6 — 요가 (마하푸루샤 5종)
+# =============================================================================
+  - id: R_YOGA_SASA
+    tier: t6_yoga
+    conclusion: CAREER_DIRECTION
+    when:
+      yoga:
+        planet: saturn
+        signs: [10, 11, 7]               # 염소·물병(자기) / 천칭(고양)
+        houses: [1, 4, 7, 10]            # 켄드라
+    direction: support
+    source: "19_하우스10.md §3"
+    text: "자수성가·인내의 대성취, 리더"
+    bonus_if_house_10: "10하우스에서 성립하면 특히 강한 커리어 활성화"
+
+  - id: R_YOGA_RUCHAKA
+    tier: t6_yoga
+    conclusion: CAREER_DIRECTION
+    when: { yoga: { planet: mars, signs: [1, 8, 10], houses: [1, 4, 7, 10] } }
+    direction: support
+    source: "19_하우스10.md §3"
+    text: "용기·경쟁력·기술 리더십"
+
+  - id: R_YOGA_BHADRA
+    tier: t6_yoga
+    conclusion: CAREER_DIRECTION
+    when: { yoga: { planet: mercury, signs: [3, 6], houses: [1, 4, 7, 10] } }
+    direction: support
+    source: "19_하우스10.md §3"
+    text: "지성·소통·상업 역량"
+
+  - id: R_YOGA_HAMSA
+    tier: t6_yoga
+    conclusion: CAREER_DIRECTION
+    when: { yoga: { planet: jupiter, signs: [9, 12, 4], houses: [1, 4, 7, 10] } }
+    direction: support
+    source: "19_하우스10.md §3"
+    text: "지혜·교육·자문 역량"
+
+  - id: R_YOGA_MALAVYA
+    tier: t6_yoga
+    conclusion: CAREER_DIRECTION
+    when: { yoga: { planet: venus, signs: [2, 7, 12], houses: [1, 4, 7, 10] } }
+    direction: support
+    source: "19_하우스10.md §3"
+    text: "예술·미감·매력"
+
+# =============================================================================
+# T3 — 바르가 (부분 자동)
+# =============================================================================
+  - id: R_D1_D10_CONTRAST
+    tier: t3_varga
+    conclusion: CAREER_DIRECTION
+    when: { varga_contrast: { planet: tenth_lord, vargas: [d9, d10] } }
+    direction: computed                  # 강약 비교 결과에 따라 support/oppose
+    source: "41_BPHS_바르가판독_1_.md §3.6"
+    text_strong_weak: "잠재력은 있으나 직업 환경·역할 선택이 중요"
+    automation: partial
+    automation_note: >
+      D1 과 D9·D10 에서 대상 행성의 사인·하우스는 엔진이 산출하지만,
+      "강함/약함" 판정에는 존엄(자기·고양·우호·적대)과 하우스 성격(켄드라·두스타나)
+      규칙이 필요하다. 후보를 제시하고 방향은 사람이 확정한다.
+
+# =============================================================================
+# 자동화 불가 — 규칙 부재
+# =============================================================================
+gaps:
+  t2_karaka:
+    issue: ISSUE-014
+    reason: >
+      44 §4.1 에 AmK 산출 규칙은 있으나 "AmK 가 어느 행성이고 어느 하우스에 있을 때
+      직업 수행 방식이 어떠한가" 라는 판독 규칙이 없다. 파일럿 1·2회차 모두 공란.
+  t4_dasha:
+    issue: ISSUE-013
+    reason: >
+      19 §6.2 다샤 조합 11행표에 노드(라후·케투) 마하다샤 조합이 없다.
+      파일럿 차트가 케투 마하다샤라 해당 행이 존재하지 않는다.
+      빔쇼타리 120년 중 25년(약 21%)이 노드 마하다샤이므로 고객 5명 중 1명이 해당.
