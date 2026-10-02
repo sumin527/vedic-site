@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import os
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -133,6 +134,10 @@ def admin_mark_paid(order_id: str, token: str = "",
                     db: Session = Depends(get_db)):
     """Toss 연동 전까지 관리자 수동 결제 확인용."""
     _require_admin(token)
+    return _fulfill_order(db, order_id)
+
+
+def _fulfill_order(db: Session, order_id: str) -> dict:
     o = db.get(Order, order_id)
     if not o:
         raise HTTPException(404, "주문을 찾을 수 없습니다.")
@@ -144,6 +149,14 @@ def admin_mark_paid(order_id: str, token: str = "",
                            order_id=o.id))
     db.commit()
     return {"ok": True}
+
+
+@router.post("/api/dev/orders/{order_id}/confirm")
+def dev_confirm_order(order_id: str, db: Session = Depends(get_db)):
+    """개발용 테스트 결제. DEV_MODE=1일 때만 동작 (운영에는 없음)."""
+    if os.environ.get("DEV_MODE") != "1":
+        raise HTTPException(404, "Not found")
+    return _fulfill_order(db, order_id)
 
 
 @router.get("/api/entitlements")
@@ -238,6 +251,19 @@ def get_my_report(report_id: str, user: User = Depends(get_current_user),
             "birth": f"{r.birth_dob} {r.birth_tob or '시간 모름'} · {r.birth_place}",
             "content_md": r.content_md,
             "published_at": r.published_at.isoformat() if r.published_at else None}
+
+
+@router.get("/api/report-jobs/{report_id}")
+def get_report_job(report_id: str, user: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    """내 리포트 생성 상태 조회 (폴링용)."""
+    r = db.get(Report, report_id)
+    if not r or r.user_id != user.id:
+        raise HTTPException(404, "리포트를 찾을 수 없습니다.")
+    return {"id": r.id, "product": r.product,
+            "name": PRODUCTS.get(r.product, {}).get("name", r.product),
+            "status": r.status,
+            "published": r.status == "published"}
 
 
 # ---------- 관리자 검수 ----------

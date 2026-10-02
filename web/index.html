@@ -198,6 +198,24 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
 .rquote{border-left:3px solid var(--gold);background:var(--gold-soft);border-radius:0 12px 12px 0;
   padding:12px 14px;margin:0 0 12px;font-size:14px;line-height:1.8}
 .rdiv{border:none;border-top:1px solid var(--line);margin:22px 0}
+/* 리포트 읽기 페이지 */
+#reportPage[hidden]{display:none}
+.hero-report{padding-bottom:28px}
+.back-light{background:none;border:none;color:var(--gold-soft);font-size:15px;cursor:pointer;padding:0;margin-bottom:16px;font-family:inherit}
+.rep-kicker{font-size:13px;letter-spacing:.14em;color:var(--gold);font-weight:700;margin:0 0 8px}
+#reportPage h1{font-size:26px;line-height:1.35;margin:0 0 8px}
+.rep-article{background:var(--surface);border:1px solid var(--line);border-radius:20px;
+  padding:28px 24px;margin-top:20px}
+.rep-article .rtitle{font-size:22px;margin:6px 0 16px}
+.rep-article .rsec{font-size:18px;color:var(--gold-dark);margin:28px 0 10px;
+  padding-top:20px;border-top:1px solid var(--gold-soft)}
+.rep-article .rsec:first-child{border-top:none;padding-top:0;margin-top:8px}
+.rep-article p{font-size:15.5px;line-height:1.9;margin:0 0 14px;color:var(--ink)}
+.rep-article .rquote{border-left:3px solid var(--gold);background:var(--gold-soft);
+  border-radius:0 12px 12px 0;padding:14px 16px;margin:0 0 14px;
+  font-size:15.5px;line-height:1.9}
+.rep-article .rdiv{margin:28px 0}
+.rep-foot{margin:24px 0 8px;text-align:center}
 .dpad{padding:16px 20px}
 .dpad .btn-secondary{width:100%}
 .back{display:inline-flex;align-items:center;background:none;border:none;color:var(--gold-dark);
@@ -402,6 +420,26 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
     </section>
   </div>
 
+  <footer>본 결과는 참고용입니다 · 항성 황도(라히리 아야남사) 기준 계산</footer>
+</div>
+
+<!-- 리포트 읽기 전용 페이지 -->
+<div class="wrap" id="reportPage" hidden>
+  <header class="hero hero-report">
+    <div class="hero-inner">
+      <button class="back back-light" onclick="closeReportPage()">‹ 돌아가기</button>
+      <p class="rep-kicker" id="repKicker">리포트</p>
+      <h1 id="repTitle"></h1>
+      <p class="hero-sub" id="repBirth"></p>
+    </div>
+  </header>
+  <div class="hero-inner">
+    <article class="rep-article" id="repBody"></article>
+    <div class="rep-foot">
+      <p class="dnote">이 리포트는 구매하신 계정에서 평생 열람할 수 있어요.</p>
+      <button class="btn-secondary" onclick="closeReportPage()" style="width:100%">돌아가기</button>
+    </div>
+  </div>
   <footer>본 결과는 참고용입니다 · 항성 황도(라히리 아야남사) 기준 계산</footer>
 </div>
 
@@ -926,6 +964,9 @@ function loadChart(id){
   setTimeout(function(){ document.getElementById('go').click(); }, 350);
 }
 
+const REPORT_NAMES = {total:'총운 리포트', yearly:'1년 운세', compat:'궁합 상세풀이',
+  cat_job:'직업운', cat_wealth:'금전운', cat_love:'애정운', cat_health:'건강운'};
+
 function viewMyReports(){
   return '<div class="dview">' + backBtn() + '<h3 class="dtitle">내 리포트</h3><div id="reportList"></div></div>';
 }
@@ -933,30 +974,110 @@ async function loadReports(){
   const list = document.getElementById('reportList');
   if(!list) return;
   list.innerHTML = '<p class="dnote">불러오는 중…</p>';
-  const r = await api('/api/my-reports');
-  if(!r.ok){ list.innerHTML = '<p class="dnote">목록을 불러오지 못했어요.</p>'; return; }
-  const items = r.data || [];
-  if(!items.length){
-    list.innerHTML = '<p class="dnote">아직 받은 리포트가 없어요. 리포트가 출시되면 이곳에서 확인할 수 있어요.</p>';
-    return;
+  const [rep, ent] = await Promise.all([api('/api/my-reports'), api('/api/entitlements')]);
+  if(!rep.ok){ list.innerHTML = '<p class="dnote">목록을 불러오지 못했어요.</p>'; return; }
+  const items = rep.data || [];
+  const owned = (ent.ok && ent.data) || [];
+  const ownedProducts = new Set(owned.map(e => e.product));
+  let h = '';
+  if(items.length){
+    h += items.map(function(x){
+      const id = String(x.id).replace(/'/g, "\\'");
+      return '<div class="crow"><div class="cinfo"><div class="clabel">' + escapeHtml(x.name) + '</div>'
+        + (x.birth ? '<div class="csub">' + escapeHtml(x.birth) + '</div>' : '')
+        + '</div><button class="btn-mini" onclick="openReportPage(\'' + id + '\')">읽기</button></div>';
+    }).join('');
   }
-  list.innerHTML = items.map(function(x){
-    const id = String(x.id).replace(/'/g, "\\'");
-    return '<div class="crow"><div class="cinfo"><div class="clabel">' + escapeHtml(x.name) + '</div>'
-      + (x.birth ? '<div class="csub">' + escapeHtml(x.birth) + '</div>' : '')
-      + '</div><button class="btn-mini" onclick="openReport(\'' + id + '\')">읽기</button></div>';
-  }).join('');
+  const pending = [...ownedProducts].filter(p => REPORT_NAMES[p]);
+  if(pending.length){
+    if(h) h += '<p class="dnote" style="margin-top:12px">리포트를 만들 수 있는 상품</p>';
+    h += pending.map(function(p){
+      return '<div class="crow"><div class="cinfo"><div class="clabel">' + escapeHtml(REPORT_NAMES[p]) + '</div>'
+        + '<div class="csub">이용권 보유 중</div></div>'
+        + '<button class="btn-mini" onclick="makeReport(\'' + p + '\')">만들기</button></div>';
+    }).join('');
+  }
+  if(!h){
+    h = '<p class="dnote">아직 받은 리포트가 없어요. 리포트가 출시되면 이곳에서 확인할 수 있어요.</p>';
+  }
+  list.innerHTML = h;
 }
-async function openReport(id){
+// 리포트 생성: 출생정보 입력 → 생성 요청 → 상태 폴링 → 자동 열기
+function makeReport(product){
+  const b = document.getElementById('drawerBody');
+  const d = {
+    dob: document.getElementById('birthDate').value || '',
+    tob: document.getElementById('timeUnknown').checked ? '' : (document.getElementById('birthTime').value || ''),
+    place: (function(){ const s = document.getElementById('place'); return s.options[s.selectedIndex].text; })()
+  };
+  b.innerHTML = '<div class="dview">' + '<button class="back" onclick="showView(\'myreports\')">‹ 내 리포트</button>'
+    + '<h3 class="dtitle">' + escapeHtml(REPORT_NAMES[product] || product) + ' 만들기</h3>'
+    + '<p class="dnote">리포트를 만들 출생정보를 확인해주세요.</p>'
+    + '<div class="dpad" style="padding:0">'
+    + '<label class="lbl" for="mrDob">생년월일</label><input class="field" type="date" id="mrDob" value="' + escapeHtml(d.dob) + '">'
+    + '<label class="lbl" for="mrTob">태어난 시간</label><input class="field" type="time" id="mrTob" value="' + escapeHtml(d.tob) + '">'
+    + '<label class="lbl" for="mrPlace">출생지</label><input class="field" type="text" id="mrPlace" value="' + escapeHtml(d.place) + '" maxlength="64">'
+    + '<p class="dnote" id="mrMsg" style="min-height:20px"></p>'
+    + '<button class="btn-primary" id="mrGo" style="margin-top:8px">리포트 만들기</button>'
+    + '</div></div>';
+  b.scrollTop = 0;
+  document.getElementById('mrGo').onclick = async () => {
+    const msg = document.getElementById('mrMsg');
+    const btn = document.getElementById('mrGo');
+    const dob = document.getElementById('mrDob').value;
+    const tob = document.getElementById('mrTob').value || null;
+    const place = document.getElementById('mrPlace').value.trim();
+    if(!dob){ msg.textContent = '생년월일을 입력해주세요.'; return; }
+    btn.disabled = true; msg.textContent = '리포트를 만들고 있어요…';
+    const job = await api('/api/report-jobs', {method:'POST',
+      body: JSON.stringify({product, dob, tob, place})});
+    if(!job.ok){ msg.textContent = (job.data && job.data.detail) || '리포트 생성 요청에 실패했어요.'; btn.disabled = false; return; }
+    msg.textContent = '생성 중이에요. 잠시만 기다려주세요…';
+    pollReportJob(job.data.id);
+  };
+}
+const _RJOB_STATUS = {
+  queued: '리포트를 만들고 있어요…',
+  generating: '리포트를 만들고 있어요…',
+  draft: '검수 중이에요. 완료되면 자동으로 열립니다.',
+  rejected: '생성에 실패했어요. 문의하기로 알려주세요.',
+};
+function pollReportJob(reportId){
+  if(window._rjobTimer) clearInterval(window._rjobTimer);
+  const tick = async () => {
+    const r = await api('/api/report-jobs/' + encodeURIComponent(reportId));
+    if(!r.ok) return;
+    const msg = document.getElementById('mrMsg');
+    if(msg) msg.textContent = _RJOB_STATUS[r.data.status] || r.data.status;
+    if(r.data.status === 'published'){
+      clearInterval(window._rjobTimer); window._rjobTimer = null;
+      closeDrawer();
+      openReportPage(reportId);
+    } else if(r.data.status === 'rejected'){
+      clearInterval(window._rjobTimer); window._rjobTimer = null;
+    }
+  };
+  tick();
+  window._rjobTimer = setInterval(tick, 8000);
+}
+// 풀페이지 리포트 뷰어
+async function openReportPage(id){
   const r = await api('/api/my-reports/' + encodeURIComponent(id));
   if(!r.ok){ toast('리포트를 불러오지 못했어요'); return; }
   const d = r.data;
-  const b = document.getElementById('drawerBody');
-  b.innerHTML = '<div class="dview rep">' + '<button class="back" onclick="showView(\'myreports\')">‹ 내 리포트</button>'
-    + '<h3 class="dtitle">' + escapeHtml(d.name) + '</h3>'
-    + (d.birth ? '<p class="dnote">' + escapeHtml(d.birth) + '</p>' : '')
-    + '<div class="rbody">' + renderReportMd(d.content_md || '') + '</div></div>';
-  b.scrollTop = 0;
+  document.getElementById('repKicker').textContent = '리포트';
+  document.getElementById('repTitle').textContent = d.name || '';
+  document.getElementById('repBirth').textContent = d.birth || '';
+  document.getElementById('repBody').innerHTML = renderReportMd(d.content_md || '');
+  document.querySelector('.wrap').hidden = true;
+  const rp = document.getElementById('reportPage');
+  rp.hidden = false;
+  window.scrollTo(0, 0);
+}
+function closeReportPage(){
+  document.getElementById('reportPage').hidden = true;
+  document.querySelector('.wrap').hidden = false;
+  window.scrollTo(0, 0);
 }
 function renderReportMd(md){
   const lines = String(md || '').split('\n');
