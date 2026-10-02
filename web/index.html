@@ -190,6 +190,14 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding:24px 0 48px;
   -webkit-overflow-scrolling:touch}
 .dview{padding:0 0 8px}
 .dview .gloss{padding:2px 20px 0}
+/* 내 리포트 뷰어 */
+.rep .rbody{padding:4px 20px 0}
+.rtitle{font-size:20px;margin:14px 0 4px}
+.rsec{font-size:16px;color:var(--gold-dark);margin:22px 0 8px}
+.rbody p{font-size:14px;line-height:1.8;margin:0 0 12px}
+.rquote{border-left:3px solid var(--gold);background:var(--gold-soft);border-radius:0 12px 12px 0;
+  padding:12px 14px;margin:0 0 12px;font-size:14px;line-height:1.8}
+.rdiv{border:none;border-top:1px solid var(--line);margin:22px 0}
 .dpad{padding:16px 20px}
 .dpad .btn-secondary{width:100%}
 .back{display:inline-flex;align-items:center;background:none;border:none;color:var(--gold-dark);
@@ -659,12 +667,14 @@ function backBtn(){ return '<button class="back" onclick="showView(\'menu\')">�
 
 function showView(name){
   const V = {menu: viewMenu, login: viewLogin, consent: viewConsent, mycharts: viewMyCharts,
+             myreports: viewMyReports,
              changelog: viewChangelog, terms: viewTerms, privacy: viewPrivacy,
              inquiry: viewInquiry, share: viewShare, glossary: viewGlossary};
   const b = document.getElementById('drawerBody');
   b.innerHTML = (V[name] || viewMenu)();
   b.scrollTop = 0;
   if(name === 'mycharts') loadCharts();
+  if(name === 'myreports') loadReports();
 }
 
 function viewMenu(){
@@ -674,12 +684,16 @@ function viewMenu(){
     h += '<div class="duser"><div class="dname">' + escapeHtml(Auth.user.nickname || '회원') + '님</div>'
        + '<div class="dprov">' + prov + '</div></div>'
        + '<button class="ditem" onclick="showView(\'mycharts\')">' + dic('chart')
-       + '<span class="dlbl">내 차트</span><span class="chev"></span></button>';
+       + '<span class="dlbl">내 차트</span><span class="chev"></span></button>'
+       + '<button class="ditem" onclick="showView(\'myreports\')">' + dic('doc')
+       + '<span class="dlbl">내 리포트</span><span class="chev"></span></button>';
   } else {
     h += '<div class="dpad"><button class="btn-secondary" onclick="openLogin(\'menu\')">로그인하기</button>'
        + '<p class="dnote" style="margin:8px 0 0">차트 저장과 보관 기능을 이용하려면 로그인해주세요.</p></div>'
        + '<button class="ditem" onclick="openLogin(\'mycharts\',\'로그인하면 저장한 차트를 볼 수 있어요\')">'
-       + dic('chart') + '<span class="dlbl">내 차트</span><span class="chev"></span></button>';
+       + dic('chart') + '<span class="dlbl">내 차트</span><span class="chev"></span></button>'
+       + '<button class="ditem" onclick="openLogin(\'myreports\',\'로그인하면 구매한 리포트를 볼 수 있어요\')">'
+       + dic('doc') + '<span class="dlbl">내 리포트</span><span class="chev"></span></button>';
   }
   h += '<button class="ditem" onclick="showView(\'glossary\')">' + dic('book')
      + '<span class="dlbl">용어 설명</span><span class="chev"></span></button>'
@@ -912,6 +926,57 @@ function loadChart(id){
   setTimeout(function(){ document.getElementById('go').click(); }, 350);
 }
 
+function viewMyReports(){
+  return '<div class="dview">' + backBtn() + '<h3 class="dtitle">내 리포트</h3><div id="reportList"></div></div>';
+}
+async function loadReports(){
+  const list = document.getElementById('reportList');
+  if(!list) return;
+  list.innerHTML = '<p class="dnote">불러오는 중…</p>';
+  const r = await api('/api/my-reports');
+  if(!r.ok){ list.innerHTML = '<p class="dnote">목록을 불러오지 못했어요.</p>'; return; }
+  const items = r.data || [];
+  if(!items.length){
+    list.innerHTML = '<p class="dnote">아직 받은 리포트가 없어요. 리포트가 출시되면 이곳에서 확인할 수 있어요.</p>';
+    return;
+  }
+  list.innerHTML = items.map(function(x){
+    const id = String(x.id).replace(/'/g, "\\'");
+    return '<div class="crow"><div class="cinfo"><div class="clabel">' + escapeHtml(x.name) + '</div>'
+      + (x.birth ? '<div class="csub">' + escapeHtml(x.birth) + '</div>' : '')
+      + '</div><button class="btn-mini" onclick="openReport(\'' + id + '\')">읽기</button></div>';
+  }).join('');
+}
+async function openReport(id){
+  const r = await api('/api/my-reports/' + encodeURIComponent(id));
+  if(!r.ok){ toast('리포트를 불러오지 못했어요'); return; }
+  const d = r.data;
+  const b = document.getElementById('drawerBody');
+  b.innerHTML = '<div class="dview rep">' + '<button class="back" onclick="showView(\'myreports\')">‹ 내 리포트</button>'
+    + '<h3 class="dtitle">' + escapeHtml(d.name) + '</h3>'
+    + (d.birth ? '<p class="dnote">' + escapeHtml(d.birth) + '</p>' : '')
+    + '<div class="rbody">' + renderReportMd(d.content_md || '') + '</div></div>';
+  b.scrollTop = 0;
+}
+function renderReportMd(md){
+  const lines = String(md || '').split('\n');
+  let h = '', inQuote = false;
+  const closeQuote = function(){ if(inQuote){ h += '</blockquote>'; inQuote = false; } };
+  lines.forEach(function(ln){
+    if(ln.indexOf('## ') === 0){ closeQuote(); h += '<h4 class="rsec">' + escapeHtml(ln.slice(3)) + '</h4>'; }
+    else if(ln.indexOf('# ') === 0){ closeQuote(); h += '<h3 class="rtitle">' + escapeHtml(ln.slice(2)) + '</h3>'; }
+    else if(ln.trim() === '---'){ closeQuote(); h += '<hr class="rdiv">'; }
+    else if(ln.indexOf('>') === 0){
+      const t = escapeHtml(ln.replace(/^>\s?/, ''));
+      if(!inQuote){ h += '<blockquote class="rquote">'; inQuote = true; } else { h += '<br>'; }
+      h += t;
+    }
+    else if(ln.trim() === ''){ closeQuote(); }
+    else { closeQuote(); h += '<p>' + escapeHtml(ln) + '</p>'; }
+  });
+  closeQuote();
+  return h;
+}
 function viewGlossary(){
   return '<div class="dview">' + backBtn() + '<h3 class="dtitle">용어 설명</h3>'
     + '<div class="gloss"><dl>'
