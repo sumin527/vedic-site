@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 log = logging.getLogger("vedic.auth")
 
 # --- 환경 변수 (전부 미설정이어도 앱이 정상 부팅되어야 한다) ---
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://vedic-site.sumin527.workers.dev")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://vedic.co.kr")
 KAKAO_REST_KEY = os.environ.get("KAKAO_REST_KEY", "")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM = os.environ.get("RESEND_FROM", "onboarding@resend.dev")
