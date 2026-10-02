@@ -37,6 +37,9 @@ from free_content import (                            # noqa: E402
     RASHI_KO, SIGN_ORDER, TIME_UNKNOWN_NOTICE,
 )
 from auth import router as auth_router               # noqa: E402  (선택 로그인/저장; 기존 엔드포인트 불변)
+from billing import router as billing_router         # noqa: E402  (유료 리포트: 주문·이용권·보관함)
+from auth import Base as _Base, _engine as _db_engine  # noqa: E402
+_Base.metadata.create_all(_db_engine)  # billing 모델 포함 전체 테이블 보장
 
 CONSTANTS = load_constants(ENGINE_DIR / "constants.yaml")
 EPHE_PATH = ENGINE_DIR / "ephe_sky"  # 2026-09-29: DE430 BSP (skyfield). 배포 시 다운로드 필요.
@@ -47,6 +50,7 @@ app.add_middleware(
     allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
 app.include_router(auth_router)  # /api/auth/*, /api/me, /api/charts, /api/inquiry, /api/admin/*
+app.include_router(billing_router)  # /api/orders, /api/entitlements, /api/report-jobs, /api/my-reports, /api/admin/reports
 
 # --- 간단 rate limit (IP당 분당 60회) ---
 _hits: dict[str, list[float]] = defaultdict(list)
