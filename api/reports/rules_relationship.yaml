@@ -1,0 +1,291 @@
+# =============================================================================
+# rules_relationship.yaml — 연애·관계 판정 규칙 DB (파일럿 범위)
+# =============================================================================
+# 범위: 파일럿 관계 카테고리에서 자동 판정 가능한 규칙만 수록한다.
+#       16_하우스7.md / 44_BPHS_카라카_특수점.md / 43_BPHS_아쉬타카바르가.md
+#       원문 서술을 그대로 옮기거나 충실히 요약한 것만 넣었다.
+#
+# 원칙:
+#   §2.1  원본 문서를 수정하지 않는다. 여기에는 서술을 인용만 한다.
+#   §6.1  문서에 없는 규칙을 만들지 않는다. text 는 원문 서술을 그대로 옮긴다.
+#   §9.1  tier 는 계열 하나만 지정한다. 한 규칙이 두 계열을 채우지 않는다.
+#
+# 안전 (16 헤더·evidence_map_relationship.md §2):
+#   - 7하우스는 마라카(2·7) — 수명·사망·이별 확정 뉘앙스의 규칙은 절대 금지.
+#     관계의 "패턴/성향/리듬" 서술에 그친다.
+#   - 16 §4.5(별거·이혼 지표)·§8.5(배우자 건강)는 볼트 지식 — 규칙에 넣지 않는다.
+#   - 배우자 서술의 주어는 사람이 아니라 관계다 (ISSUE-027).
+#   - "만갈리크" 용어는 리포트에 쓰지 않고 효과만 서술한다 (16 §4.3, §2-3).
+#
+# when 조건 문법 (전부 AND) — judge.py 가 지원하는 키만 사용:
+#   lord_house: {lord_of: N, in_house: M}   N하우스 로드가 M하우스에 위치
+#   lord_dignity: {lord_of: N, dignity: own|exalted|debilitated|other}
+#   house_sign: {house: N, sign: S}         N하우스의 사인 번호 (1=양..12=물고기)
+#   karaka_house: {karaka: dk, in_house: N} 차라 카라카(DK 등) 행성의 하우스
+#   planet_in_house: {행성: 하우스}          sun moon mars mercury jupiter
+#                                           venus saturn rahu ketu
+#   sav_house: {house: n}                   + direction: support_if_grade_above
+#                                           + grade_threshold (constants.yaml 하한)
+#   yoga: {planet, signs, houses}           요가 성립 조건
+#     ※ R_MANGAL_DOSHA 는 하우스 기반 도샤라 signs 에 12사인 전부를 넣어
+#       사실상 하우스 조건으로만 동작하게 했다.
+#   varga_contrast: {planet, vargas}        + direction: computed (D1·D9 강약 비교)
+# =============================================================================
+
+meta:
+  version: 0.1.0
+  scope: relationship_pilot
+  source_docs: [16_하우스7.md, 44_BPHS_카라카_특수점.md, 43_BPHS_아쉬타카바르가.md]
+  coverage_note: >
+    파일럿: T1(7로드 주요 배치·7H 재실 핵심 4행)·T2(DK)·T3(D9 대조)·
+    T5(7H SAV)·T6(말라비야·함사·만갈리크 완곡) 자동 판정.
+    T4(다샤·트랜짓 시기)는 judge when 문법 미지원이라 사람 확정.
+    16 §5.1 7H 사인 12행·7로드 나머지 배치(1·3·4·6·11·12H)는 v0.2 확장 후보.
+    16 §4.5·§8.5 는 문서 지정 볼트 지식 — 리포트 사용 금지.
+
+# =============================================================================
+# T1 — D1 하우스/로드/재실  (L1)
+# =============================================================================
+rules:
+
+  # --- 16 §1  7하우스 로드의 12하우스 배치 (파일럿: 관계 진단 핵심 6배치) ---
+  - id: R_7L_IN_7H
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { lord_house: { lord_of: 7, in_house: 7 } }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "결혼의 signification 강화 — 자기 별자리·고양이면 강력한 결혼 요가"
+
+  - id: R_7L_IN_7H_OWN
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when:
+      lord_house: { lord_of: 7, in_house: 7 }
+      lord_dignity: { lord_of: 7, dignity: own }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "강력한 결혼 요가 — 좋은 배우자, 성공적 파트너십"
+
+  - id: R_7L_IN_9H
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { lord_house: { lord_of: 7, in_house: 9 } }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "이상적·법적·종교적 결혼 — 배우자가 스승·조언자적, 신앙·철학의 공유"
+
+  - id: R_7L_IN_5H
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { lord_house: { lord_of: 7, in_house: 5 } }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "연애결혼 — 로맨스를 통한 결합, 배우자와의 지적·창조적 유대 지속"
+
+  - id: R_7L_IN_10H
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { lord_house: { lord_of: 7, in_house: 10 } }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "결혼이 사회적 지위 상승과 연결 — 배우자가 커리어에 도움"
+
+  - id: R_7L_IN_2H
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { lord_house: { lord_of: 7, in_house: 2 } }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "배우자로 인한 재산 유입, 가족적 유대 강화"
+
+  - id: R_7L_IN_8H
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { lord_house: { lord_of: 7, in_house: 8 } }
+    direction: support
+    source: "16_하우스7.md §1"
+    text: "관계의 급변·비밀 요소에 민감한 국면 — '관계에서 인내와 소통이 특별히 중요한 시기' 프레임으로 서술"
+    caution: "확정 예언 금지 (16 §9.3). 7하우스는 마라카 — 수명·건강·사별 뉘앙스 서술 절대 금지"
+
+  # --- 16 §2  7하우스 재실 행성 (파일럿: 핵심 4행) ---
+  - id: R_7H_VENUS
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { planet_in_house: { venus: 7 } }
+    direction: support
+    source: "16_하우스7.md §2"
+    text: "로맨틱·조화로운 결혼"
+    caution: "훼손 시 결혼 지연·관계의 복잡성 — 완곡 서술 필수"
+
+  - id: R_7H_JUPITER
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { planet_in_house: { jupiter: 7 } }
+    direction: support
+    source: "16_하우스7.md §2"
+    text: "결혼의 축복 — 지혜롭고 신실한 배우자, 결혼 후 확장"
+
+  - id: R_7H_MARS
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { planet_in_house: { mars: 7 } }
+    direction: support
+    source: "16_하우스7.md §2·§4.3"
+    text: "화성의 7하우스 위치 — '결혼의 열정과 강도가 강한 성향', 감정 표현과 관계 조율에 주의가 필요한 배치"
+    caution: >
+      리포트에 '만갈리크' 용어 사용 금지 — 효과만 서술 (16 §4.3).
+      완화 조건 병기: 화성이 자기 별자리(양·전갈)·고양(염소)이면 약화,
+      금성 동반·좋은 각이면 완화, 30세 이후 영향 감소.
+
+  - id: R_7H_SATURN
+    tier: t1_d1
+    conclusion: RELATIONSHIP_PATTERN
+    when: { planet_in_house: { saturn: 7 } }
+    direction: support
+    source: "16_하우스7.md §2"
+    text: "결혼 시기의 신중한 선택이 권장되는 배치 — 장기적 안정과 헌신을 중시하는 관계 패턴"
+    caution: "원문 '결혼 지연'은 완곡 서술. 부정 확정 예언 금지"
+
+# =============================================================================
+# T2 — 카라카  (자연 카라카 + DK)
+# =============================================================================
+  - id: R_DK_IN_7H
+    tier: t2_karaka
+    conclusion: RELATIONSHIP_PATTERN
+    when: { karaka_house: { karaka: dk, in_house: 7 } }
+    direction: support
+    source: "44_BPHS_카라카_특수점.md §5.1"
+    text: "이 행성은 당신이 장기 관계에서 만나게 되는 상대의 핵심 성향뿐 아니라, 관계를 통해 배우게 되는 태도를 함께 보여줍니다."
+    note: "다라카라카(DK) = 라시 7행성 중 최소 도수 행성 (16 §5.3). 고객용 문구는 44 §5.1 원문 인용."
+
+# =============================================================================
+# T3 — 바르가  (D1·D9 대조. 16 헤더: D1만으로 부족 — D9 병행 필수)
+# =============================================================================
+  - id: R_D1_D9_7LORD_CONTRAST
+    tier: t3_varga
+    conclusion: RELATIONSHIP_PATTERN
+    when: { varga_contrast: { planet: lord_of_7, vargas: [d9] } }
+    direction: computed                  # 강약 비교 결과에 따라 support/oppose
+    source: "16_하우스7.md §8.1"
+    text_strong_weak: "D1(결혼의 외적 상황)과 D9(관계의 실질적 질·지속성)의 강약 비교 — 반전 시 외양과 실제 질이 다를 수 있음"
+    automation: partial
+    automation_note: >
+      D1 과 D9 에서 7로드의 사인·하우스는 엔진이 산출하지만,
+      "강함/약함" 판정에는 존엄(자기·고양·우호·적대)과 하우스 성격(켄드라·두스타나)
+      규칙이 필요하다. 후보를 제시하고 방향은 사람이 확정한다.
+      D9 반전 규칙(16 §1 나밤샤 병행 규칙): 라시에서 좋아도 D9 6/8/12이면 반전,
+      라시에서 훼손돼도 D9 켄드라·트리코나이면 회복.
+
+  - id: R_D1_D9_VENUS_CONTRAST
+    tier: t3_varga
+    conclusion: RELATIONSHIP_PATTERN
+    when: { varga_contrast: { planet: venus, vargas: [d9] } }
+    direction: computed
+    source: "16_하우스7.md §8.1"
+    text_strong_weak: "결혼의 주 카라카 금성 — D1과 D9에서의 강약 비교"
+    automation: partial
+    automation_note: >
+      16 §8.1 필수 확인 항목: D9에서의 금성·목성 상태.
+      강약 판정은 사람 확정 (R_D1_D9_7LORD_CONTRAST 와 동일).
+
+# =============================================================================
+# T5 — 아쉬타카바르가  (강도 지표. counts_as_evidence: false)
+# =============================================================================
+  - id: R_SAV_7H
+    tier: t5_ashtaka
+    conclusion: RELATIONSHIP_PATTERN
+    when: { sav_house: { house: 7 } }
+    direction: support_if_grade_above
+    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
+    source: "43_BPHS_아쉬타카바르가.md §5.2"
+    text_template: "7하우스 SAV {value}점 — {grade}"
+    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
+
+# =============================================================================
+# T6 — 요가
+# =============================================================================
+  - id: R_YOGA_MALAVYA
+    tier: t6_yoga
+    conclusion: RELATIONSHIP_PATTERN
+    when:
+      yoga:
+        planet: venus
+        signs: [2, 7, 12]                # 황소·천칭(자기) / 물고기(고양)
+        houses: [1, 4, 7, 10]            # 켄드라
+    direction: support
+    source: "16_하우스7.md §4.1"
+    text: "아름답고 조화로운 배우자, 예술적 감각, 결혼의 축복"
+
+  - id: R_YOGA_HAMSA
+    tier: t6_yoga
+    conclusion: RELATIONSHIP_PATTERN
+    when:
+      yoga:
+        planet: jupiter
+        signs: [9, 12, 4]                # 궁수·물고기(자기) / 게(고양)
+        houses: [1, 4, 7, 10]            # 켄드라
+    direction: support
+    source: "16_하우스7.md §4.1"
+    text: "이상적 결혼의 축복 — 지혜로운 파트너십 (여성 차트에서 특히 이상적 남편의 신호)"
+
+  - id: R_MANGAL_DOSHA
+    tier: t6_yoga
+    conclusion: RELATIONSHIP_PATTERN
+    when:
+      yoga:
+        planet: mars
+        signs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  # 하우스 기반 도샤 — 사인 무관
+        houses: [1, 2, 4, 7, 8, 12]                     # 16 §4.3 정의
+    direction: support
+    source: "16_하우스7.md §4.3"
+    text: "결혼의 열정과 강도가 강한 성향 — 감정 표현과 관계 조율에 주의가 필요한 배치"
+    caution: >
+      리포트에 '만갈리크' 용어 사용 금지 — 효과만 서술 (evidence_map §2-3).
+      완화 조건 병기 필수: 양쪽 다 해당이면 상쇄, 화성이 자기 별자리(양·전갈)·
+      고양(염소)이면 약화, 금성 동반·좋은 각이면 완화, 30세 이후 영향 감소.
+      확정 예언 금지, 결혼 자체의 부정 금지.
+
+# =============================================================================
+# 자동화 불가 — 규칙 부재 / 엔진·문법 한계
+# =============================================================================
+gaps:
+  t2_karaka_gender:
+    issue: N/A
+    reason: >
+      16 헤더의 성별 조건부 카라카(목성=여성 차트 남편, 태양=여성 차트 남편 보조,
+      달=남성 차트 아내 보조)는 엔진 JSON에 성별이 없어 자동 판정 불가.
+      성별 입력 정책이 정해지면 규칙 추가 가능.
+  t3_dk_d9:
+    issue: N/A
+    reason: >
+      16 §5.3 "나밤샤에서 다라카라카의 위치가 배우자의 실제 성격을 결정" —
+      judge 의 varga_contrast 가 카라카 지정자(dk)를 해석하지 못해 자동화 불가.
+      judge.py 수정 또는 별도 when 키 필요.
+  t4_dasha:
+    issue: N/A
+    reason: >
+      16 §3.2 결혼 성립 다샤 조합·§3.4 결합별 결과는 문서에 있으나
+      judge 에 다샤 when 키가 없어 자동 판정 불가.
+      16 §9.2 — 다샤·트랜짓·이중 트랜짓이 모두 일치할 때만 시기로 확정,
+      하나만 신호이면 "가능성 있는 시기"로 완곡화. 사람 확정 필수.
+  t1_sign_table:
+    issue: N/A
+    reason: >
+      16 §5.1 7H 사인별 배우자 기본 성향 12행 — house_sign 키로 자동화 가능하나
+      파일럿 분량상 v0.2 확장 후보. 서술 시 주어를 관계로 환원(ISSUE-027) 필요.
+  t1_lord_rest:
+    issue: N/A
+    reason: >
+      7로드 나머지 배치(1·3·4·6·11·12H) — 16 §1에 문서 있으나 파일럿 제외.
+      v0.2 확장 후보.
+  t3_ul:
+    issue: ISSUE-028
+    reason: >
+      16 §5.4 우파파다 라그나(UL) — 엔진 미산출 특수점.
+      추가금 상품 사양 (evidence_map §3).
+  t6_ashtakuta:
+    issue: ISSUE-028
+    reason: >
+      16 §6 궁합(Ashtakuta) — 상대방 출생정보 필요, 접수 정책 변경 필요.
+      관계 카테고리 추가금의 핵심 상품. 기본 리포트는 이것 없이 완결.

@@ -1,0 +1,264 @@
+# =============================================================================
+# rules_finance.yaml — 금전 판정 규칙 DB (파일럿 범위)
+# =============================================================================
+# 범위: F1~F6 결론 후보 중 judge.py 의 when 키로 표현 가능한 규칙만 수록한다.
+#       11_하우스2.md (HTJH1 Ch.5) 와 20_하우스11.md 의 서술을 옮긴 것이며,
+#       안 쓰인 행·자동화 불가 항목은 넣지 않고 gaps 에 기록한다.
+#
+# 원칙:
+#   §2.1  원본 문서를 수정하지 않는다. 여기에는 서술을 인용만 한다.
+#   §6.1  문서에 없는 규칙을 만들지 않는다. text 는 원문 서술을 그대로 옮기거나
+#         충실히 요약한다 (인격 단정·의료·S3 항목은 evidence_map_finance.md §2-1 에
+#         따라 근거에서 제외하며, 완곡 치환도 하지 않는다).
+#   §9.1  tier 는 계열 하나만 지정한다. 한 규칙이 두 계열을 채우지 않는다.
+#
+# when 조건 문법 (전부 AND) — judge.py 가 지원하는 키만 사용:
+#   lord_house: {lord_of: N, in_house: M}   N하우스 로드가 M하우스에 위치
+#   lord_dignity: {lord_of: N, dignity: own|exalted|debilitated|other}
+#   house_sign: {house: N, sign: S}          사인 번호 1=양자리..12=물고기자리
+#   karaka_house: {karaka: dk, in_house: N}  차라 카라카(DK 등) 행성의 하우스
+#   planet_in_house: {행성: 하우스}          행성명: sun moon mars mercury
+#                                           jupiter venus saturn rahu ketu
+#   sav_house: {house: n}                   상한 미포함. grade_threshold 와 함께
+#                                           direction: support_if_grade_above
+#   yoga: {planet, signs, houses}            단일 행성 요가 성립 조건
+#   varga_contrast: {planet, vargas}          planet 지정자: lord_of_N | 행성명
+#
+# 안전:
+#   - 투자 권유·특정 자산(주식·투기 등) 추천 뉘앙스 금지. "흐름/구조" 서술에 그친다.
+#   - 빈곤 조합(11 §3)은 "재정 관리 취약 구조"로 치환하되, 마라카 관여·신체·의료
+#     항목은 근거에서 제외한다 (evidence_map_finance.md §2-1/§2-2).
+#   - 특정 금액·수치 예언 금지. S3(수명) 영역 금지.
+# =============================================================================
+
+meta:
+  version: 0.1.0
+  scope: finance_F1_F6_pilot
+  source_docs: [11_하우스2.md, 20_하우스11.md, 43_BPHS_아쉬타카바르가.md]
+  coverage_note: >
+    2H=축적(저수지), 11H=이득(수도꼭지). T1·T5·T6 은 자동 판정 가능.
+    T2 는 다나카라카(목성) 2H 재실 1건만 자동(어스펙트 조건은 수동).
+    T3 은 강약 비교가 필요해 부분 자동(후보 제시 + 사람 확정).
+    T4(다샤·트랜짓 결합)는 judge 키가 없어 규칙 부재.
+    11H 재실 행성 9행 중 태양·달·수성·케투는 분량상 미수록(문서 근거는 유효).
+
+# =============================================================================
+# T1 — D1 하우스/로드/재실  (L1)
+# =============================================================================
+rules:
+
+  # --- 11_하우스2.md §1 : 2로드의 하우스별 배치 ---
+  - id: R_2L_IN_2H
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 2, in_house: 2 } }
+    direction: support
+    source: "11_하우스2.md §1"
+    text: "2로드 자기 자리 — 축적(저수지) signification 강화. 길성과 함께면 매우 길하고 사업으로 큰 재산"
+    caution: "흉 어스펙트 시 손실·지출로 발현"
+
+  - id: R_2L_IN_11H
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 2, in_house: 11 } }
+    direction: support
+    source: "11_하우스2.md §1"
+    text: "상당한 축재 — 이득의 흐름(11H)이 축적(2H)과 연결. 대부업·은행업·하숙업 경로의 소득"
+
+  - id: R_2L_IN_10H
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 2, in_house: 10 } }
+    direction: support
+    source: "11_하우스2.md §1"
+    text: "부유·자수성가 — 복수 직업 병행(사업+농업+강연 등)으로 소득원 다변화"
+    caution: "강한 손상 시 같은 소득원에서 손실"
+
+  # --- 20_하우스11.md §1 : 11로드의 하우스별 배치 ---
+  - id: R_11L_IN_11H
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 11, in_house: 11 } }
+    direction: support
+    source: "20_하우스11.md §1"
+    text: "11로드 자기 자리 — 이득 signification 강화, 다양한 원천"
+
+  - id: R_11L_IN_2H
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 11, in_house: 2 } }
+    direction: support
+    source: "20_하우스11.md §1"
+    text: "이득이 재산으로 직결 — 다나 요가 성립 가능, 안정된 재산"
+
+  - id: R_11L_IN_10H
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 11, in_house: 10 } }
+    direction: support
+    source: "20_하우스11.md §1"
+    text: "우파차야 겹침 — 커리어 이득 대증가"
+
+  # --- 20_하우스11.md §2 : 11하우스 재실 행성 (금전 관련 강한 행만) ---
+  - id: R_11H_JUPITER
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { jupiter: 11 } }
+    direction: support
+    source: "20_하우스11.md §2"
+    text: "최상의 배치 중 하나 — 자연 카라카(목성)가 11하우스에 재실, 큰 재산·지혜 이득"
+
+  - id: R_11H_RAHU
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { rahu: 11 } }
+    direction: support
+    source: "20_하우스11.md §2"
+    text: "최상의 배치 중 하나 — 대규모·국제 이득, 이례적 재산 축적"
+
+  - id: R_11H_SATURN
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { saturn: 11 } }
+    direction: support
+    source: "20_하우스11.md §2"
+    text: "매우 좋음 — 우파차야에 자연스러운 흉성, 오랜 인내의 대이득, 노년 안정"
+
+  - id: R_11H_VENUS
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { venus: 11 } }
+    direction: support
+    source: "20_하우스11.md §2"
+    text: "예술·미용·럭셔리 이득, 여성 통한 재산, 배우자 이득"
+
+  - id: R_11H_MARS
+    tier: t1_d1
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { mars: 11 } }
+    direction: support
+    source: "20_하우스11.md §2"
+    text: "매우 좋음 — 부동산·기술 이득"
+
+# =============================================================================
+# T2 — 카라카  (다나카라카 = 목성. 자연 카라카라 판독 가능)
+# =============================================================================
+  - id: R_JUPITER_IN_2H
+    tier: t2_karaka
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { jupiter: 2 } }
+    direction: support
+    source: "11_하우스2.md §3"
+    text: "다나카라카(목성) 2하우스 재실 — 큰 부"
+    automation: partial
+    automation_note: >
+      원문 조건 "흉 어스펙트 없이" 와 "달의 어스펙트를 받는 수성이 개입하면 상실" 은
+      judge 가 어스펙트를 판정하지 못하므로 사람이 확인한다.
+
+# =============================================================================
+# T5 — 아쉬타카바르가  (강도 지표. counts_as_evidence: false)
+#   20 §7.4 의 30/35 임계값 사용 금지 (ISSUE-024) — constants.yaml sav_grades 사용.
+# =============================================================================
+  - id: R_SAV_2H
+    tier: t5_ashtaka
+    conclusion: FINANCE_FLOW
+    when: { sav_house: { house: 2 } }
+    direction: support_if_grade_above
+    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
+    source: "43_BPHS_아쉬타카바르가.md §5.2"
+    text_template: "2하우스 SAV {value}점 — {grade}"
+    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
+
+  - id: R_SAV_11H
+    tier: t5_ashtaka
+    conclusion: FINANCE_FLOW
+    when: { sav_house: { house: 11 } }
+    direction: support_if_grade_above
+    grade_threshold: 28                  # constants.yaml sav_grades "평균 이상" 하한
+    source: "43_BPHS_아쉬타카바르가.md §5.2"
+    text_template: "11하우스 SAV {value}점 — {grade}"
+    note: "등급 문자열은 constants.yaml ashtakavarga.sav_grades 에서 조회한다."
+
+# =============================================================================
+# T6 — 요가  (11 §3 부유 조합 중 judge 키로 표현 가능한 것만)
+# =============================================================================
+  - id: R_YOGA_LAGNALORD_IN_2H
+    tier: t6_yoga
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 1, in_house: 2 } }
+    direction: support
+    source: "11_하우스2.md §3"
+    text: "라그나 로드 2하우스 — 큰 재산 (자기 노력의 재물)"
+
+  - id: R_YOGA_11L_IN_LAGNA
+    tier: t6_yoga
+    conclusion: FINANCE_FLOW
+    when: { lord_house: { lord_of: 11, in_house: 1 } }
+    direction: support
+    source: "11_하우스2.md §3"
+    text: "11로드 라그나 — 큰 재산"
+
+  - id: R_YOGA_JUP11_VEN2
+    tier: t6_yoga
+    conclusion: FINANCE_FLOW
+    when: { planet_in_house: { jupiter: 11, venus: 2 } }
+    direction: support
+    source: "11_하우스2.md §3"
+    text: "목성 11하우스 + 금성 2하우스 — 도덕적 목적에 지출하는 부"
+    automation: partial
+    automation_note: >
+      원문 조건 "2로드가 길성과" 는 judge 가 결합을 판정하지 못하므로 사람이 확인한다.
+
+# =============================================================================
+# T3 — 바르가 (부분 자동)
+# =============================================================================
+  - id: R_D1_D9_CONTRAST
+    tier: t3_varga
+    conclusion: FINANCE_FLOW
+    when: { varga_contrast: { planet: lord_of_2, vargas: [d9] } }
+    direction: computed                  # 강약 비교 결과에 따라 support/oppose
+    source: "20_하우스11.md §1"
+    text_strong_weak: "D9 에서 2로드 강도 반복 확인 — 강하면 축적의 실질화, 약하면 실현 지연"
+    automation: partial
+    automation_note: >
+      D1 과 D9 에서 2로드의 사인·하우스는 엔진이 산출하지만,
+      "강함/약함" 판정에는 존엄(자기·고양·우호·적대)과 하우스 성격(켄드라·두스타나)
+      규칙이 필요하다. 후보를 제시하고 방향은 사람이 확정한다.
+      (20 §1 나밤샤 확인: D9에서 강하면 이득의 실질화)
+
+# =============================================================================
+# 자동화 불가 — 규칙 부재 (의도적 제외 포함)
+# =============================================================================
+gaps:
+  t2_karaka:
+    issue: YOGA-2PLANET
+    reason: >
+      11 §4 찬드라망갈라 요가(달+화성 결합·상호 어스펙트. 2·9·10·11하우스 발생 시
+      재정적 대길)와 가자케사리 요가의 재물 발현 조건("목성이 2하우스와 연결될
+      때만")은 행성 간 결합·켄드라 관계 판정이 필요해 judge 의 단일 행성 yoga
+      키로 표현할 수 없다.
+  t4_dasha:
+    issue: DASHA-KEY-ABSENT
+    reason: >
+      11 §5 (행성별 2하우스 다샤 9행 + 2로드×각 로드 12조합), 20 §7.2 (다샤 결합
+      9행), 20 §7.3 (목성 트랜짓 11H 통과)은 마하·안타르다샤 결합 키가 judge 에
+      없어 자동 판정 불가. 금전에서 T4 가 가장 두꺼운 계열이므로(21+9행) 수동
+      판정 영역으로 남는다.
+  t6_yoga:
+    issue: PARIVARTANA-ABSENT
+    reason: >
+      11 §3 "2로드+11로드 하우스 교환(파리바르타나)" 및 20 §8.3 "2H·11H 로드의
+      파리바르타나"는 judge 에 교환 키가 없어 표현 불가.
+      "둘 다 켄드라 + 수성/목성 결합·어스펙트 → 상당한 부"(11 §3)도 결합 판정
+      미지원으로 제외.
+  t1_d1:
+    issue: ISSUE-019
+    reason: >
+      11 §5-f 달 기준 2로드(찬드라 라그나 기준)는 ISSUE-019 미결로 라그나 기준만
+      판정한다.
+  t1_d1_excluded:
+    issue: SAFETY-FILTER
+    reason: >
+      11 §3 빈곤 조합 13항은 의도적으로 자동화에서 제외한다. 마라카 관여·신체·
+      의료 항목은 근거에서 제외하고(§2-1), 나머지는 "재정 관리 취약 구조"로
+      치환해야 하므로(§2-2) 리포트에서 다룰 경우 수동 판정한다.
